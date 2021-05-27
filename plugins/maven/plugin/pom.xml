@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>com.mobidevelop.robovm</groupId>
+        <groupId>com.robovmx</groupId>
         <artifactId>robovm-maven-parent</artifactId>
         <version>2.3.14-SNAPSHOT</version>
     </parent>
@@ -35,7 +35,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.mobidevelop.robovm</groupId>
+            <groupId>com.robovmx</groupId>
             <artifactId>robovm-dist-compiler</artifactId>
         </dependency>
 

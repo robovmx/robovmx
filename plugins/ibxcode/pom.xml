@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>com.mobidevelop.robovm</groupId>
+        <groupId>com.robovmx</groupId>
         <artifactId>robovm-parent</artifactId>
         <version>2.3.14-SNAPSHOT</version>
         <relativePath>../../</relativePath>
@@ -38,7 +38,7 @@
             <artifactId>bcel</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.mobidevelop.robovm</groupId>
+            <groupId>com.robovmx</groupId>
             <artifactId>robovm-compiler</artifactId>
             <scope>provided</scope>
         </dependency>

@@ -55,12 +55,12 @@ ${project.name}
   <dependencies>
     ...
     <dependency>
-      <groupId>com.mobidevelop.robovm</groupId>
+      <groupId>com.robovmx</groupId>
       <artifactId>robovm-rt</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.mobidevelop.robovm</groupId>
+      <groupId>com.robovmx</groupId>
       <artifactId>robovm-cocoatouch</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -69,7 +69,7 @@ ${project.name}
   <build>
     <plugins>
       <plugin>
-        <groupId>com.mobidevelop.robovm</groupId>
+        <groupId>com.robovmx</groupId>
         <artifactId>robovm-maven-plugin</artifactId>
         <version>${project.version}</version>
       </plugin>

@@ -26,12 +26,22 @@ import org.jboss.shrinkwrap.resolver.api.maven.MavenResolvedArtifact;
 
 public class RoboVMResolver {
 
-    private static String ROBOVM_DIST = "com.mobidevelop.robovm:robovm-dist:tar.gz:nocompiler";
+    private final static String ROBOVM_DIST = "com.robovmx:robovm-dist:tar.gz:nocompiler";
+
+    private final String robovmDistArtifact;
 
     private Logger logger = new GenericLogger();
     
     public void setLogger(Logger logger) {
         this.logger = logger;
+    }
+
+    public RoboVMResolver() {
+        this(ROBOVM_DIST);
+    }
+
+    public RoboVMResolver(String robovmDistArtifact) {
+        this.robovmDistArtifact = robovmDistArtifact;
     }
 
     public MavenResolvedArtifact resolveArtifact(String artifact) {
@@ -61,7 +71,7 @@ public class RoboVMResolver {
     }
 
     public MavenResolvedArtifact resolveRoboVMDistArtifact(String version) {
-        return resolveArtifact(ROBOVM_DIST + ":" + version);
+        return resolveArtifact(robovmDistArtifact + ":" + version);
     }
 
     public File resolveAndUnpackRoboVMDistArtifact(String version) throws IOException {

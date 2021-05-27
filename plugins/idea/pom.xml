@@ -1,7 +1,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.mobidevelop.robovm</groupId>
+    <groupId>com.robovmx</groupId>
     <artifactId>org.robovm.idea</artifactId>
     <name>RoboVM plugin for Intellij IDEA</name>
     <version>2.3.14-SNAPSHOT</version>
@@ -38,7 +38,7 @@
         <dependencies>
             <!-- include parent pom as bill of material to pick up dependency definitions from it -->
             <dependency>
-                <groupId>com.mobidevelop.robovm</groupId>
+                <groupId>com.robovmx</groupId>
                 <artifactId>robovm-parent</artifactId>
                 <version>${robovm.version}</version>
                 <type>pom</type>
@@ -49,15 +49,15 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.mobidevelop.robovm</groupId>
+            <groupId>com.robovmx</groupId>
             <artifactId>robovm-compiler</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.mobidevelop.robovm</groupId>
+            <groupId>com.robovmx</groupId>
             <artifactId>robovm-templater</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.mobidevelop.robovm</groupId>
+            <groupId>com.robovmx</groupId>
             <artifactId>robovm-ibxcode</artifactId>
         </dependency>
     </dependencies>
@@ -85,7 +85,7 @@
                     <stripClassifier>true</stripClassifier>
                     <artifactItems>
                         <artifactItem>
-                            <groupId>com.mobidevelop.robovm</groupId>
+                            <groupId>com.robovmx</groupId>
                             <artifactId>robovm-dist</artifactId>
                             <classifier>nocompiler</classifier>
                             <type>tar.gz</type>

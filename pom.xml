@@ -3,11 +3,11 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.mobidevelop.robovm</groupId>
+    <groupId>com.robovmx</groupId>
     <version>2.3.14-SNAPSHOT</version>
     <artifactId>robovm-parent</artifactId>
     <organization>
-        <name>com.mobidevelop.robovm</name>
+        <name>com.robovmx</name>
         <url>https://github.com/MobiVM/robovm</url>
     </organization>
     <name>RoboVM Parent</name>
@@ -198,87 +198,87 @@
 
             <!-- own artifacts -->
             <dependency>
-                <groupId>com.mobidevelop.robovm</groupId>
+                <groupId>com.robovmx</groupId>
                 <artifactId>robovm-debugger</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.mobidevelop.robovm</groupId>
+                <groupId>com.robovmx</groupId>
                 <artifactId>robovm-compiler</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.mobidevelop.robovm</groupId>
+                <groupId>com.robovmx</groupId>
                 <artifactId>robovm-dist-compiler</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.mobidevelop.robovm</groupId>
+                <groupId>com.robovmx</groupId>
                 <artifactId>robovm-dist</artifactId>
                 <classifier>nocompiler</classifier>
                 <version>${project.version}</version>
                 <type>tar.gz</type>
             </dependency>
             <dependency>
-                <groupId>com.mobidevelop.robovm</groupId>
+                <groupId>com.robovmx</groupId>
                 <artifactId>robovm-templater</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.mobidevelop.robovm</groupId>
+                <groupId>com.robovmx</groupId>
                 <artifactId>robovm-ibxcode</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.mobidevelop.robovm</groupId>
+                <groupId>com.robovmx</groupId>
                 <artifactId>robovm-rt</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <!-- FIXME: -->
             <dependency>
-                <groupId>com.mobidevelop.robovm</groupId>
+                <groupId>com.robovmx</groupId>
                 <artifactId>robovm-rt</artifactId>
                 <version>${project.version}</version>
                 <classifier>sources</classifier>
             </dependency>
             <dependency>
-                <groupId>com.mobidevelop.robovm</groupId>
+                <groupId>com.robovmx</groupId>
                 <artifactId>robovm-objc</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.mobidevelop.robovm</groupId>
+                <groupId>com.robovmx</groupId>
                 <artifactId>robovm-cocoatouch</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.mobidevelop.robovm</groupId>
+                <groupId>com.robovmx</groupId>
                 <artifactId>robovm-cacerts-full</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.mobidevelop.robovm</groupId>
+                <groupId>com.robovmx</groupId>
                 <artifactId>robovm-llvm</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.mobidevelop.robovm</groupId>
+                <groupId>com.robovmx</groupId>
                 <artifactId>robovm-libimobiledevice</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.mobidevelop.robovm</groupId>
+                <groupId>com.robovmx</groupId>
                 <artifactId>robovm-maven-resolver</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.mobidevelop.robovm</groupId>
+                <groupId>com.robovmx</groupId>
                 <artifactId>robovm-maven-resolver</artifactId>
                 <version>${project.version}</version>
                 <classifier>nodep</classifier>
             </dependency>
             <dependency>
-                <groupId>com.mobidevelop.robovm</groupId>
+                <groupId>com.mobidevelop.robovm</groupId> <!-- FIXME: RoboVMx note: keeping reference to mobidev, fork from dkimitsa once required -->
                 <artifactId>robovm-soot</artifactId>
                 <version>2.5.0-7</version>
             </dependency>

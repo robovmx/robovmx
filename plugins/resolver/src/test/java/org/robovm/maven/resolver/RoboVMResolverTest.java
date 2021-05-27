@@ -40,7 +40,7 @@ public class RoboVMResolverTest {
     
     @Test
     public void testResolveAndUnpackRoboVMDistArtifact() throws Exception {
-        RoboVMResolver resolver = new RoboVMResolver();
+        RoboVMResolver resolver = new RoboVMResolver("com.mobidevelop.robovm:robovm-dist:tar.gz:nocompiler");
         File dir = resolver.resolveAndUnpackRoboVMDistArtifact("2.3.3");
         assertEquals(distAlpha2Dir, dir);
         assertEquals(1508519672L, new File(dir, "lib/robovm-rt.jar").lastModified() / 1000L);

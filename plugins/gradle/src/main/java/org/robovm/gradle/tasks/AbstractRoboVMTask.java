@@ -251,7 +251,7 @@ abstract public class AbstractRoboVMTask extends DefaultTask {
     abstract public void invoke();
 
     protected File unpack() throws GradleException {
-        final Artifact artifact = resolveArtifact("com.mobidevelop.robovm:robovm-dist:tar.gz:nocompiler:"
+        final Artifact artifact = resolveArtifact("com.robovmx:robovm-dist:tar.gz:nocompiler:"
                 + RoboVMPlugin.getRoboVMVersion());
         final File distTarFile = artifact.getFile();
         final File unpackedDirectory = new File(distTarFile.getParent(), "unpacked");

@@ -228,10 +228,10 @@ public abstract class AbstractRoboVMMojo extends AbstractMojo {
         }
 
         // Read embedded RoboVM <config> if there is one
-        Plugin plugin = project.getPlugin("com.mobidevelop.robovm:robovm-maven-plugin");
+        Plugin plugin = project.getPlugin("com.robovmx:robovm-maven-plugin");
         MavenProject p = project;
         while (p != null && plugin == null) {
-            plugin = p.getPluginManagement().getPluginsAsMap().get("com.mobidevelop.robovm:robovm-maven-plugin");
+            plugin = p.getPluginManagement().getPluginsAsMap().get("com.robovmx:robovm-maven-plugin");
             if (plugin == null) p = p.getParent();
         }
         if (plugin != null) {
@@ -395,7 +395,7 @@ public abstract class AbstractRoboVMMojo extends AbstractMojo {
     protected Artifact resolveRoboVMDistArtifact() throws MojoExecutionException {
 
         MavenArtifactHandler handler = new MavenArtifactHandler("tar.gz");
-        Artifact artifact = new DefaultArtifact("com.mobidevelop.robovm", "robovm-dist",
+        Artifact artifact = new DefaultArtifact("com.robovmx", "robovm-dist",
                 getRoboVMVersion(), "", "tar.gz", "nocompiler", handler);
         return resolveArtifact(artifact);
     }

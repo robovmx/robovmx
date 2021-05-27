@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>com.mobidevelop.robovm</groupId>
+        <groupId>com.robovmx</groupId>
         <artifactId>robovm-compiler-parent</artifactId>
         <version>2.3.14-SNAPSHOT</version>
     </parent>
@@ -79,28 +79,28 @@
             <artifactId>asm-debug-all</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.mobidevelop.robovm</groupId>
+            <groupId>com.robovmx</groupId>
             <artifactId>robovm-llvm</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.mobidevelop.robovm</groupId>
+            <groupId>com.robovmx</groupId>
             <artifactId>robovm-libimobiledevice</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.mobidevelop.robovm</groupId>
+            <groupId>com.mobidevelop.robovm</groupId> <!-- FIXME: RoboVMx note: keeping reference to mobidev, fork from dkimitsa once required -->
             <artifactId>robovm-soot</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.mobidevelop.robovm</groupId>
+            <groupId>com.robovmx</groupId>
             <artifactId>robovm-debugger</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.mobidevelop.robovm</groupId>
+            <groupId>com.robovmx</groupId>
             <artifactId>robovm-rt</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.mobidevelop.robovm</groupId>
+            <groupId>com.robovmx</groupId>
             <artifactId>robovm-objc</artifactId>
             <scope>test</scope>
         </dependency>

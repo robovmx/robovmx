@@ -15,7 +15,7 @@ buildscript {
         maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
     }
     dependencies {
-        classpath group: 'com.mobidevelop.robovm', name: 'robovm-gradle-plugin', version: project.roboVMGradleVersion
+        classpath group: 'com.robovmx', name: 'robovm-gradle-plugin', version: project.roboVMGradleVersion
     }
 }
 
@@ -28,8 +28,8 @@ repositories {
 }
 
 dependencies {
-    compile group: 'com.mobidevelop.robovm', name: 'robovm-rt', version: project.roboVMVersion
-    compile group: 'com.mobidevelop.robovm', name: 'robovm-cocoatouch', version: project.roboVMVersion
+    compile group: 'com.robovmx', name: 'robovm-rt', version: project.roboVMVersion
+    compile group: 'com.robovmx', name: 'robovm-cocoatouch', version: project.roboVMVersion
 }
 
 robovm {

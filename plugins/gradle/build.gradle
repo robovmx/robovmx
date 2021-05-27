@@ -16,7 +16,7 @@ apply plugin: 'nexus'
 apply plugin: 'eclipse'
 apply plugin: 'com.github.johnrengelman.shadow'
 
-group = 'com.mobidevelop.robovm'
+group = 'com.robovmx'
 archivesBaseName = 'robovm-gradle-plugin'
 version = '2.3.14-SNAPSHOT'
 
@@ -43,7 +43,7 @@ dependencies {
     compileOnly gradleApi()
     compileOnly localGroovy()
     compile "org.apache.commons:commons-compress:1.5"
-    compile "com.mobidevelop.robovm:robovm-dist-compiler:${roboVMVersion}"
+    compile "com.robovmx:robovm-dist-compiler:${roboVMVersion}"
     compile 'org.sonatype.aether:aether:1.13.1'
     compile 'org.sonatype.aether:aether-connector-wagon:1.13.1'
     compile 'org.apache.maven:maven-aether-provider:3.0.4'
@@ -100,11 +100,11 @@ jar {
 shadowJar {
     classifier = ''
     dependencies {
-        exclude(dependency("com.mobidevelop.robovm:robovm-dist-compiler:${roboVMVersion}"));
+        exclude(dependency("com.robovmx:robovm-dist-compiler:${roboVMVersion}"));
     }
-    relocate 'org.apache.http', 'com.mobidevelop.robovm.org.apache.http'
-    relocate 'org.apache.commons.io', 'com.mobidevelop.robovm.org.apache.commons.io'
-    relocate 'org.objectweb.asm', 'com.mobidevelop.robovm.asm'
+    relocate 'org.apache.http', 'com.robovmx.org.apache.http'
+    relocate 'org.apache.commons.io', 'com.robovmx.org.apache.commons.io'
+    relocate 'org.objectweb.asm', 'com.robovmx.asm'
 }
 
 assemble.dependsOn('shadowJar')

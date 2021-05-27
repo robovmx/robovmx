@@ -3,7 +3,7 @@
 
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>com.mobidevelop.robovm</groupId>
+        <groupId>com.robovmx</groupId>
         <artifactId>robovm-junit-parent</artifactId>
         <version>2.3.14-SNAPSHOT</version>
     </parent>
@@ -13,18 +13,18 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.mobidevelop.robovm</groupId>
+            <groupId>com.robovmx</groupId>
             <artifactId>robovm-junit-protocol</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.mobidevelop.robovm</groupId>
+            <groupId>com.robovmx</groupId>
             <artifactId>robovm-junit-server</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.mobidevelop.robovm</groupId>
+            <groupId>com.robovmx</groupId>
             <artifactId>robovm-compiler</artifactId>
             <scope>provided</scope>
         </dependency>
@@ -33,7 +33,7 @@
             <artifactId>rxjava</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.mobidevelop.robovm</groupId>
+            <groupId>com.robovmx</groupId>
             <artifactId>robovm-maven-resolver</artifactId>
             <scope>test</scope>
         </dependency>

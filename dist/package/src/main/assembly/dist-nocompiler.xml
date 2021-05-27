@@ -20,7 +20,7 @@
         <include>*:*:jar:*</include>
       </includes>
       <excludes>
-        <exclude>com.mobidevelop.robovm:robovm-dist-compiler:jar:*</exclude>
+        <exclude>com.robovmx:robovm-dist-compiler:jar:*</exclude>
       </excludes>
       <outputDirectory>lib</outputDirectory>
       <unpack>false</unpack>

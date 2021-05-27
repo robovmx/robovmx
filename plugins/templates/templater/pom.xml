@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>com.mobidevelop.robovm</groupId>
+        <groupId>com.robovmx</groupId>
         <artifactId>robovm-templates-parent</artifactId>
         <version>2.3.14-SNAPSHOT</version>
     </parent>
@@ -27,19 +27,19 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.mobidevelop.robovm</groupId>
+            <groupId>com.robovmx</groupId>
             <artifactId>robovm-templates-ios-single-view-no-ib</artifactId>
             <version>${project.version}</version>
             <type>tar.gz</type>
         </dependency>
         <dependency>
-            <groupId>com.mobidevelop.robovm</groupId>
+            <groupId>com.robovmx</groupId>
             <artifactId>robovm-templates-ios-framework</artifactId>
             <version>${project.version}</version>
             <type>tar.gz</type>
         </dependency>
         <dependency>
-            <groupId>com.mobidevelop.robovm</groupId>
+            <groupId>com.robovmx</groupId>
             <artifactId>robovm-templates-console</artifactId>
             <version>${project.version}</version>
             <type>tar.gz</type>
@@ -70,7 +70,7 @@
                     <stripClassifier>true</stripClassifier>
                     <artifactItems>
                         <artifactItem>
-                            <groupId>com.mobidevelop.robovm</groupId>
+                            <groupId>com.robovmx</groupId>
                             <artifactId>robovm-templates-ios-single-view-no-ib</artifactId>
                             <version>${project.version}</version>
                             <overWrite>true</overWrite>
@@ -78,7 +78,7 @@
                             <outputDirectory>src/main/resources/templates</outputDirectory>
                         </artifactItem>
                         <artifactItem>
-                            <groupId>com.mobidevelop.robovm</groupId>
+                            <groupId>com.robovmx</groupId>
                             <artifactId>robovm-templates-ios-framework</artifactId>
                             <version>${project.version}</version>
                             <overWrite>true</overWrite>
@@ -86,7 +86,7 @@
                             <outputDirectory>src/main/resources/templates</outputDirectory>
                         </artifactItem>
                         <artifactItem>
-                            <groupId>com.mobidevelop.robovm</groupId>
+                            <groupId>com.robovmx</groupId>
                             <artifactId>robovm-templates-console</artifactId>
                             <version>${project.version}</version>
                             <overWrite>true</overWrite>

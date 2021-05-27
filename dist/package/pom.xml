@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>com.mobidevelop.robovm</groupId>
+        <groupId>com.robovmx</groupId>
         <artifactId>robovm-dist-parent</artifactId>
         <version>2.3.14-SNAPSHOT</version>
     </parent>
@@ -22,7 +22,7 @@
             <dependencies>
                 <!-- RT sources are build during release only -->
                 <dependency>
-                    <groupId>com.mobidevelop.robovm</groupId>
+                    <groupId>com.robovmx</groupId>
                     <artifactId>robovm-rt</artifactId>
                     <classifier>sources</classifier>
                 </dependency>
@@ -32,23 +32,23 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.mobidevelop.robovm</groupId>
+            <groupId>com.robovmx</groupId>
             <artifactId>robovm-dist-compiler</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.mobidevelop.robovm</groupId>
+            <groupId>com.robovmx</groupId>
             <artifactId>robovm-rt</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.mobidevelop.robovm</groupId>
+            <groupId>com.robovmx</groupId>
             <artifactId>robovm-objc</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.mobidevelop.robovm</groupId>
+            <groupId>com.robovmx</groupId>
             <artifactId>robovm-cocoatouch</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.mobidevelop.robovm</groupId>
+            <groupId>com.robovmx</groupId>
             <artifactId>robovm-cacerts-full</artifactId>
         </dependency>
     </dependencies>

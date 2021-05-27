@@ -27,7 +27,7 @@
                     </configuration>
                 </plugin>
                 <plugin>
-                    <groupId>com.mobidevelop.robovm</groupId>
+                    <groupId>com.robovmx</groupId>
                     <artifactId>robovm-maven-plugin</artifactId>
                     <version>${robovm.maven.version}</version>
                 </plugin>
@@ -37,7 +37,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.mobidevelop.robovm</groupId>
+            <groupId>com.robovmx</groupId>
             <artifactId>robovm-rt</artifactId>
             <version>${robovm.version}</version>
         </dependency>

@@ -1,5 +1,5 @@
 <idea-plugin url="https://github.com/robovm/robovm-idea">
-    <id>com.mobidevelop.robovm.intellij</id>
+    <id>com.mobidevelop.robovm.intellij</id>  <!-- RoboVMx note: keep original ID to have single plugin installed   -->
     <version>${project.version}</version>
     <vendor email="robovm@mobidevelop.com" url="https://github.com/MobiVM/robovm">MobiVM</vendor>
 

@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>com.mobidevelop.robovm</groupId>
+        <groupId>com.robovmx</groupId>
         <artifactId>org.robovm.eclipse.parent</artifactId>
         <version>2.3.14-SNAPSHOT</version>
     </parent>
@@ -16,7 +16,7 @@
         <dependencies>
             <!-- include parent pom as bill of material to pick up dependency definitions from it -->
             <dependency>
-                <groupId>com.mobidevelop.robovm</groupId>
+                <groupId>com.robovmx</groupId>
                 <artifactId>robovm-parent</artifactId>
                 <version>${robovm.version}</version>
                 <type>pom</type>
@@ -60,11 +60,11 @@
                             <artifactId>commons-compress</artifactId>
                         </artifactItem>
                         <artifactItem>
-                            <groupId>com.mobidevelop.robovm</groupId>
+                            <groupId>com.robovmx</groupId>
                             <artifactId>robovm-dist-compiler</artifactId>
                         </artifactItem>
                         <artifactItem>
-                            <groupId>com.mobidevelop.robovm</groupId>
+                            <groupId>com.robovmx</groupId>
                             <artifactId>robovm-ibxcode</artifactId>
                         </artifactItem>
                         <artifactItem>
@@ -72,13 +72,13 @@
                             <artifactId>bcel</artifactId>
                         </artifactItem>
                         <artifactItem>
-                            <groupId>com.mobidevelop.robovm</groupId>
+                            <groupId>com.robovmx</groupId>
                             <artifactId>robovm-dist</artifactId>
                             <classifier>nocompiler</classifier>
                             <type>tar.gz</type>
                         </artifactItem>
                         <artifactItem>
-                            <groupId>com.mobidevelop.robovm</groupId>
+                            <groupId>com.robovmx</groupId>
                             <artifactId>robovm-templater</artifactId>
                         </artifactItem>
                     </artifactItems>
