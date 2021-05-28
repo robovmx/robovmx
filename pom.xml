@@ -313,7 +313,7 @@
     </repositories>
     <distributionManagement>
         <snapshotRepository>
-            <id>sonatype-nexus-snapshots</id>
+            <id>ossrh-robovmx</id>
             <name>Sonatype Nexus Snapshots</name>
             <url>${sonatypeOssDistMgmtSnapshotsUrl}</url>
         </snapshotRepository>
