@@ -17,22 +17,22 @@
  */
 package org.robovm.compiler.util;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import org.apache.commons.exec.ExecuteException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.robovm.compiler.config.Arch;
 import org.robovm.compiler.config.Config;
+import org.robovm.compiler.config.CpuArch;
 import org.robovm.compiler.config.OS;
 import org.robovm.compiler.config.tools.TextureAtlas;
 import org.robovm.compiler.log.ConsoleLogger;
 import org.robovm.compiler.log.Logger;
 import org.robovm.compiler.target.ios.IOSTarget;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * @author niklas
@@ -390,16 +390,9 @@ public class ToolchainUtil {
             opts.add("-g");
         }
         if (isDarwin) {
-            opts.add("-arch");
-            opts.add(config.getArch().getClangName());
             for (File objectsFile : objectsFiles) {
                 opts.add("-Wl,-filelist," + objectsFile.getAbsolutePath());
             }
-            /*
-             * See #123, ignore ld: warning: pointer not aligned at address [infostruct] message with Xcode 8.3
-             * unless we find a better solution
-             */
-            opts.add("-w");
         } else {
             opts.add(config.getArch().is32Bit() ? "-m32" : "-m64");
             for (File objectsFile : objectsFiles) {
@@ -416,7 +409,7 @@ public class ToolchainUtil {
         if (config.getCcBinPath() != null) {
             ccPath = config.getCcBinPath().getAbsolutePath();
         } else if (config.getOs() == OS.ios) {
-            if (config.getArch() == Arch.x86) {
+            if (config.getArch().getCpuArch() == CpuArch.x86) {
                 ccPath = getIOSSimClang();
             } else {
                 ccPath = getIOSDevClang();

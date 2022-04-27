@@ -40,6 +40,8 @@ import org.robovm.compiler.plugin.TargetPlugin;
 import org.robovm.compiler.plugin.annotation.AnnotationImplPlugin;
 import org.robovm.compiler.plugin.debug.DebugInformationPlugin;
 import org.robovm.compiler.plugin.debug.DebuggerLaunchPlugin;
+import org.robovm.compiler.plugin.desugar.ByteBufferJava9ApiPlugin;
+import org.robovm.compiler.plugin.desugar.StringConcatRewriterPlugin;
 import org.robovm.compiler.plugin.lambda.LambdaPlugin;
 import org.robovm.compiler.plugin.objc.InterfaceBuilderClassesPlugin;
 import org.robovm.compiler.plugin.objc.ObjCBlockPlugin;
@@ -55,6 +57,7 @@ import org.robovm.compiler.target.ios.SigningIdentity;
 import org.robovm.compiler.util.DigestUtil;
 import org.robovm.compiler.util.InfoPList;
 import org.robovm.compiler.util.io.RamDiskTools;
+import org.simpleframework.xml.Attribute;
 import org.simpleframework.xml.Element;
 import org.simpleframework.xml.ElementList;
 import org.simpleframework.xml.Root;
@@ -63,6 +66,7 @@ import org.simpleframework.xml.Text;
 import org.simpleframework.xml.convert.Converter;
 import org.simpleframework.xml.convert.Registry;
 import org.simpleframework.xml.convert.RegistryStrategy;
+import org.simpleframework.xml.core.Persist;
 import org.simpleframework.xml.core.Persister;
 import org.simpleframework.xml.filter.PlatformFilter;
 import org.simpleframework.xml.stream.Format;
@@ -98,7 +102,7 @@ import java.util.zip.ZipFile;
  */
 @Root
 public class Config {
-    
+
 
 	/**
      * The max file name length of files stored in the cache. OS X has a limit
@@ -159,7 +163,7 @@ public class Config {
     @Element(required = false)
     private SwiftSupport swiftSupport = null;
     @ElementList(required = false, entry = "resource")
-    private ArrayList<Resource> resources;   
+    private ArrayList<Resource> resources;
     @ElementList(required = false, entry = "classpathentry")
     private ArrayList<File> bootclasspath;
     @ElementList(required = false, entry = "classpathentry")
@@ -180,7 +184,7 @@ public class Config {
     @Element(required = false, name = "iosInfoPList")
     private File iosInfoPListFile = null;
     @Element(required = false, name = "infoPList")
-    private File infoPListFile = null;    
+    private File infoPListFile = null;
     @Element(required = false)
     private File iosEntitlementsPList;
 
@@ -251,7 +255,9 @@ public class Config {
                 new ObjCMemberPlugin(),
                 new ObjCBlockPlugin(),
                 new AnnotationImplPlugin(),
-                new LambdaPlugin(),         
+                new StringConcatRewriterPlugin(),
+                new ByteBufferJava9ApiPlugin(),
+                new LambdaPlugin(),
                 new DebugInformationPlugin(),
                 new DebuggerLaunchPlugin()
                 ));
@@ -314,13 +320,23 @@ public class Config {
         return archs == null ? Collections.emptyList()
                 : Collections.unmodifiableList(archs);
     }
-    
+
     public String getTriple() {
-        return sliceArch.getLlvmName() + "-unknown-" + os.getLlvmName();
+        return getTriple(os.getMinVersion());
+    }
+
+    public String getTriple(String minVersion) {
+        return sliceArch.getCpuArch().getLlvmName() + "-" + os.getVendor() + "-" + os.getLlvmName() + minVersion +
+                sliceArch.getEnv().asLlvmSuffix("-");
     }
 
     public String getClangTriple() {
-        return sliceArch.getClangName() + "-unknown-" + os.getLlvmName();
+        return getClangTriple(os.getMinVersion());
+    }
+
+    public String getClangTriple(String minVersion) {
+        return sliceArch.getCpuArch().getClangName() + "-" + os.getVendor() + "-" + os.getLlvmName() + minVersion +
+                sliceArch.getEnv().asLlvmSuffix("-");
     }
 
     public DataLayout getDataLayout() {
@@ -382,7 +398,7 @@ public class Config {
     public void addResourcesPath(Path path) {
         resourcesPaths.add(path);
     }
-    
+
     public StripArchivesConfig getStripArchivesConfig() {
        return stripArchivesConfig == null ? StripArchivesConfig.DEFAULT : stripArchivesConfig;
     }
@@ -390,7 +406,7 @@ public class Config {
     public DependencyGraph getDependencyGraph() {
         return dependencyGraph;
     }
-    
+
     public File getTmpDir() {
         if (tmpDir == null) {
             try {
@@ -423,10 +439,12 @@ public class Config {
         return unhideSymbols == null ? Collections.emptyList()
                 : Collections.unmodifiableList(unhideSymbols);
     }
-    
+
     public List<Lib> getLibs() {
         return libs == null ? Collections.emptyList()
-                : Collections.unmodifiableList(libs);
+                : libs.stream()
+                .filter(this::isQualified)
+                .collect(Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
     }
 
     public List<String> getFrameworks() {
@@ -617,7 +635,8 @@ public class Config {
         // emit bitcode to object file even if it is not enabled.
         // as currently only `__LLVM,__asm` is being added
         // but build should match criteria
-        return !debug && os == OS.ios && (sliceArch == Arch.arm64 || sliceArch == Arch.thumbv7);
+        return !debug && os == OS.ios && sliceArch.getEnv() == Environment.Native &&
+                (sliceArch.getCpuArch() == CpuArch.arm64 || sliceArch.getCpuArch() == CpuArch.thumbv7);
     }
 
     public Tools getTools() {
@@ -733,11 +752,9 @@ public class Config {
             if (!Arrays.asList(qualified.filterArch()).contains(sliceArch))
                 return false;
         }
-        // TODO: there is no platform variant, just guess it from arch, applies to iOS temporally
-        if (os == OS.ios && qualified.filterPlatformVariants() != null) {
-            PlatformVariant variant = sliceArch.isArm() ? PlatformVariant.device : PlatformVariant.simulator;
-            if (!Arrays.asList(qualified.filterPlatformVariants()).contains(variant))
-                return false;
+        if (qualified.filterPlatformVariants() != null) {
+            PlatformVariant variant = (sliceArch.getEnv() == Environment.Native) ? PlatformVariant.device : PlatformVariant.simulator;
+            return Arrays.asList(qualified.filterPlatformVariants()).contains(variant);
         }
 
         return true;
@@ -940,6 +957,13 @@ public class Config {
             imageName = executableName;
         }
 
+        // promote environment of arch if it is not ambigious (e.g. x86_64 or iOS exists only
+        // in simulator environment)
+        if (archs != null) {
+            for (int idx = 0; idx < archs.size(); idx++)
+                archs.set(idx, archs.get(idx).promoteTo(os));
+        }
+
         List<File> realBootclasspath = bootclasspath == null ? new ArrayList<>() : bootclasspath;
         if (!isSkipRuntimeLib()) {
             realBootclasspath = new ArrayList<>(bootclasspath);
@@ -962,8 +986,8 @@ public class Config {
                 target = new ConsoleTarget();
             } else if (IOSTarget.TYPE.equals(targetType)) {
                 target = new IOSTarget();
-            } else if (FrameworkTarget.TYPE.equals(targetType)) {
-                target = new FrameworkTarget();
+            } else if (FrameworkTarget.matches(targetType)) {
+                target = new FrameworkTarget(targetType);
             } else {
                 for (TargetPlugin plugin : getTargetPlugins()) {
                     if (plugin.getTarget().getType().equals(targetType)) {
@@ -994,11 +1018,10 @@ public class Config {
         sliceArch = target.getArch();
         dataLayout = new DataLayout(getTriple());
 
-        osArchDepLibDir = new File(new File(home.libVmDir, os.toString()),
-                sliceArch.toString());
+        osArchDepLibDir = new File(new File(home.libVmDir, os.toString()), sliceArch.toString());
 
-        if (treeShakerMode != null && treeShakerMode != TreeShakerMode.none 
-                && os.getFamily() == Family.darwin && sliceArch == Arch.x86) {
+        if (treeShakerMode != null && treeShakerMode != TreeShakerMode.none
+                && os.getFamily() == Family.darwin && sliceArch.getCpuArch() == CpuArch.x86) {
 
             logger.warn("Tree shaking is not supported when building "
                     + "for OS X/iOS x86 32-bit due to a bug in Xcode's linker. No tree "
@@ -1014,12 +1037,13 @@ public class Config {
         this.tmpDir = ramDiskTools.getTmpDir();
 
         File osDir = new File(cacheDir, os.toString());
-        File archDir = new File(osDir, sliceArch.toString());
+        String archName = sliceArch.toString();
+        File archDir = new File(osDir, archName);
         osArchCacheDir = new File(archDir, debug ? "debug" : "release");
         osArchCacheDir.mkdirs();
 
         this.clazzes = new Clazzes(this, realBootclasspath, classpath);
-        
+
         if(this.stripArchivesConfig == null) {
             if(stripArchivesBuilder == null) {
                 this.stripArchivesConfig = StripArchivesConfig.DEFAULT;
@@ -1062,7 +1086,7 @@ public class Config {
             this.rtPath = rtPath;
             cacertsPath = new HashMap<>();
             cacertsPath.put(Cacerts.full, new File(devDir,
-                    "cacerts/full/target/robovm-cacerts-full-" + Version.getVersion() + ".jar"));
+                    "cacerts/full/target/robovm-cacerts-full-" + Version.getCompilerVersion() + ".jar"));
             this.dev = true;
         }
 
@@ -1154,7 +1178,7 @@ public class Config {
             // Compare the version of this compiler with the version of the
             // robovm-rt.jar in the home dir. They have to match.
             try {
-                String thisVersion = Version.getVersion();
+                String thisVersion = Version.getCompilerVersion();
                 String thatVersion = getImplementationVersion(rtJarFile);
                 if (thisVersion == null || !thisVersion.equals(thatVersion)) {
                     throw new IllegalArgumentException(error + "version mismatch (expected: "
@@ -1186,7 +1210,7 @@ public class Config {
                 throw new IllegalArgumentException(error + "bin/ missing or invalid");
             }
 
-            String rtJarName = "robovm-rt-" + Version.getVersion() + ".jar";
+            String rtJarName = "robovm-rt-" + Version.getCompilerVersion() + ".jar";
             File rtJar = new File(dir, "rt/target/" + rtJarName);
             File rtClasses = new File(dir, "rt/target/classes/");
             File rtSource = rtJar;
@@ -1536,7 +1560,7 @@ public class Config {
             config.resources.add(resource);
             return this;
         }
-        
+
         public Builder stripArchivesBuilder(StripArchivesBuilder stripArchivesBuilder) {
            this.config.stripArchivesBuilder = stripArchivesBuilder;
            return this;
@@ -1798,7 +1822,6 @@ public class Config {
                     new PlatformFilter(config.properties), matcher, new Format(2));
 
             registry.bind(File.class, fileConverter);
-            registry.bind(Lib.class, new RelativeLibConverter(fileConverter));
             registry.bind(Resource.class, new ResourceConverter(fileConverter, resourceSerializer));
             registry.bind(StripArchivesConfig.class, new StripArchivesConfigConverter());
 
@@ -1806,8 +1829,10 @@ public class Config {
             // adding file converter to matcher, as it fails to pick it from registry when writing
             // tag text of custom object (such as QualifiedFile)
             matcher.bind(File.class, fileConverter);
+            matcher.bind(Arch.class, new ArchTransformer());
+            matcher.bind(Lib.PathWrap.class, new RelativeLibPathTransformer(fileConverter));
             matcher.bind(OS[].class, new EnumArrayConverter<>(OS.class));
-            matcher.bind(Arch[].class, new EnumArrayConverter<>(Arch.class));
+            matcher.bind(Arch[].class, new ArchArrayConverter());
             matcher.bind(PlatformVariant[].class, new EnumArrayConverter<>(PlatformVariant.class));
 
             return serializer;
@@ -1832,26 +1857,54 @@ public class Config {
         }
     }
 
-    public static final class Lib {
-        private final String value;
-        private final boolean force;
+    public static final class Lib extends AbstractQualified {
+        // using here special type PathWrap. Purpose is to use RelativeLibPathTransformer
+        // that will apply relative path transformation.
+        static final class PathWrap {
+            String value;
+            PathWrap(String v) { value = v; }
+        }
+        @Text PathWrap pathWrap;
+
+        // force was made nullable by purpose: it's expected by UT to be missing in XML
+        // if it contains default value "true". it's possible to remove attribute only
+        // by declaring it as "required = false" and nulling in case of true.
+        // before serialization, any true should go into null, this is covered in
+        // @Persist annotated method
+        @Attribute(name = "force", required = false) Boolean force;
+        @Persist
+        private void nullForceValueBeforeSerialization() {
+            if (force != null && force)
+                force = null;
+        }
+
+        // default constructor is required for serializer
+        protected Lib() {}
 
         public Lib(String value, boolean force) {
-            this.value = value;
+            this.pathWrap = new PathWrap(value);
             this.force = force;
         }
 
+        public Lib(String value, boolean force, OS[] platforms, PlatformVariant[] variants, Arch[] arches) {
+            this.pathWrap = new PathWrap(value);
+            this.force = force;
+            this.platforms = platforms;
+            this.variants = variants;
+            this.arches = arches;
+        }
+
         public String getValue() {
-            return value;
+            return pathWrap != null ? pathWrap.value : null;
         }
 
         public boolean isForce() {
-            return force;
+            return force == null || force;
         }
 
         @Override
         public String toString() {
-            return "Lib [value=" + value + ", force=" + force + "]";
+            return "Lib [value=" + getValue() + ", force=" + force + "]";
         }
 
         @Override
@@ -1859,7 +1912,7 @@ public class Config {
             final int prime = 31;
             int result = 1;
             result = prime * result + (force ? 1231 : 1237);
-            result = prime * result + ((value == null) ? 0 : value.hashCode());
+            result = prime * result + ((pathWrap == null) ? 0 : pathWrap.value.hashCode());
             return result;
         }
 
@@ -1875,12 +1928,12 @@ public class Config {
                 return false;
             }
             Lib other = (Lib) obj;
-            if (force != other.force) {
+            if (isForce() != other.isForce()) {
                 return false;
             }
-            if (value == null) {
-                return other.value == null;
-            } else return value.equals(other.value);
+            if (pathWrap == null) {
+                return other.pathWrap == null;
+            } else return pathWrap.value.equals(other.pathWrap.value);
         }
     }
 
@@ -1907,44 +1960,75 @@ public class Config {
         }
     }
 
-
-    private static final class RelativeLibConverter implements Converter<Lib> {
+    private static final class RelativeLibPathTransformer implements Transform<Lib.PathWrap> {
         private final RelativeFileConverter fileConverter;
 
-        public RelativeLibConverter(RelativeFileConverter fileConverter) {
+        public RelativeLibPathTransformer(RelativeFileConverter fileConverter) {
             this.fileConverter = fileConverter;
         }
 
         @Override
-        public Lib read(InputNode node) throws Exception {
-            String value = node.getValue();
+        public Lib.PathWrap read(String value) throws Exception {
             if (value == null) {
                 return null;
             }
-            InputNode forceNode = node.getAttribute("force");
-            boolean force = forceNode == null || Boolean.parseBoolean(forceNode.getValue());
             if (value.endsWith(".a") || value.endsWith(".o")) {
-                return new Lib(fileConverter.read(value).getAbsolutePath(), force);
+                value = fileConverter.read(value).getAbsolutePath();
             } else if (value.endsWith(".dylib") || value.endsWith(".so")) {
                 File f = fileConverter.read(value);
-                return new Lib(f.isFile() ? f.getAbsolutePath() : value, force);
-            } else {
-                return new Lib(value, force);
+                if (f.isFile())
+                    value = f.getAbsolutePath();
             }
+            return new Lib.PathWrap(value);
         }
 
         @Override
-        public void write(OutputNode node, Lib lib) throws Exception {
-            String value = lib.getValue();
-            boolean force = lib.isForce();
-            if (value.endsWith(".a") || value.endsWith(".o")) {
-                fileConverter.write(node, new File(value));
-            } else {
-                node.setValue(value);
+        public String write(Lib.PathWrap wrap) throws Exception {
+            if (wrap != null) {
+                String value = wrap.value;
+                if (value.endsWith(".a") || value.endsWith(".o")) {
+                    return fileConverter.write(new File(value));
+                } else {
+                    return value;
+                }
+            } else return null;
+        }
+    }
+
+    private static final class ArchTransformer implements Transform<Arch> {
+        @Override
+        public Arch read(String value) throws Exception {
+            if (value == null) {
+                return null;
             }
-            if (!force) {
-                node.setAttribute("force", "false");
-            }
+            return Arch.parse(value);
+        }
+
+        @Override
+        public String write(Arch s) throws Exception {
+            if (s != null) {
+                return s.toString();
+            } else return null;
+        }
+    }
+
+    private static final class ArchArrayConverter implements Transform<Arch[]> {
+        @Override
+        public Arch[] read(String s) {
+            s = s.trim();
+            if (s.isEmpty())
+                return null;
+
+            String[] tokens = s.split(",");
+            Arch[] res = new Arch[tokens.length];
+            for (int idx = 0; idx < tokens.length; idx++)
+                res[idx] = Arch.parse(tokens[idx].trim());
+            return res;
+        }
+
+        @Override
+        public String write(Arch[] ts) {
+            return Arrays.stream(ts).map(Arch::toString).collect(Collectors.joining());
         }
     }
 
@@ -2067,35 +2151,32 @@ public class Config {
             }
         }
     }
-    
+
     private static final class StripArchivesConfigConverter implements Converter<StripArchivesConfig> {
+        @Override
+        public StripArchivesConfig read(InputNode node) throws Exception {
+            StripArchivesBuilder cfgBuilder = new StripArchivesBuilder();
+            InputNode childNode;
+            while ((childNode = node.getNext()) != null) {
+                if (childNode.isElement() && !childNode.isEmpty() && childNode.getName().equals("include") || childNode.getName().equals("exclude")) {
+                    boolean isInclude = childNode.getName().equals("include");
+                    cfgBuilder.add(isInclude, childNode.getValue());
+                }
+            }
+            return cfgBuilder.build();
+        }
 
-   	 @Override
-   	 public StripArchivesConfig read (InputNode node) throws Exception {
-   		 StripArchivesBuilder cfgBuilder = new StripArchivesBuilder();
-   		 InputNode childNode;
-   		 while((childNode = node.getNext()) != null){
-   			 if(childNode.isElement() && !childNode.isEmpty() && childNode.getName().equals("include") || childNode.getName().equals("exclude")){
-   				 boolean isInclude = childNode.getName().equals("include");
-   				 cfgBuilder.add(isInclude, childNode.getValue());
-   			 }
-   		 }
-   		 return cfgBuilder.build();
-   	 }
-
-   	 @Override
-   	 public void write (OutputNode node, StripArchivesConfig config) throws Exception {
-   		 if(config.getPatterns() != null && !config.getPatterns().isEmpty()){
-   			 for(StripArchivesConfig.Pattern pattern : config.getPatterns()){
-   				 OutputNode child = node.getChild(pattern.isInclude() ? "include" : "exclude");
-   				 child.setValue(pattern.getPatternAsString());
-   				 child.commit();
-   			 }
-
-
-   		 }
-   		 node.commit();
-   	 }
+        @Override
+        public void write(OutputNode node, StripArchivesConfig config) throws Exception {
+            if (config.getPatterns() != null && !config.getPatterns().isEmpty()) {
+                for (StripArchivesConfig.Pattern pattern : config.getPatterns()) {
+                    OutputNode child = node.getChild(pattern.isInclude() ? "include" : "exclude");
+                    child.setValue(pattern.getPatternAsString());
+                    child.commit();
+                }
+            }
+            node.commit();
+        }
 
     }
 }

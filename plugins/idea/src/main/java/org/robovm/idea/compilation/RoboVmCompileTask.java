@@ -17,14 +17,9 @@
  */
 package org.robovm.idea.compilation;
 
-import com.intellij.execution.configurations.ModuleRunProfile;
-import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.compiler.CompileContext;
 import com.intellij.openapi.compiler.CompileScope;
-import com.intellij.openapi.compiler.CompileTask;
 import com.intellij.openapi.compiler.CompilerManager;
-import com.intellij.openapi.compiler.CompilerMessageCategory;
 import com.intellij.openapi.compiler.CompilerPaths;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
@@ -41,6 +36,7 @@ import org.jetbrains.annotations.NotNull;
 import org.robovm.compiler.AppCompiler;
 import org.robovm.compiler.config.Arch;
 import org.robovm.compiler.config.Config;
+import org.robovm.compiler.config.Environment;
 import org.robovm.compiler.config.OS;
 import org.robovm.compiler.plugin.PluginArgument;
 import org.robovm.compiler.target.ConsoleTarget;
@@ -214,13 +210,13 @@ public class RoboVmCompileTask {
             Arch arch;
             if (runConfig.getTargetType() == RoboVmRunConfiguration.TargetType.Device) {
                 os = OS.ios;
-                arch = runConfig.getDeviceArch();
+                arch = new Arch(runConfig.getDeviceArch());
             } else if (runConfig.getTargetType() == RoboVmRunConfiguration.TargetType.Simulator) {
                 os = OS.ios;
-                arch = runConfig.getSimulatorArch();
+                arch = new Arch(runConfig.getSimulatorArch(), Environment.Simulator);
             } else {
                 os = OS.getDefaultOS();
-                arch = Arch.getDefaultArch();
+                arch = new Arch(runConfig.getDeviceArch());
             }
             builder.os(os);
             builder.arch(arch);

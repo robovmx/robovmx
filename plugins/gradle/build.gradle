@@ -1,9 +1,16 @@
 plugins {
-    id 'com.github.johnrengelman.shadow' version '7.0.0'
+    id "com.github.johnrengelman.shadow" version "7.1.0"
     id 'java'
+    id 'groovy'
     id 'maven-publish'
     id 'signing'
+    id 'eclipse'
 }
+
+
+group = 'com.mobidevelop.robovm'
+archivesBaseName = 'robovm-gradle-plugin'
+version = '2.3.17-SNAPSHOT'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -13,7 +20,7 @@ compileJava {
 }
 
 ext {
-    roboVMVersion = '2.3.14-SNAPSHOT'
+    roboVMVersion = '2.3.17-SNAPSHOT'
     nexusUsername = System.getenv('MAVEN_USERNAME')
     nexusPassword = System.getenv('MAVEN_PASSWORD')
 }
@@ -28,7 +35,7 @@ dependencies {
     compileOnly gradleApi()
     compileOnly localGroovy()
     implementation "org.apache.commons:commons-compress:1.5"
-    implementation "com.robovmx:robovm-dist-compiler:${roboVMVersion}"
+    implementation "com.com.robovmx:robovm-compiler:${roboVMVersion}"
     implementation 'org.sonatype.aether:aether:1.13.1'
     implementation 'org.sonatype.aether:aether-connector-wagon:1.13.1'
     implementation 'org.apache.maven:maven-aether-provider:3.0.4'
@@ -42,7 +49,6 @@ publishing {
         mavenJava(MavenPublication) {
             groupId = 'com.robovmx'
             artifactId = 'robovm-gradle-plugin'
-            version = "${roboVMVersion}"
             from components.java
 
             pom {
@@ -53,9 +59,9 @@ publishing {
                 inceptionYear = '2013'
 
                 scm {
-                    url = 'https://github.com/mobidevelop/robovm.git'
-                    connection = 'scm:git:git://github.com/mobidevelop/robovm.git'
-                    developerConnection = 'scm:git:git@github.com:mobidevelop/robovm.git'
+                    url = 'https://github.com/robovmx/robovmx.git'
+                    connection = 'scm:git:git://github.com/robovmx/robovmx.git'
+                    developerConnection = 'scm:git:git@github.com:robovmx/robovmx.git'
                 }
 
                 licenses {
@@ -81,28 +87,36 @@ publishing {
     }
     repositories {
         maven {
-            name = 'ossrhrobovmx'
-            credentials(PasswordCredentials)
-            url = 'https://oss.sonatype.org/content/repositories/snapshots/'
+            def releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+            def snapshotsRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots/"
+            url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+            credentials {
+                username = System.getenv("MAVEN_USERNAME")
+                password = System.getenv("MAVEN_PASSWORD")            }
         }
     }
 }
 
-// RoboVMx note: meanwhile disabled as not required for snapshot but to be configured
-//signing {
-//    sign publishing.publications.mavenJava
-//}
+java {
+    withSourcesJar()
+    withJavadocJar()
+}
 
 shadowJar {
     classifier = ''
     dependencies {
-        exclude(dependency("com.robovmx:robovm-dist-compiler:${roboVMVersion}"));
+        exclude(dependency("com.robovmx:robovm-compiler:${roboVMVersion}"));
     }
     relocate 'org.apache.http', 'com.robovmx.org.apache.http'
     relocate 'org.apache.commons.io', 'com.robovmx.org.apache.commons.io'
     relocate 'org.objectweb.asm', 'com.robovmx.asm'
 }
 
+signing {
+    required { !version.endsWith('SNAPSHOT') && gradle.taskGraph.hasTask("publish") }
+    sign publishing.publications.mavenJava
+}
+
 assemble.dependsOn('shadowJar')
-publish.dependsOn('shadowJar')
 publishToMavenLocal.dependsOn('shadowJar')
+publish.dependsOn('shadowJar')
