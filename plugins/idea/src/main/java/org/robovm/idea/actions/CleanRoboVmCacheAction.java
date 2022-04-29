@@ -25,9 +25,8 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import org.apache.commons.io.FileUtils;
 import org.jetbrains.annotations.NotNull;
-import org.robovm.idea.ibxcode.RoboVmIbXcodeProjectTask;
+import org.robovm.compiler.branding.Locations;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -60,12 +59,11 @@ public class CleanRoboVmCacheAction extends AnAction {
         @Override
         public void run(@NotNull ProgressIndicator progress) {
             busy.set(true);
-            progress.setText("Clearing RoboVM cache (~/.robovm/cache)");
+            progress.setText("Clearing RoboVM cache (" + Locations.Cache + ")");
             progress.setIndeterminate(true);
 
-            File file = new File(System.getProperty("user.home"), ".robovm/cache");
             try {
-                FileUtils.deleteDirectory(file);
+                FileUtils.deleteDirectory(Locations.Cache);
             } catch (IOException ignored) {
             }
         }

@@ -24,6 +24,7 @@ import org.robovm.compiler.ITable;
 import org.robovm.compiler.MarshalerLookup;
 import org.robovm.compiler.VTable;
 import org.robovm.compiler.Version;
+import org.robovm.compiler.branding.Locations;
 import org.robovm.compiler.clazz.Clazz;
 import org.robovm.compiler.clazz.Clazzes;
 import org.robovm.compiler.clazz.Path;
@@ -208,7 +209,7 @@ public class Config {
 
     private Home home = null;
     private File tmpDir;
-    private File cacheDir = new File(System.getProperty("user.home"), ".robovm/cache");
+    private File cacheDir = Locations.Cache;
     private File ccBinPath = null;
 
     private boolean clean = false;

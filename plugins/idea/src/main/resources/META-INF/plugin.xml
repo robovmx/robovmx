@@ -40,7 +40,7 @@
         <stepsBeforeRunProvider implementation="org.robovm.idea.running.RoboVmBeforeRunTaskProvider"/>
         <!-- dkimitsa: removed as it is not required for open source xcode integration -->
         <!--<applicationConfigurable implementation="org.robovm.idea.config.RoboVmGlobalConfig"></applicationConfigurable>-->
-        <toolWindow id="RoboVM" anchor="bottom" icon="org.robovm.idea.RoboVmIcons.ROBOVM_SMALL" secondary="true"
+        <toolWindow id="RoboVMx" anchor="bottom" icon="org.robovm.idea.RoboVmIcons.ROBOVM_SMALL" secondary="true"
                     factoryClass="org.robovm.idea.components.RoboVmToolWindowFactory"/>
     </extensions>
 
@@ -63,7 +63,7 @@
     </module-components>
 
     <actions>
-        <group id="org.robovm.idea.Menu" text="RoboVM" description="RoboVM menu">
+        <group id="org.robovm.idea.Menu" text="RoboVMx" description="RoboVM menu">
             <add-to-group group-id="MainMenu" anchor="after" relative-to-action="ToolsMenu"/>
 
             <action id="org.robovm.idea.create-ipa" class="org.robovm.idea.actions.CreateIpaAction" text="Create IPA"
@@ -78,7 +78,7 @@
                     description="Deletes all RoboVM build folders in all modules"/>
             <action id="org.robovm.idea.clean-cache" class="org.robovm.idea.actions.CleanRoboVmCacheAction"
                     text="Clean Global Cache"
-                    description="Deletes as files in ~/.robovm/cache folder"/>
+                    description="Deletes as files in ~/.robovmx/cache folder"/>
             <separator/>
 
             <group id="org.robovm.idea.as-fixes-new" class="org.robovm.idea.actions.ASNewGroup" text="New" description="New project/module workaround for Android Studio" popup="true">

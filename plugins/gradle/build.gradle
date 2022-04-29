@@ -8,7 +8,7 @@ plugins {
 }
 
 
-group = 'com.mobidevelop.robovm'
+group = 'com.robovmx'
 archivesBaseName = 'robovm-gradle-plugin'
 version = '2.3.17-SNAPSHOT'
 
@@ -35,7 +35,7 @@ dependencies {
     compileOnly gradleApi()
     compileOnly localGroovy()
     implementation "org.apache.commons:commons-compress:1.5"
-    implementation "com.com.robovmx:robovm-compiler:${roboVMVersion}"
+    implementation "com.robovmx:robovm-compiler:${roboVMVersion}"
     implementation 'org.sonatype.aether:aether:1.13.1'
     implementation 'org.sonatype.aether:aether-connector-wagon:1.13.1'
     implementation 'org.apache.maven:maven-aether-provider:3.0.4'

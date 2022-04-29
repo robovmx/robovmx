@@ -48,6 +48,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.jetbrains.annotations.NotNull;
 import org.robovm.compiler.Version;
+import org.robovm.compiler.branding.Locations;
 import org.robovm.compiler.config.Arch;
 import org.robovm.compiler.config.Config;
 import org.robovm.compiler.config.Resource;
@@ -58,19 +59,10 @@ import org.robovm.idea.config.RoboVmGlobalConfig;
 import org.robovm.idea.sdk.RoboVmSdkType;
 import org.robovm.idea.utils.RoboFileUtils;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import java.io.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.zip.GZIPInputStream;
 
@@ -302,11 +294,11 @@ public class RoboVmPlugin {
     }
 
     public static File getSdkHome() {
-        return new File(getSdkHomeBase(), "robovm-" + Version.getCompilerVersion());
+        return Locations.SdkHome;
     }
 
     public static File getSdkHomeBase() {
-        return new File(System.getProperty("user.home"), ".robovm-sdks");
+        return Locations.SdkHomeBase;
     }
 
     public static Sdk getSdk() {
@@ -349,10 +341,9 @@ public class RoboVmPlugin {
             logInfo(null, "Installed RoboVM SDK %s to %s", Version.getCompilerVersion(), dest.getAbsolutePath());
 
             if (filesWereUpdated) {
-                File cacheLog = new File(System.getProperty("user.home"), ".robovm/cache");
-                logInfo(null, "Clearing ~/.robovm/cache folder due SDK files changed.");
+                logInfo(null, "Clearing %s folder due SDK files changed.", Locations.Cache);
                 try {
-                    FileUtils.deleteDirectory(cacheLog);
+                    FileUtils.deleteDirectory(Locations.Cache);
                 } catch (IOException ignored) {
                 }
             }
@@ -500,7 +491,7 @@ public class RoboVmPlugin {
     }
 
     public static File getModuleLogDir(Module module) {
-        File logDir = new File(getModuleBaseDir(module), "robovm-build/logs/");
+        File logDir = Locations.inBuildDir(getModuleBaseDir(module), "logs/");
         if (!logDir.exists()) {
             if (!logDir.mkdirs()) {
                 throw new RuntimeException("Couldn't create log dir '" + logDir.getAbsolutePath() + "'");
@@ -510,7 +501,7 @@ public class RoboVmPlugin {
     }
 
     public static File getModuleXcodeDir(Module module) {
-        File buildDir = new File(getModuleBaseDir(module), "robovm-build/xcode/");
+        File buildDir = Locations.inBuildDir(getModuleBaseDir(module), "xcode/");
         if (!buildDir.exists()) {
             if (!buildDir.mkdirs()) {
                 throw new RuntimeException("Couldn't create build dir '" + buildDir.getAbsolutePath() + "'");
@@ -520,23 +511,13 @@ public class RoboVmPlugin {
     }
 
     public static File getModuleBuildDir(Module module, String runConfigName, org.robovm.compiler.config.OS os, Arch arch) {
-        File buildDir = new File(getModuleBaseDir(module), "robovm-build/tmp/" + runConfigName + "/" + os + "/" + arch);
+        File buildDir = Locations.inBuildDir(getModuleBaseDir(module), "tmp/");
         if (!buildDir.exists()) {
             if (!buildDir.mkdirs()) {
                 throw new RuntimeException("Couldn't create build dir '" + buildDir.getAbsolutePath() + "'");
             }
         }
         return buildDir;
-    }
-
-    public static File getModuleClassesDir(String moduleBaseDir) {
-        File classesDir = new File(moduleBaseDir, "robovm-build/classes/");
-        if (!classesDir.exists()) {
-            if (!classesDir.mkdirs()) {
-                throw new RuntimeException("Couldn't create classes dir '" + classesDir.getAbsolutePath() + "'");
-            }
-        }
-        return classesDir;
     }
 
     public static File getModuleBaseDir(Module module) {

@@ -28,12 +28,12 @@ import org.gradle.api.DefaultTask;
 import org.gradle.api.GradleException;
 import org.gradle.api.Project;
 import org.gradle.api.plugins.JavaPlugin;
-import org.gradle.api.tasks.TaskAction;
 import org.gradle.api.tasks.Internal;
+import org.gradle.api.tasks.TaskAction;
 import org.robovm.compiler.AppCompiler;
+import org.robovm.compiler.branding.Locations;
 import org.robovm.compiler.config.Arch;
 import org.robovm.compiler.config.Config;
-import org.robovm.compiler.config.Environment;
 import org.robovm.compiler.config.OS;
 import org.robovm.compiler.log.Logger;
 import org.robovm.compiler.target.ios.ProvisioningProfile;
@@ -53,11 +53,7 @@ import org.sonatype.aether.resolution.ArtifactResult;
 import org.sonatype.aether.spi.connector.RepositoryConnectorFactory;
 import org.sonatype.aether.util.artifact.DefaultArtifact;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -162,15 +158,15 @@ abstract public class AbstractRoboVMTask extends DefaultTask {
         if (extension.getInstallDir() != null) {
             installDir = new File(extension.getInstallDir());
         } else {
-            installDir = new File(project.getBuildDir(), "robovm");
+            installDir = Locations.inBuildDir(project.getBuildDir(), "tmp/");
         }
         File cacheDir = null;
         if(extension.getCacheDir() != null) {
             cacheDir = new File(extension.getCacheDir());
         } else {
-            cacheDir = new File(System.getProperty("user.home"), ".robovm/cache");
+            cacheDir = Locations.Cache;
         }
-        File temporaryDirectory = new File(project.getBuildDir(), "robovm.tmp");
+        File temporaryDirectory = Locations.inBuildDir(project.getBuildDir(), "tmp/");
         try {
             FileUtils.deleteDirectory(temporaryDirectory);
         } catch (IOException e) {
