@@ -28,6 +28,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.apache.commons.io.FileUtils;
 import org.jetbrains.annotations.NotNull;
+import org.robovm.compiler.branding.Locations;
 import org.robovm.compiler.target.ios.IOSTarget;
 import org.robovm.idea.RoboVmPlugin;
 
@@ -68,11 +69,11 @@ public class CleanBuildFoldersAction extends AnAction {
         public void run(@NotNull ProgressIndicator progress) {
             busy.set(true);
             progress.setText("Cleaning RoboVM build folders");
-            progress.setFraction(0.5);
+            progress.setIndeterminate(true);
             try {
                 for (Module module : RoboVmPlugin.getRoboVmModules(project, IOSTarget.TYPE)) {
                     File moduleBaseDir = RoboVmPlugin.getModuleBaseDir(module);
-                    File robovmBuildDir = new File(moduleBaseDir, "robovm-build");
+                    File robovmBuildDir = Locations.buildDir(moduleBaseDir);
                     FileUtils.deleteDirectory(robovmBuildDir);
                 }
             } catch (Exception e) {

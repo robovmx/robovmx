@@ -114,6 +114,10 @@ import org.robovm.apple.coreanimation.*;
      */
     public static final PKPaymentNetwork ChinaUnionPay = new PKPaymentNetwork("ChinaUnionPay");
     /**
+     * @since Available in iOS 15.1 and later.
+     */
+    public static final PKPaymentNetwork Dankort = new PKPaymentNetwork("Dankort");
+    /**
      * @since Available in iOS 9.0 and later.
      */
     public static final PKPaymentNetwork Discover = new PKPaymentNetwork("Discover");
@@ -173,9 +177,17 @@ import org.robovm.apple.coreanimation.*;
      * @since Available in iOS 14.0 and later.
      */
     public static final PKPaymentNetwork Girocard = new PKPaymentNetwork("Girocard");
+    /**
+     * @since Available in iOS 15.0 and later.
+     */
+    public static final PKPaymentNetwork Waon = new PKPaymentNetwork("Waon");
+    /**
+     * @since Available in iOS 15.0 and later.
+     */
+    public static final PKPaymentNetwork Nanaco = new PKPaymentNetwork("Nanaco");
     /*</constants>*/
     
-    private static /*<name>*/PKPaymentNetwork/*</name>*/[] values = new /*<name>*/PKPaymentNetwork/*</name>*/[] {/*<value_list>*/Amex, CarteBancaire, CarteBancaires, CartesBancaires, ChinaUnionPay, Discover, Eftpos, Electron, Elo, IDCredit, Interac, JCB, Mada, Maestro, MasterCard, Mir, PrivateLabel, QuicPay, Suica, Visa, VPay, Barcode, Girocard/*</value_list>*/};
+    private static /*<name>*/PKPaymentNetwork/*</name>*/[] values = new /*<name>*/PKPaymentNetwork/*</name>*/[] {/*<value_list>*/Amex, CarteBancaire, CarteBancaires, CartesBancaires, ChinaUnionPay, Dankort, Discover, Eftpos, Electron, Elo, IDCredit, Interac, JCB, Mada, Maestro, MasterCard, Mir, PrivateLabel, QuicPay, Suica, Visa, VPay, Barcode, Girocard, Waon, Nanaco/*</value_list>*/};
     
     /*<name>*/PKPaymentNetwork/*</name>*/ (String getterName) {
         super(Values.class, getterName);
@@ -224,6 +236,11 @@ import org.robovm.apple.coreanimation.*;
          */
         @GlobalValue(symbol="PKPaymentNetworkChinaUnionPay", optional=true)
         public static native NSString ChinaUnionPay();
+        /**
+         * @since Available in iOS 15.1 and later.
+         */
+        @GlobalValue(symbol="PKPaymentNetworkDankort", optional=true)
+        public static native NSString Dankort();
         /**
          * @since Available in iOS 9.0 and later.
          */
@@ -302,6 +319,16 @@ import org.robovm.apple.coreanimation.*;
          */
         @GlobalValue(symbol="PKPaymentNetworkGirocard", optional=true)
         public static native NSString Girocard();
+        /**
+         * @since Available in iOS 15.0 and later.
+         */
+        @GlobalValue(symbol="PKPaymentNetworkWaon", optional=true)
+        public static native NSString Waon();
+        /**
+         * @since Available in iOS 15.0 and later.
+         */
+        @GlobalValue(symbol="PKPaymentNetworkNanaco", optional=true)
+        public static native NSString Nanaco();
         /*</values>*/
     }
 }

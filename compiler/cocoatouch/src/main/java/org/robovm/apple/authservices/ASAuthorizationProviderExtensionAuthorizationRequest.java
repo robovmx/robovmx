@@ -83,6 +83,11 @@ import org.robovm.apple.coreanimation.*;
      */
     @Property(selector = "localizedCallerDisplayName")
     public native String getLocalizedCallerDisplayName();
+    /**
+     * @since Available in iOS 15.4 and later.
+     */
+    @Property(selector = "isUserInterfaceEnabled")
+    public native boolean isUserInterfaceEnabled();
     /*</properties>*/
     /*<members>*//*</members>*/
     /*<methods>*/
@@ -96,6 +101,11 @@ import org.robovm.apple.coreanimation.*;
     public native void complete(NSDictionary<NSString, NSString> httpAuthorizationHeaders);
     @Method(selector = "completeWithHTTPResponse:httpBody:")
     public native void complete(NSHTTPURLResponse httpResponse, NSData httpBody);
+    /**
+     * @since Available in iOS 15.0 and later.
+     */
+    @Method(selector = "completeWithAuthorizationResult:")
+    public native void complete(ASAuthorizationProviderExtensionAuthorizationResult authorizationResult);
     @Method(selector = "completeWithError:")
     public native void complete(NSError error);
     @Method(selector = "presentAuthorizationViewControllerWithCompletion:")
