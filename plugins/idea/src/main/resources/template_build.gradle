@@ -6,7 +6,7 @@ buildscript {
         maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
     }
     dependencies {
-        classpath 'com.robovmx:robovm-gradle-plugin:${roboVMVersion}'
+        classpath "com.robovmx:robovm-gradle-plugin:${roboVMVersion}"
     }
 }
 
@@ -27,5 +27,5 @@ robovm {
 dependencies {
     implementation "com.robovmx:robovm-rt:${roboVMVersion}"
     implementation "com.robovmx:robovm-cocoatouch:${roboVMVersion}"
-    testCompile "junit:junit:4.12"
+    testImplementation "junit:junit:4.12"
 }

@@ -10,7 +10,7 @@ plugins {
 
 group = 'com.robovmx'
 archivesBaseName = 'robovm-gradle-plugin'
-version = '2.3.17-SNAPSHOT'
+version = '10.2.1-SNAPSHOT'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
