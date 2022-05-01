@@ -36,6 +36,9 @@ jobs:
       - name: Install dependencies
         run: |
           brew install autoconf automake libtool cmake
+      - name: Switch to branch
+        run: |
+          git checkout "${{ github.event.inputs.targetBranch }}"
       - name: build everything
         run: ./build.sh
       - name: Maven deploy
