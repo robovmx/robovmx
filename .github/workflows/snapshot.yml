@@ -1,0 +1,53 @@
+# this workflow builds RoboVMx snapshot and deploys it to sonatype maven OSSRH.
+# idea plugin is deployed to Release page
+
+name: Build RoboVMx and deplous snapshot
+
+on:
+  workflow_dispatch:
+    inputs:
+      tagName:
+        required: true
+        description: 'TAG name for release'
+      targetBranch:
+        description: 'Branch to build'
+        required: true
+      releaseMessage:
+        required: true
+        description: 'Release message'
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    env:
+      MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+      MAVEN_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 1.11
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.11
+          server-id: ossrh-robovmx
+          server-username: MAVEN_USERNAME
+          server-password: MAVEN_PASSWORD
+      - name: Install dependencies
+        run: |
+          brew install autoconf automake libtool cmake
+      - name: build everything
+        run: ./build.sh
+      - name: Maven deploy
+        run: mvn clean deploy
+      - name: Gradle plugin deploy
+        run: cd plugins/gradle && ./gradlew clean build publish
+      - name: Create a release and capture idea plugin
+        uses: ncipollo/release-action@v1
+        with:
+          name: "${{ github.event.inputs.tagName }}"
+          body: "${{ github.event.inputs.releaseMessage }}"
+          tag: "${{ github.event.inputs.tagName }}"
+          draft: true
+          artifacts: "plugins/idea/build/distributions/*"
+          token: ${{ secrets.GITHUB_TOKEN }}
