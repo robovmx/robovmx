@@ -26,6 +26,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.inputs.targetBranch }}
       - name: Set up JDK 1.11
         uses: actions/setup-java@v1
         with:
@@ -36,9 +38,6 @@ jobs:
       - name: Install dependencies
         run: |
           brew install autoconf automake libtool cmake
-      - name: Switch to branch
-        run: |
-          git checkout "${{ github.event.inputs.targetBranch }}"
       - name: build everything
         run: ./build.sh
       - name: Maven deploy
