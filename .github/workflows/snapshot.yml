@@ -1,7 +1,7 @@
 # this workflow builds RoboVMx snapshot and deploys it to sonatype maven OSSRH.
 # idea plugin is deployed to Release page
 
-name: Build RoboVMx and deplous snapshot
+name: Build RoboVMx and deploys snapshot
 
 on:
   workflow_dispatch:
