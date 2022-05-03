@@ -91,7 +91,7 @@
             <artifactId>robovm-libimobiledevice</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.mobidevelop.robovm</groupId> <!-- FIXME: RoboVMx note: keeping reference to mobidev, fork from dkimitsa once required -->
+            <groupId>com.robovmx</groupId>
             <artifactId>robovm-soot</artifactId>
         </dependency>
         <dependency>
