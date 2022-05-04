@@ -474,6 +474,10 @@ public class AppCompiler {
                     dependencyGraph.add(clazz, rootClasses.contains(clazz), forceLinkMethods);
                     linkClasses.add(clazz);
 
+                    // at this moment this class is processed and all dependency information not required anymore
+                    // can be dropped to reduce memory usage
+                    clazz.getClazzInfo().dropDependencyData();
+
                     if (compileDependencies) {
                         addMetaInfImplementations(config.getClazzes(), clazz, linkClasses, compileQueue);
                     }
@@ -524,6 +528,10 @@ public class AppCompiler {
             long duration = System.currentTimeMillis() - start;
             config.getLogger().info("Compiled %d classes in %.2f seconds", compiledCount, duration / 1000.0);
         }
+
+        // reset anything that can be retained by Soot library. As it keeps structures that are not required
+        // any more
+        config.getClazzes().disposeSoot();
 
         return linkClasses;
     }
@@ -1001,9 +1009,14 @@ public class AppCompiler {
                         this.config.addResourcesPath(path);
                     }
                 }
+
+                // dispose compilation data that is not required anymore (clazzes, dependency trie etc)
+                sliceConfig.disposeBuildData();
             }
             this.config.getTarget().buildFat(slices);
         }
+        // dispose compilation data that is not required anymore (clazzes, dependency trie etc)
+        this.config.disposeBuildData();
     }
 
     /**
