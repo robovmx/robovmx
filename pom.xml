@@ -248,6 +248,11 @@
             </dependency>
             <dependency>
                 <groupId>com.robovmx</groupId>
+                <artifactId>robovm-bro-bridge</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.robovmx</groupId>
                 <artifactId>robovm-objc</artifactId>
                 <version>${project.version}</version>
             </dependency>

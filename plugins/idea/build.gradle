@@ -24,6 +24,7 @@ dependencies {
     implementation ("com.robovmx:robovm-dist-compiler:${roboVMVersion}") {
         exclude group: 'com.robovmx', module: 'robovm-rt'
         exclude group: 'com.robovmx', module: 'robovm-objc'
+        exclude group: 'com.robovmx', module: 'robovm-bro-bridge'
         exclude group: 'com.robovmx', module: 'robovm-cocoatouch'
         exclude group: 'com.robovmx', module: 'robovm-cacerts-full'
     }

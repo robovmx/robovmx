@@ -8,8 +8,8 @@
         <version>10.2.1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>robovm-objc</artifactId>
-    <name>RoboVM Objective-C Bridge</name>
+    <artifactId>robovm-bro-bridge</artifactId>
+    <name>RoboVM Bro Java to Native Bridge</name>
     <packaging>jar</packaging>
 
     <licenses>
@@ -25,10 +25,6 @@
             <groupId>com.robovmx</groupId>
             <artifactId>robovm-rt</artifactId>
             <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.robovmx</groupId>
-            <artifactId>robovm-bro-bridge</artifactId>
         </dependency>
     </dependencies>
 
