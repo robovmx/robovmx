@@ -134,8 +134,9 @@ else()
 endif()
 
 # Set up global C and C++ compiler flags
+set(CMAKE_CXX_STANDARD 17)
 set(C_FLAGS "${C_FLAGS} -std=gnu99 -fPIC")
-set(CXX_FLAGS "${CXX_FLAGS} -std=gnu++11 -fPIC")
+set(CXX_FLAGS "${CXX_FLAGS} -fPIC")
 set(C_CXX_FLAGS "${C_CXX_FLAGS} -Wall -fPIC")
 if(NOT IOS)
   # -fdata-sections -ffunction-sections conflicts with -fembed-bitcode
