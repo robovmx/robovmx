@@ -218,6 +218,7 @@ endif()
 set(INSTALL_DIR ${CMAKE_SOURCE_DIR}/target/binaries/${OS}/${ARCH})
 
 # at this point convert remove "-simulator" suffix as it will conflict as sub-modules
+set(ARCH_WITH_ENV "${ARCH}")
 if (ARCH STREQUAL "arm64-simulator")
   set(ARCH arm64)
 elseif (ARCH STREQUAL "x86_64-simulator")
@@ -314,5 +315,5 @@ install(FILES ${CMAKE_BINARY_DIR}/gc/lib/libgc.a DESTINATION ${INSTALL_DIR} RENA
 add_subdirectory(core/src)
 add_subdirectory(debug/src)
 add_subdirectory(bc/src)
-add_subdirectory(rt)
+add_subdirectory(../rt "rt")
 add_subdirectory(frameworksupport/src)
