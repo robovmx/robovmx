@@ -33,11 +33,7 @@ import org.robovm.compiler.config.StripArchivesConfig.StripArchivesBuilder;
 import org.robovm.compiler.config.tools.Tools;
 import org.robovm.compiler.llvm.DataLayout;
 import org.robovm.compiler.log.Logger;
-import org.robovm.compiler.plugin.CompilerPlugin;
-import org.robovm.compiler.plugin.LaunchPlugin;
-import org.robovm.compiler.plugin.Plugin;
-import org.robovm.compiler.plugin.PluginArgument;
-import org.robovm.compiler.plugin.TargetPlugin;
+import org.robovm.compiler.plugin.*;
 import org.robovm.compiler.plugin.annotation.AnnotationImplPlugin;
 import org.robovm.compiler.plugin.debug.DebugInformationPlugin;
 import org.robovm.compiler.plugin.debug.DebuggerLaunchPlugin;
@@ -161,7 +157,7 @@ public class Config {
     @ElementList(required = false, entry = "path")
     private ArrayList<QualifiedFile> appExtensionPaths;
     @Element(required = false)
-    private SwiftSupport swiftSupport = null;
+    private SwiftSupport swiftSupport = new SwiftSupport();
     @ElementList(required = false, entry = "resource")
     private ArrayList<Resource> resources;
     @ElementList(required = false, entry = "classpathentry")
@@ -258,7 +254,8 @@ public class Config {
                 new StringConcatRewriterPlugin(),
                 new LambdaPlugin(),
                 new DebugInformationPlugin(),
-                new DebuggerLaunchPlugin()
+                new DebuggerLaunchPlugin(),
+                new BuildGarbageCollectorPlugin()
                 ));
         this.loadPluginsFromClassPath();
     }
@@ -480,15 +477,15 @@ public class Config {
     }
 
     public SwiftSupport getSwiftSupport() {
-        return swiftSupport;
+        return swiftSupport.isEnabled() ? swiftSupport : null;
     }
 
     public boolean hasSwiftSupport() {
-        return swiftSupport != null;
+        return swiftSupport.isEnabled();
     }
 
     public List<File> getSwiftLibPaths() {
-        return swiftSupport == null ? Collections.emptyList()
+        return !swiftSupport.isEnabled() ? Collections.emptyList()
                 : swiftSupport.getSwiftLibPaths().stream()
                 .filter(this::isQualified)
                 .map(f -> f.entry)
