@@ -1,0 +1,62 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.robovmx</groupId>
+        <artifactId>robovm-compiler-parent</artifactId>
+        <version>10.2.2-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>robovm-bro-bridge</artifactId>
+    <name>RoboVM Bro Java to Native Bridge</name>
+    <packaging>jar</packaging>
+
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.robovmx</groupId>
+            <artifactId>robovm-rt</artifactId>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <!-- provide empty bootclass as one from robovm.rt to be used -->
+                <configuration combine.self="override">
+                    <compilerArguments>
+                        <target>1.8</target>
+                        <source>1.8</source>
+                        <bootclasspath>""</bootclasspath>
+                    </compilerArguments>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <configuration combine.self="override">
+                    <maxmemory>2g</maxmemory>
+                    <!-- docs for RT: no lint, no bootclass and api 8 -->
+                    <doclint>none</doclint>
+                    <source>8</source>
+                    <bootclasspath>""</bootclasspath>
+                    <detectJavaApiLink>false</detectJavaApiLink>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

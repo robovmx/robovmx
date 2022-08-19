@@ -170,7 +170,7 @@ public class AppCompiler {
         "java/net/Socket",
         "java/net/InetSocketAddress$InetSocketAddressHolder",
         "java/net/SocketImpl",
-        "java/nio/charset/CharsetICU",
+        "com/android/icu/charset/CharsetICU",
         "java/nio/DirectByteBuffer",
         "java/text/ParsePosition",
         "java/util/Calendar",
@@ -185,7 +185,7 @@ public class AppCompiler {
         "android/system/NetlinkSocketAddress",
         "android/system/PacketSocketAddress",
         "android/system/StructAddrinfo",
-        "android/system/StructFlock",
+        "android/system/StructCmsghdr",
         "android/system/StructGroupReq",
         "android/system/StructIfaddrs",
         "android/system/StructLinger",
@@ -197,7 +197,11 @@ public class AppCompiler {
         "android/system/StructTimespec",
         "android/system/StructUcred",
         "android/system/StructUtsname",
+        "android/system/StructMsghdr",
         "android/system/UnixSocketAddress",
+        "android/system/VmSocketAddress",
+        "android/system/Int32Ref",
+        "android/system/Int64Ref",
         "dalvik/system/SocketTagger",
         "org/apache/harmony/xml/ExpatParser",
         "java/util/zip/ZipFile",
@@ -227,8 +231,7 @@ public class AppCompiler {
         "java/net/SocketOutputStream",
         "java/lang/StrictMath",
         "java/lang/Math",
-        "java/lang/ProcessEnvironment",
-        "org/robovm/rt/bro/Struct"
+        "java/lang/ProcessEnvironment"
     };
 
     private static final String TRUSTED_CERTIFICATE_STORE_CLASS =

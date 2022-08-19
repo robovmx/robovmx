@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.robovmx</groupId>
         <artifactId>robovm-parent</artifactId>
-        <version>10.2.1-SNAPSHOT</version>
+        <version>10.2.2-SNAPSHOT</version>
     </parent>
 
     <artifactId>robovm-compiler-parent</artifactId>
@@ -20,13 +20,15 @@
     <inceptionYear>2012</inceptionYear>
 
     <modules>
-        <module>llvm</module>
-        <module>libimobiledevice</module>
-        <module>compiler</module>
         <module>rt</module>
         <module>cacerts</module>
+        <module>bro-bridge</module>
         <module>objc</module>
         <module>cocoatouch</module>
+        <module>llvm</module>
+        <module>libimobiledevice</module>
+        <!-- compiler has to be last as it contains tests that uses modules above -->
+        <module>compiler</module>
     </modules>
 </project>
 

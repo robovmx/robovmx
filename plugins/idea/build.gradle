@@ -4,7 +4,7 @@ plugins {
 }
 
 ext {
-    roboVMVersion = '10.2.1-SNAPSHOT'
+    roboVMVersion = '10.2.2-SNAPSHOT'
 }
 
 group 'com.robovmx'
@@ -24,6 +24,7 @@ dependencies {
     implementation ("com.robovmx:robovm-dist-compiler:${roboVMVersion}") {
         exclude group: 'com.robovmx', module: 'robovm-rt'
         exclude group: 'com.robovmx', module: 'robovm-objc'
+        exclude group: 'com.robovmx', module: 'robovm-bro-bridge'
         exclude group: 'com.robovmx', module: 'robovm-cocoatouch'
         exclude group: 'com.robovmx', module: 'robovm-cacerts-full'
     }

@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.robovmx</groupId>
-    <version>10.2.1-SNAPSHOT</version>
+    <version>10.2.2-SNAPSHOT</version>
     <artifactId>robovm-parent</artifactId>
     <organization>
         <name>com.robovmx</name>
@@ -245,6 +245,11 @@
                 <artifactId>robovm-rt</artifactId>
                 <version>${project.version}</version>
                 <classifier>sources</classifier>
+            </dependency>
+            <dependency>
+                <groupId>com.robovmx</groupId>
+                <artifactId>robovm-bro-bridge</artifactId>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.robovmx</groupId>

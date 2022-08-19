@@ -1,0 +1,185 @@
+# allows to filter out not required files copied from original Libcore
+# out of scope files can be removed from disk by `git clean -fXd` command
+
+## common
+TEST_MAPPING
+
+##
+## BorringSSL. files to keep
+##
+/external/boringssl/*
+/external/boringssl/**/test/**
+!/external/boringssl/src
+/external/boringssl/src/*
+!/external/boringssl/src/include
+!/external/boringssl/src/crypto
+!/external/boringssl/src/ssl
+!/external/boringssl/src/third_party/
+/external/boringssl/src/third_party/*
+!/external/boringssl/src/third_party/fiat
+!/external/boringssl/src/LICENSE
+!/external/boringssl/src/README.md
+!/external/boringssl/MODULE_LICENSE_BSD_LIKE
+!/external/boringssl/NOTICE
+!/external/boringssl/BORINGSSL_REVISION
+!/external/boringssl/err_data.c
+
+##
+## Expat. files to keep
+##
+/external/expat/*
+!/external/expat/lib
+!/external/expat/COPYING
+!/external/expat/MODULE_LICENSE_MIT
+!/external/expat/README.md
+!/external/expat/expat_config.h
+
+##
+## zlib
+##
+/external/zlib/google
+/external/zlib/patches
+/external/zlib/Android.bp
+/external/zlib/BUILD.gn
+/external/zlib/CleanSpec.mk
+/external/zlib/DIR_METADATA
+/external/zlib/libz.map.txt
+/external/zlib/OWNERS.android
+/external/zlib/contrib/tests
+
+##
+## JavaSqlite
+##
+/external/javasqlite/Android.bp
+/external/javasqlite/METADATA
+/external/javasqlite/OWNERS
+
+##
+## OkHttp
+##
+/external/okhttp/*
+/external/okhttp/**/src/test/**
+!/external/okhttp/repackaged
+!/external/okhttp/CHANGELOG.md
+!/external/okhttp/LICENSE.txt
+!/external/okhttp/MODULE_LICENSE_APACHE2
+!/external/okhttp/README.android
+
+##
+## BouncyCastle
+##
+/external/bouncycastle/*
+!/external/bouncycastle/repackaged/
+!/external/bouncycastle/bouncycastle.version
+!/external/bouncycastle/MODULE_LICENSE_BSD_LIKE
+!/external/bouncycastle/NOTICE
+
+##
+## Compat -- annotations for Libcore
+##
+/compat/*
+/compat/**/Android.bp
+!/compat/README.md
+!/compat/java
+/compat/java/*
+!/compat/java/android
+/compat/java/android/compat/testing
+/compat/java/android/processor
+
+##
+## Conscrypt. files to keep
+##
+/cmake/conscrypt/generate_constants
+/conscrypt/*
+/conscrypt/**/src/test/**
+!/conscrypt/LICENSE
+!/conscrypt/MODULE_LICENSE_APACHE2
+!/conscrypt/NOTICE
+#
+# keep /conscrypt/common/src/jni/main
+!/conscrypt/common
+/conscrypt/common/src/*
+!/conscrypt/common/src/jni
+/conscrypt/common/src/jni/*
+!/conscrypt/common/src/jni/main
+#
+# keep /conscrypt/constants/src
+!/conscrypt/constants
+/conscrypt/constants/*
+!/conscrypt/constants/src/
+#
+# keep /conscrypt/publicapi/src
+!/conscrypt/publicapi
+#
+# keep /conscrypt/repackaged/common/src/
+!/conscrypt/repackaged
+/conscrypt/repackaged/*
+!/conscrypt/repackaged/common/
+!/conscrypt/repackaged/platform/
+
+##
+## ICU
+##
+/external/icu/**/main/tests/**
+/external/icu/build
+/external/icu/icu4j/
+/external/icu/README.android
+/external/icu/CleanSpec.mk
+/external/icu/PREUPLOAD.cfg
+/external/icu/libicu/
+/external/icu/tools/
+/external/icu/Android.bp
+/external/icu/libandroidicu/
+/external/icu/libandroidicuinit/
+/external/icu/android_icu4c/
+# android_icu4j and libcore_bridge
+/external/icu/android_icu4j/*
+!/external/icu/android_icu4j/src
+!/external/icu/android_icu4j/libcore_bridge
+!/external/icu/android_icu4j/resources
+/external/icu/android_icu4j/src/samples/
+# icu4c: leave source/i18n/*, source/common/* and source/stubdata/stubdata.cpp
+/external/icu/icu4c/*
+!/external/icu/icu4c/source/
+!/external/icu/icu4c/LICENSE
+/external/icu/icu4c/source/*
+!/external/icu/icu4c/source/i18n
+!/external/icu/icu4c/source/common
+!/external/icu/icu4c/source/stubdata
+/external/icu/icu4c/source/stubdata/*
+!/external/icu/icu4c/source/stubdata/stubdata.cpp
+
+##
+## Libcore
+##
+/libcore/*
+/libcore/**/src/test/**
+/libcore/**/src/benchmark/**
+/libcore/**/test-rules/**
+/libcore/**/src/module/**
+/libcore/**/Android.bp
+/libcore/ojluni/src/lambda
+/libcore/ojluni/annotations/
+/libcore/ojluni/src/generated-annotation
+!/libcore/dalvik
+!/libcore/json
+!/libcore/libart
+!/libcore/luni
+!/libcore/ojluni
+!/libcore/xml
+!/libcore/LICENSE
+!/libcore/NOTICE
+/art/*
+!/art/openjdkjvm
+/art/**/Android.bp
+
+##
+## libnativehelper
+##
+/libnativehelper/tests
+/libnativehelper/tests_mts
+/libnativehelper/Android.bp
+/libnativehelper/libnativehelper.map.txt
+/libnativehelper/OWNERS
+/libnativehelper/PREUPLOAD.cfg
+/libnativehelper/TEST_MAPPING
