@@ -25,6 +25,7 @@ import org.robovm.compiler.Version;
 import org.robovm.compiler.clazz.Path;
 import org.robovm.compiler.config.*;
 import org.robovm.compiler.config.Resource.Walker;
+import org.robovm.compiler.target.ios.IOSTarget;
 import org.robovm.compiler.util.ToolchainUtil;
 import org.simpleframework.xml.Transient;
 
@@ -90,7 +91,7 @@ public abstract class AbstractTarget implements Target {
         return Collections.emptyList();
     }
 
-    public void build(List<File> objectFiles) throws IOException {
+    public File build(List<File> objectFiles) throws IOException {
         File outFile = new File(config.getTmpDir(), config.getExecutableName());
 
         config.getLogger().info("Building %s binary %s", config.getTarget().getType(), outFile);
@@ -264,6 +265,7 @@ public abstract class AbstractTarget implements Target {
         }
 
         doBuild(outFile, ccArgs, objectFiles, libs);
+        return outFile;
     }
 
     protected void doBuild(File outFile, List<String> ccArgs, List<File> objectFiles,
@@ -367,7 +369,7 @@ public abstract class AbstractTarget implements Target {
 
                                 if (isDynamicLibrary(file)) {
                                     // remove simulator and deprecated archs, also strip bitcode if not used
-                                    if (config.getOs() == OS.ios && config.getArch().isArm()) {
+                                    if (config.getOs() == OS.ios && config.getArch().getEnv() != Environment.Simulator) {
                                         File libFile = new File(destDir, file.getName());
                                         stripExtraArches(libFile);
                                         if (!config.isEnableBitcode())
@@ -441,7 +443,7 @@ public abstract class AbstractTarget implements Target {
                 public void processFile(Resource resource, File file, File destDir) throws IOException {
                     copyFile(resource, file, destDir);
 
-                    if (config.getOs() == OS.ios && config.getArch().isArm()) {
+                    if (config.getOs() == OS.ios && config.getArch().getEnv() != Environment.Simulator) {
                         // remove simulator and deprecated archs, also strip bitcode if not used
                         if (isAppExtension(file)) {
                             File libFile = new File(destDir, file.getName());
@@ -583,7 +585,7 @@ public abstract class AbstractTarget implements Target {
     private String getSwiftSystemName(Config config) {
         String system;
         if (config.getOs() == OS.ios) {
-            if (config.getArch().isArm()) {
+            if (IOSTarget.isDeviceArch(config.getArch())) {
                 system = "iphoneos";
             } else {
                 system = "iphonesimulator";
@@ -671,7 +673,7 @@ public abstract class AbstractTarget implements Target {
 			// don't strip if libraries goes to SwiftSupport folder
 			if (strip) {
                 // remove simulator and deprecated archs, also strip bitcode if not used
-                if (config.getOs() == OS.ios && config.getArch().isArm()) {
+                if (config.getOs() == OS.ios && config.getArch().getEnv() != Environment.Simulator) {
                     File libFile = new File(targetDir, swiftLibrary.getName());
                     stripExtraArches(libFile);
                     if (!config.isEnableBitcode())
