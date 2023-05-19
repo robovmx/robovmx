@@ -7,7 +7,7 @@
  * others. All Rights Reserved.                                                *
  *******************************************************************************
  */
-package android.icu.text;
+package android.icu.impl.breakiter;
 
 import java.text.CharacterIterator;
 

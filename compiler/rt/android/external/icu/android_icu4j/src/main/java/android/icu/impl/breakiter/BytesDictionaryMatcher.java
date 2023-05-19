@@ -7,11 +7,12 @@
  * others. All Rights Reserved.                                                *
  *******************************************************************************
  */
-package android.icu.text;
+package android.icu.impl.breakiter;
 
 import java.text.CharacterIterator;
 
 import android.icu.impl.Assert;
+import android.icu.text.UCharacterIterator;
 import android.icu.util.BytesTrie;
 import android.icu.util.BytesTrie.Result;
 

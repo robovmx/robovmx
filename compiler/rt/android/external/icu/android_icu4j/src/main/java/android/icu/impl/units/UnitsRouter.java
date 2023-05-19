@@ -10,8 +10,8 @@ import java.util.List;
 import android.icu.impl.IllegalIcuArgumentException;
 import android.icu.impl.number.MicroProps;
 import android.icu.number.Precision;
-import android.icu.util.Measure;
 import android.icu.util.MeasureUnit;
+import android.icu.util.ULocale;
 
 /**
  * `UnitsRouter` responsible for converting from a single unit (such as `meter` or `meter-per-second`) to
@@ -24,7 +24,7 @@ import android.icu.util.MeasureUnit;
  * `foot+inch`, otherwise, the output will be in `inch`.
  * <p>
  * NOTE:
- * the output units and the their limits MUST BE in order, for example, if the output units, from the
+ * the output units and their limits MUST BE in order, for example, if the output units, from the
  * previous example, are the following:
  * {`inch`     , limit: no value (-inf)}
  * {`foot+inch`, limit: 3.0}
@@ -49,14 +49,17 @@ public class UnitsRouter {
     private ArrayList<MeasureUnit> outputUnits_ = new ArrayList<>();
     private ArrayList<ConverterPreference> converterPreferences_ = new ArrayList<>();
 
-    public UnitsRouter(MeasureUnitImpl inputUnitImpl, String region, String usage) {
+    public UnitsRouter(String inputUnitIdentifier, ULocale locale, String usage) {
+        this(MeasureUnitImpl.forIdentifier(inputUnitIdentifier), locale, usage);
+    }
+
+    public UnitsRouter(MeasureUnitImpl inputUnit, ULocale locale, String usage) {
         // TODO: do we want to pass in ConversionRates and UnitPreferences instead?
         // of loading in each UnitsRouter instance? (Or make global?)
         UnitsData data = new UnitsData();
 
-        //MeasureUnitImpl inputUnitImpl = MeasureUnitImpl.forMeasureUnitMaybeCopy(inputUnit);
-        String category = data.getCategory(inputUnitImpl);
-        UnitPreferences.UnitPreference[] unitPreferences = data.getPreferencesFor(category, usage, region);
+        String category = data.getCategory(inputUnit);
+        UnitPreferences.UnitPreference[] unitPreferences = data.getPreferencesFor(category, usage, locale);
 
         for (int i = 0; i < unitPreferences.length; ++i) {
             UnitPreferences.UnitPreference preference = unitPreferences[i];
@@ -76,7 +79,7 @@ public class UnitsRouter {
             }
 
             outputUnits_.add(complexTargetUnitImpl.build());
-            converterPreferences_.add(new ConverterPreference(inputUnitImpl, complexTargetUnitImpl,
+            converterPreferences_.add(new ConverterPreference(inputUnit, complexTargetUnitImpl,
                     preference.getGeq(), precision,
                     data.getConversionRates()));
         }
@@ -182,19 +185,15 @@ public class UnitsRouter {
      * @hide Only a subset of ICU is exposed in Android
      */
     public class RouteResult {
-        // A list of measures: a single measure for single units, multiple measures
-        // for mixed units.
-        //
-        // TODO(icu-units/icu#21): figure out the right mixed unit API.
-        public final List<Measure> measures;
+        public final ComplexUnitsConverter.ComplexConverterResult complexConverterResult;
 
         // The output unit for this RouteResult. This may be a MIXED unit - for
         // example: "yard-and-foot-and-inch", for which `measures` will have three
         // elements.
         public final MeasureUnitImpl outputUnit;
 
-        RouteResult(List<Measure> measures, MeasureUnitImpl outputUnit) {
-            this.measures = measures;
+        RouteResult(ComplexUnitsConverter.ComplexConverterResult complexConverterResult, MeasureUnitImpl outputUnit) {
+            this.complexConverterResult = complexConverterResult;
             this.outputUnit = outputUnit;
         }
     }

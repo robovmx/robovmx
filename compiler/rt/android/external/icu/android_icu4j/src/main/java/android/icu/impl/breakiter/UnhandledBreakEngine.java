@@ -7,15 +7,19 @@
  * others. All Rights Reserved.                                                *
  *******************************************************************************
  */
-package android.icu.text;
+package android.icu.impl.breakiter;
 
 import java.text.CharacterIterator;
 
 import android.icu.impl.CharacterIteration;
 import android.icu.lang.UCharacter;
 import android.icu.lang.UProperty;
+import android.icu.text.UnicodeSet;
 
-final class UnhandledBreakEngine implements LanguageBreakEngine {
+/**
+ * @hide Only a subset of ICU is exposed in Android
+ */
+public final class UnhandledBreakEngine implements LanguageBreakEngine {
     // TODO: Use two UnicodeSets, one with all frozen sets, one with unfrozen.
     // in handleChar(), update the unfrozen version, clone, freeze, replace the frozen one.
 
@@ -44,7 +48,7 @@ final class UnhandledBreakEngine implements LanguageBreakEngine {
 
     @Override
     public int findBreaks(CharacterIterator text, int startPos, int endPos,
-            DictionaryBreakEngine.DequeI foundBreaks) {
+            DictionaryBreakEngine.DequeI foundBreaks, boolean isPhraseBreaking) {
 
         UnicodeSet uniset = fHandled;
         int c = CharacterIteration.current32(text);

@@ -100,8 +100,6 @@ public class Currency extends MeasureUnit {
      * The formal currency symbol is similar to the regular currency symbol,
      * but it always takes the form used in formal settings such as banking;
      * for example, "NT$" instead of "$" for TWD in zh-TW.
-     *
-     * @hide draft / provisional / internal are hidden on Android
      */
     public static final int FORMAL_SYMBOL_NAME = 4;
 
@@ -110,8 +108,6 @@ public class Currency extends MeasureUnit {
      * <p>
      * The variant symbol for a currency is an alternative symbol that is not
      * necessarily as widely used as the regular symbol.
-     *
-     * @hide draft / provisional / internal are hidden on Android
      */
     public static final int VARIANT_SYMBOL_NAME = 5;
 
@@ -264,7 +260,12 @@ public class Currency extends MeasureUnit {
     private static Currency loadCurrency(String key) {
         String region = key;
         CurrencyMetaInfo info = CurrencyMetaInfo.getInstance();
-        List<String> list = info.currencies(CurrencyFilter.onRegion(region));
+        // https://unicode-org.atlassian.net/browse/ICU-21997
+        // Prefer to use currencies that are legal tender.
+        List<String> list = info.currencies(CurrencyFilter.onRegion(region).withTender());
+        if (list.isEmpty()) {
+            list = info.currencies(CurrencyFilter.onRegion(region));
+        }
         if (!list.isEmpty()) {
             String code = list.get(0);
             return getInstance(code);

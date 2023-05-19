@@ -7,15 +7,16 @@
  * others. All Rights Reserved.                                                *
  *******************************************************************************
  */
-package android.icu.text;
+package android.icu.impl.breakiter;
 
 import java.text.CharacterIterator;
 
 /**
  * The LanguageBreakEngine interface is to be used to implement any
  * language-specific logic for break iteration.
+ * @hide Only a subset of ICU is exposed in Android
  */
-interface LanguageBreakEngine {
+public interface LanguageBreakEngine {
     /**
      * @param c A Unicode codepoint value
      * @return true if the engine can handle this character, false otherwise
@@ -33,7 +34,7 @@ interface LanguageBreakEngine {
      * @return the number of breaks found
      */
     int findBreaks(CharacterIterator text, int startPos, int endPos,
-            DictionaryBreakEngine.DequeI foundBreaks);
+            DictionaryBreakEngine.DequeI foundBreaks, boolean isPhraseBreaking);
 }
 
 

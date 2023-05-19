@@ -7,13 +7,17 @@
  * others. All Rights Reserved.                                                *
  *******************************************************************************
  */
-package android.icu.text;
+package android.icu.impl.breakiter;
 
 import java.text.CharacterIterator;
 
 import android.icu.impl.CharacterIteration;
+import android.icu.text.UnicodeSet;
 
-abstract class DictionaryBreakEngine implements LanguageBreakEngine {
+/**
+ * @hide Only a subset of ICU is exposed in Android
+ */
+public abstract class DictionaryBreakEngine implements LanguageBreakEngine {
 
     /* Helper class for improving readability of the Thai/Lao/Khmer word break
      * algorithm.
@@ -87,9 +91,10 @@ abstract class DictionaryBreakEngine implements LanguageBreakEngine {
      *  A deque-like structure holding raw ints.
      *  Partial, limited implementation, only what is needed by the dictionary implementation.
      *  For internal use only.
+     * @hide Only a subset of ICU is exposed in Android
      * @hide draft / provisional / internal are hidden on Android
      */
-    static class DequeI implements Cloneable {
+    public static class DequeI implements Cloneable {
         private int[] data = new int[50];
         private int lastIdx = 4;   // or base of stack. Index of element.
         private int firstIdx = 4;  // or Top of Stack. Index of element + 1.
@@ -101,11 +106,11 @@ abstract class DictionaryBreakEngine implements LanguageBreakEngine {
             return result;
         }
 
-        int size() {
+        public int size() {
             return firstIdx - lastIdx;
         }
 
-        boolean isEmpty() {
+        public boolean isEmpty() {
             return size() == 0;
         }
 
@@ -115,26 +120,26 @@ abstract class DictionaryBreakEngine implements LanguageBreakEngine {
             data = newData;
         }
 
-        void offer(int v) {
+        public void offer(int v) {
             // Note that the actual use cases of offer() add at most one element.
             //   We make no attempt to handle more than a few.
             assert lastIdx > 0;
             data[--lastIdx] = v;
         }
 
-        void push(int v) {
+        public void push(int v) {
             if (firstIdx >= data.length) {
                 grow();
             }
             data[firstIdx++] = v;
         }
 
-        int pop() {
+        public int pop() {
             assert size() > 0;
             return data[--firstIdx];
         }
 
-        int peek() {
+        public int peek() {
             assert size() > 0;
             return data[firstIdx - 1];
         }
@@ -158,12 +163,12 @@ abstract class DictionaryBreakEngine implements LanguageBreakEngine {
             return false;
         }
 
-        int elementAt(int i) {
+        public int elementAt(int i) {
             assert i < size();
             return data[lastIdx + i];
         }
 
-        void removeAllElements() {
+        public void removeAllElements() {
             lastIdx = firstIdx = 4;
         }
     }
@@ -183,7 +188,7 @@ abstract class DictionaryBreakEngine implements LanguageBreakEngine {
 
     @Override
     public int findBreaks(CharacterIterator text, int startPos, int endPos,
-            DequeI foundBreaks) {
+            DequeI foundBreaks, boolean isPhraseBreaking) {
         int result = 0;
 
          // Find the span of characters included in the set.
@@ -202,7 +207,7 @@ abstract class DictionaryBreakEngine implements LanguageBreakEngine {
         rangeStart = start;
         rangeEnd = current;
 
-        result = divideUpDictionaryRange(text, rangeStart, rangeEnd, foundBreaks);
+        result = divideUpDictionaryRange(text, rangeStart, rangeEnd, foundBreaks, isPhraseBreaking);
         text.setIndex(current);
 
         return result;
@@ -226,5 +231,6 @@ abstract class DictionaryBreakEngine implements LanguageBreakEngine {
      abstract int divideUpDictionaryRange(CharacterIterator text,
                                           int               rangeStart,
                                           int               rangeEnd,
-                                          DequeI            foundBreaks );
+                                          DequeI            foundBreaks,
+                                          boolean isPhraseBreaking);
 }

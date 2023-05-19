@@ -8,7 +8,7 @@
  *******************************************************************************
  */
 
-package android.icu.text;
+package android.icu.impl.breakiter;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;

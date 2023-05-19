@@ -241,7 +241,7 @@ public final class LocaleData {
     /**
      * Sets the "no substitute" behavior of this locale data object.
      *
-     * @param setting   Value for the no substitute behavior.  If TRUE,
+     * @param setting   Value for the no substitute behavior.  If true,
      *                  methods of this locale data object will return
      *                  an error when no data is available for that method,
      *                  given the locale ID supplied to the constructor.
@@ -253,7 +253,7 @@ public final class LocaleData {
     /**
      * Gets the "no substitute" behavior of this locale data object.
      *
-     * @return          Value for the no substitute behavior.  If TRUE,
+     * @return          Value for the no substitute behavior.  If true,
      *                  methods of this locale data object will return
      *                  an error when no data is available for that method,
      *                  given the locale ID supplied to the constructor.
@@ -373,7 +373,7 @@ public final class LocaleData {
             width = w;
         }
         /**
-         * Retruns the height of the paper
+         * Returns the height of the paper
          * @return the height
          */
         public int getHeight(){

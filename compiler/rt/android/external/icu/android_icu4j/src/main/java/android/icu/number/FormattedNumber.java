@@ -11,6 +11,7 @@ import android.icu.impl.FormattedValueStringBuilderImpl;
 import android.icu.impl.Utility;
 import android.icu.impl.number.DecimalQuantity;
 import android.icu.text.ConstrainedFieldPosition;
+import android.icu.text.DisplayOptions;
 import android.icu.text.FormattedValue;
 import android.icu.text.PluralRules.IFixedDecimal;
 import android.icu.util.MeasureUnit;
@@ -28,10 +29,14 @@ public class FormattedNumber implements FormattedValue {
     final DecimalQuantity fq;
     final MeasureUnit outputUnit;
 
-    FormattedNumber(FormattedStringBuilder nsb, DecimalQuantity fq, MeasureUnit outputUnit) {
+    // Grammatical gender of the formatted result.
+    final String gender;
+
+    FormattedNumber(FormattedStringBuilder nsb, DecimalQuantity fq, MeasureUnit outputUnit, String gender) {
         this.string = nsb;
         this.fq = fq;
         this.outputUnit = outputUnit;
+        this.gender = gender;
     }
 
     /**
@@ -111,10 +116,34 @@ public class FormattedNumber implements FormattedValue {
      * as "foot-and-inch" or "hour-and-minute-and-second".
      *
      * @return `MeasureUnit`.
-     * @hide draft / provisional / internal are hidden on Android
      */
     public MeasureUnit getOutputUnit() {
         return this.outputUnit;
+    }
+
+    /**
+     * Gets the noun class of the formatted output. Returns `UNDEFINED` when the noun class is not
+     * supported yet.
+     *
+     * @return NounClass
+     * @hide draft / provisional / internal are hidden on Android
+     */
+    public DisplayOptions.NounClass getNounClass() {
+        return DisplayOptions.NounClass.fromIdentifier(this.gender);
+    }
+
+    /**
+     * The gender of the formatted output.
+     *
+     * @deprecated This API is for technology preview only.
+     * @hide draft / provisional / internal are hidden on Android
+     */
+    @Deprecated
+    public String getGender() {
+        if (this.gender == null) {
+            return "";
+        }
+        return this.gender;
     }
 
     /**

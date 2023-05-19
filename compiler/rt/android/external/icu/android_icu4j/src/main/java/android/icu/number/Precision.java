@@ -10,6 +10,9 @@ import java.math.MathContext;
 import android.icu.impl.number.DecimalQuantity;
 import android.icu.impl.number.MultiplierProducer;
 import android.icu.impl.number.RoundingUtils;
+import android.icu.number.NumberFormatter.RoundingPriority;
+import android.icu.number.NumberFormatter.TrailingZeroDisplay;
+import android.icu.text.PluralRules.Operand;
 import android.icu.util.Currency;
 import android.icu.util.Currency.CurrencyUsage;
 
@@ -24,6 +27,7 @@ import android.icu.util.Currency.CurrencyUsage;
 public abstract class Precision {
 
     /* package-private final */ MathContext mathContext;
+    /* package-private final */ TrailingZeroDisplay trailingZeroDisplay;
 
     /* package-private */ Precision() {
         mathContext = RoundingUtils.DEFAULT_MATH_CONTEXT_UNLIMITED;
@@ -324,6 +328,18 @@ public abstract class Precision {
     }
 
     /**
+     * Configure how trailing zeros are displayed on numbers. For example, to hide trailing zeros
+     * when the number is an integer, use HIDE_IF_WHOLE.
+     *
+     * @param trailingZeroDisplay Option to configure the display of trailing zeros.
+     */
+    public Precision trailingZeroDisplay(TrailingZeroDisplay trailingZeroDisplay) {
+        Precision result = this.createCopy();
+        result.trailingZeroDisplay = trailingZeroDisplay;
+        return result;
+    }
+
+    /**
      * Sets a MathContext to use on this Precision.
      *
      * @deprecated This API is ICU internal only.
@@ -341,6 +357,16 @@ public abstract class Precision {
 
     /** Package-private clone method */
     abstract Precision createCopy();
+
+    /**
+     * Call this function to copy the fields from the Precision base class.
+     *
+     * Note: It would be nice if this returned the copy, but most impls return the child class, not Precision.
+     */
+    /* package-private */ void createCopyHelper(Precision copy) {
+        copy.mathContext = mathContext;
+        copy.trailingZeroDisplay = trailingZeroDisplay;
+    }
 
     /**
      * @deprecated ICU 60 This API is ICU internal only.
@@ -370,7 +396,8 @@ public abstract class Precision {
     static final SignificantRounderImpl FIXED_SIG_3 = new SignificantRounderImpl(3, 3);
     static final SignificantRounderImpl RANGE_SIG_2_3 = new SignificantRounderImpl(2, 3);
 
-    static final FracSigRounderImpl COMPACT_STRATEGY = new FracSigRounderImpl(0, 0, 2, -1);
+    static final FracSigRounderImpl COMPACT_STRATEGY = new FracSigRounderImpl(0, 0, 1, 2, RoundingPriority.RELAXED,
+            false);
 
     static final IncrementFiveRounderImpl NICKEL = new IncrementFiveRounderImpl(new BigDecimal("0.05"), 2, 2);
 
@@ -406,14 +433,16 @@ public abstract class Precision {
         }
     }
 
-    static Precision constructFractionSignificant(FractionPrecision base_, int minSig, int maxSig) {
+    static Precision constructFractionSignificant(FractionPrecision base_, int minSig, int maxSig,
+            RoundingPriority priority, boolean retain) {
         assert base_ instanceof FractionRounderImpl;
         FractionRounderImpl base = (FractionRounderImpl) base_;
         Precision returnValue;
-        if (base.minFrac == 0 && base.maxFrac == 0 && minSig == 2 /* && maxSig == -1 */) {
+        if (base.minFrac == 0 && base.maxFrac == 0 && minSig == 1 && maxSig == 2 && priority == RoundingPriority.RELAXED
+                && !retain) {
             returnValue = COMPACT_STRATEGY;
         } else {
-            returnValue = new FracSigRounderImpl(base.minFrac, base.maxFrac, minSig, maxSig);
+            returnValue = new FracSigRounderImpl(base.minFrac, base.maxFrac, minSig, maxSig, priority, retain);
         }
         return returnValue.withMode(base.mathContext);
     }
@@ -571,7 +600,7 @@ public abstract class Precision {
         @Override
         BogusRounder createCopy() {
             BogusRounder copy = new BogusRounder();
-            copy.mathContext = mathContext;
+            createCopyHelper(copy);
             return copy;
         }
 
@@ -584,7 +613,7 @@ public abstract class Precision {
         @Deprecated
         public Precision into(Precision precision) {
             Precision copy = precision.createCopy();
-            copy.mathContext = mathContext;
+            createCopyHelper(copy);
             return copy;
         }
     }
@@ -597,13 +626,13 @@ public abstract class Precision {
         @Override
         public void apply(DecimalQuantity value) {
             value.roundToInfinity();
-            value.setMinFraction(0);
+            setResolvedMinFraction(value, 0);
         }
 
         @Override
         InfiniteRounderImpl createCopy() {
             InfiniteRounderImpl copy = new InfiniteRounderImpl();
-            copy.mathContext = mathContext;
+            createCopyHelper(copy);
             return copy;
         }
     }
@@ -620,13 +649,13 @@ public abstract class Precision {
         @Override
         public void apply(DecimalQuantity value) {
             value.roundToMagnitude(getRoundingMagnitudeFraction(maxFrac), mathContext);
-            value.setMinFraction(Math.max(0, -getDisplayMagnitudeFraction(minFrac)));
+            setResolvedMinFraction(value, Math.max(0, -getDisplayMagnitudeFraction(minFrac)));
         }
 
         @Override
         FractionRounderImpl createCopy() {
             FractionRounderImpl copy = new FractionRounderImpl(minFrac, maxFrac);
-            copy.mathContext = mathContext;
+            createCopyHelper(copy);
             return copy;
         }
     }
@@ -643,7 +672,7 @@ public abstract class Precision {
         @Override
         public void apply(DecimalQuantity value) {
             value.roundToMagnitude(getRoundingMagnitudeSignificant(value, maxSig), mathContext);
-            value.setMinFraction(Math.max(0, -getDisplayMagnitudeSignificant(value, minSig)));
+            setResolvedMinFraction(value, Math.max(0, -getDisplayMagnitudeSignificant(value, minSig)));
             // Make sure that digits are displayed on zero.
             if (value.isZeroish() && minSig > 0) {
                 value.setMinInteger(1);
@@ -656,13 +685,13 @@ public abstract class Precision {
          */
         public void apply(DecimalQuantity quantity, int minInt) {
             assert quantity.isZeroish();
-            quantity.setMinFraction(minSig - minInt);
+            setResolvedMinFraction(quantity, minSig - minInt);
         }
 
         @Override
         SignificantRounderImpl createCopy() {
             SignificantRounderImpl copy = new SignificantRounderImpl(minSig, maxSig);
-            copy.mathContext = mathContext;
+            createCopyHelper(copy);
             return copy;
         }
     }
@@ -672,35 +701,65 @@ public abstract class Precision {
         final int maxFrac;
         final int minSig;
         final int maxSig;
+        final RoundingPriority priority;
+        final boolean retain;
 
-        public FracSigRounderImpl(int minFrac, int maxFrac, int minSig, int maxSig) {
+        public FracSigRounderImpl(int minFrac, int maxFrac, int minSig, int maxSig, RoundingPriority priority,
+                boolean retain) {
             this.minFrac = minFrac;
             this.maxFrac = maxFrac;
             this.minSig = minSig;
             this.maxSig = maxSig;
+            this.priority = priority;
+            this.retain = retain;
         }
 
         @Override
         public void apply(DecimalQuantity value) {
-            int displayMag = getDisplayMagnitudeFraction(minFrac);
-            int roundingMag = getRoundingMagnitudeFraction(maxFrac);
-            if (minSig == -1) {
-                // Max Sig override
-                int candidate = getRoundingMagnitudeSignificant(value, maxSig);
-                roundingMag = Math.max(roundingMag, candidate);
+            int roundingMag1 = getRoundingMagnitudeFraction(maxFrac);
+            int roundingMag2 = getRoundingMagnitudeSignificant(value, maxSig);
+            int roundingMag;
+            if (priority == RoundingPriority.RELAXED) {
+                roundingMag = Math.min(roundingMag1, roundingMag2);
             } else {
-                // Min Sig override
-                int candidate = getDisplayMagnitudeSignificant(value, minSig);
-                roundingMag = Math.min(roundingMag, candidate);
+                roundingMag = Math.max(roundingMag1, roundingMag2);
             }
-            value.roundToMagnitude(roundingMag, mathContext);
-            value.setMinFraction(Math.max(0, -displayMag));
+            if (!value.isZeroish()) {
+                int upperMag = value.getMagnitude();
+                value.roundToMagnitude(roundingMag, mathContext);
+                if (!value.isZeroish() && value.getMagnitude() != upperMag && roundingMag1 == roundingMag2) {
+                    // roundingMag2 needs to be the magnitude after rounding
+                    roundingMag2 += 1;
+                }
+            }
+
+            int displayMag1 = getDisplayMagnitudeFraction(minFrac);
+            int displayMag2 = getDisplayMagnitudeSignificant(value, minSig);
+            int displayMag;
+            if (retain) {
+                // withMinDigits + withMaxDigits
+                displayMag = Math.min(displayMag1, displayMag2);
+            } else if (priority == RoundingPriority.RELAXED) {
+                if (roundingMag2 <= roundingMag1) {
+                    displayMag = displayMag2;
+                } else {
+                    displayMag = displayMag1;
+                }
+            } else {
+                assert(priority == RoundingPriority.STRICT);
+                if (roundingMag2 <= roundingMag1) {
+                    displayMag = displayMag1;
+                } else {
+                    displayMag = displayMag2;
+                }
+            }
+            setResolvedMinFraction(value, Math.max(0, -displayMag));
         }
 
         @Override
         FracSigRounderImpl createCopy() {
-            FracSigRounderImpl copy = new FracSigRounderImpl(minFrac, maxFrac, minSig, maxSig);
-            copy.mathContext = mathContext;
+            FracSigRounderImpl copy = new FracSigRounderImpl(minFrac, maxFrac, minSig, maxSig, priority, retain);
+            createCopyHelper(copy);
             return copy;
         }
     }
@@ -718,13 +777,13 @@ public abstract class Precision {
         @Override
         public void apply(DecimalQuantity value) {
             value.roundToIncrement(increment, mathContext);
-            value.setMinFraction(increment.scale());
+            setResolvedMinFraction(value, Math.max(0, increment.scale()));
         }
 
         @Override
         IncrementRounderImpl createCopy() {
             IncrementRounderImpl copy = new IncrementRounderImpl(increment);
-            copy.mathContext = mathContext;
+            createCopyHelper(copy);
             return copy;
         }
     }
@@ -747,13 +806,13 @@ public abstract class Precision {
         @Override
         public void apply(DecimalQuantity value) {
             value.roundToMagnitude(-maxFrac, mathContext);
-            value.setMinFraction(minFrac);
+            setResolvedMinFraction(value, minFrac);
         }
 
         @Override
         IncrementOneRounderImpl createCopy() {
             IncrementOneRounderImpl copy = new IncrementOneRounderImpl(increment, minFrac, maxFrac);
-            copy.mathContext = mathContext;
+            createCopyHelper(copy);
             return copy;
         }
     }
@@ -774,13 +833,13 @@ public abstract class Precision {
         @Override
         public void apply(DecimalQuantity value) {
             value.roundToNickel(-maxFrac, mathContext);
-            value.setMinFraction(minFrac);
+            setResolvedMinFraction(value, minFrac);
         }
 
         @Override
         IncrementFiveRounderImpl createCopy() {
             IncrementFiveRounderImpl copy = new IncrementFiveRounderImpl(increment, minFrac, maxFrac);
-            copy.mathContext = mathContext;
+            createCopyHelper(copy);
             return copy;
         }
     }
@@ -801,7 +860,7 @@ public abstract class Precision {
         @Override
         CurrencyRounderImpl createCopy() {
             CurrencyRounderImpl copy = new CurrencyRounderImpl(usage);
-            copy.mathContext = mathContext;
+            createCopyHelper(copy);
             return copy;
         }
     }
@@ -828,7 +887,17 @@ public abstract class Precision {
         return -minFrac;
     }
 
+    void setResolvedMinFraction(DecimalQuantity value, int resolvedMinFraction) {
+        if (trailingZeroDisplay == null ||
+                trailingZeroDisplay == TrailingZeroDisplay.AUTO ||
+                // PLURAL_OPERAND_T returns fraction digits as an integer
+                value.getPluralOperand(Operand.t) != 0) {
+            value.setMinFraction(resolvedMinFraction);
+        }
+    }
+
     private static int getDisplayMagnitudeSignificant(DecimalQuantity value, int minSig) {
+        // Question: Is it useful to look at trailingZeroDisplay here?
         int magnitude = value.isZeroish() ? 0 : value.getMagnitude();
         return magnitude - minSig + 1;
     }

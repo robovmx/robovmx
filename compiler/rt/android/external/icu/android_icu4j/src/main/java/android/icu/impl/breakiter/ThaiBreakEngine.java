@@ -7,7 +7,7 @@
  * others. All Rights Reserved.                                                *
  *******************************************************************************
  */
-package android.icu.text;
+package android.icu.impl.breakiter;
 
 import java.io.IOException;
 import java.text.CharacterIterator;
@@ -15,8 +15,12 @@ import java.text.CharacterIterator;
 import android.icu.lang.UCharacter;
 import android.icu.lang.UProperty;
 import android.icu.lang.UScript;
+import android.icu.text.UnicodeSet;
 
-class ThaiBreakEngine extends DictionaryBreakEngine {
+/**
+ * @hide Only a subset of ICU is exposed in Android
+ */
+public class ThaiBreakEngine extends DictionaryBreakEngine {
 
     // Constants for ThaiBreakIterator
     // How many words in a row are "good enough"?
@@ -36,31 +40,27 @@ class ThaiBreakEngine extends DictionaryBreakEngine {
     private static final byte THAI_MIN_WORD_SPAN = THAI_MIN_WORD * 2;
 
     private DictionaryMatcher fDictionary;
-    private static UnicodeSet fThaiWordSet;
-    private static UnicodeSet fEndWordSet;
-    private static UnicodeSet fBeginWordSet;
-    private static UnicodeSet fSuffixSet;
-    private static UnicodeSet fMarkSet;
+    private UnicodeSet fEndWordSet;
+    private UnicodeSet fBeginWordSet;
+    private UnicodeSet fSuffixSet;
+    private UnicodeSet fMarkSet;
 
-    static {
+    public ThaiBreakEngine() throws IOException {
         // Initialize UnicodeSets
-        fThaiWordSet = new UnicodeSet();
-        fMarkSet = new UnicodeSet();
-        fBeginWordSet = new UnicodeSet();
-        fSuffixSet = new UnicodeSet();
-
-        fThaiWordSet.applyPattern("[[:Thai:]&[:LineBreak=SA:]]");
-        fThaiWordSet.compact();
-
-        fMarkSet.applyPattern("[[:Thai:]&[:LineBreak=SA:]&[:M:]]");
+        UnicodeSet thaiWordSet = new UnicodeSet("[[:Thai:]&[:LineBreak=SA:]]");
+        fMarkSet = new UnicodeSet("[[:Thai:]&[:LineBreak=SA:]&[:M:]]");
         fMarkSet.add(0x0020);
-        fEndWordSet = new UnicodeSet(fThaiWordSet);
-        fEndWordSet.remove(0x0E31); // MAI HAN-AKAT
-        fEndWordSet.remove(0x0E40, 0x0E44); // SARA E through SARA AI MAIMALAI
-        fBeginWordSet.add(0x0E01, 0x0E2E); //KO KAI through HO NOKHUK
-        fBeginWordSet.add(0x0E40, 0x0E44); // SARA E through SARA AI MAIMALAI
+        fBeginWordSet = new UnicodeSet(0x0E01, 0x0E2E,  //KO KAI through HO NOKHUK
+                                       0x0E40, 0x0E44); // SARA E through SARA AI MAIMALAI
+        fSuffixSet = new UnicodeSet();
         fSuffixSet.add(THAI_PAIYANNOI);
         fSuffixSet.add(THAI_MAIYAMOK);
+
+        thaiWordSet.compact();
+
+        fEndWordSet = new UnicodeSet(thaiWordSet);
+        fEndWordSet.remove(0x0E31); // MAI HAN-AKAT
+        fEndWordSet.remove(0x0E40, 0x0E44); // SARA E through SARA AI MAIMALAI
 
         // Compact for caching
         fMarkSet.compact();
@@ -69,15 +69,13 @@ class ThaiBreakEngine extends DictionaryBreakEngine {
         fSuffixSet.compact();
 
         // Freeze the static UnicodeSet
-        fThaiWordSet.freeze();
+        thaiWordSet.freeze();
         fMarkSet.freeze();
         fEndWordSet.freeze();
         fBeginWordSet.freeze();
         fSuffixSet.freeze();
-    }
 
-    public ThaiBreakEngine() throws IOException {
-        setCharacters(fThaiWordSet);
+        setCharacters(thaiWordSet);
         // Initialize dictionary
         fDictionary = DictionaryData.loadDictionaryFor("Thai");
     }
@@ -102,7 +100,7 @@ class ThaiBreakEngine extends DictionaryBreakEngine {
 
     @Override
     public int divideUpDictionaryRange(CharacterIterator fIter, int rangeStart, int rangeEnd,
-            DequeI foundBreaks) {
+            DequeI foundBreaks, boolean isPhraseBreaking) {
 
         if ((rangeEnd - rangeStart) < THAI_MIN_WORD_SPAN) {
             return 0;  // Not enough characters for word
@@ -135,13 +133,9 @@ class ThaiBreakEngine extends DictionaryBreakEngine {
                 if (fIter.getIndex() < rangeEnd) {
                   foundBest:
                     do {
-                        int wordsMatched = 1;
                         if (words[(wordsFound+1)%THAI_LOOKAHEAD].candidates(fIter, fDictionary, rangeEnd) > 0) {
-                            if (wordsMatched < 2) {
-                                // Followed by another dictionary word; mark first word as a good candidate
-                                words[wordsFound%THAI_LOOKAHEAD].markCurrent();
-                                wordsMatched = 2;
-                            }
+                            // Followed by another dictionary word; mark first word as a good candidate
+                            words[wordsFound%THAI_LOOKAHEAD].markCurrent();
 
                             // If we're already at the end of the range, we're done
                             if (fIter.getIndex() >= rangeEnd) {
