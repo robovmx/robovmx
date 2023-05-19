@@ -65,9 +65,8 @@ final class OpenSSLKey {
     /**
      * Returns the EVP_PKEY context for use in JNI calls.
      */
-    @android.compat.annotation
-            .UnsupportedAppUsage
-            NativeRef.EVP_PKEY getNativeRef() {
+    @android.compat.annotation.UnsupportedAppUsage
+    NativeRef.EVP_PKEY getNativeRef() {
         return ctx;
     }
 
@@ -319,7 +318,7 @@ final class OpenSSLKey {
     PrivateKey getPrivateKey() throws NoSuchAlgorithmException {
         switch (NativeCrypto.EVP_PKEY_type(ctx)) {
             case NativeConstants.EVP_PKEY_RSA:
-                return new OpenSSLRSAPrivateKey(this);
+                return OpenSSLRSAPrivateKey.getInstance(this);
             case NativeConstants.EVP_PKEY_EC:
                 return new OpenSSLECPrivateKey(this);
             default:
