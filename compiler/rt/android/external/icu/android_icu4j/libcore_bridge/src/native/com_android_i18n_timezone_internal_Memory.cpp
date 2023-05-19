@@ -16,16 +16,7 @@
 
 #define LOG_TAG "Memory"
 
-#if defined(__APPLE__)
-// RoboVM note: byteswap workaround
-#include <libkern/OSByteOrder.h>
-#define bswap_16 OSSwapInt16
-#define bswap_32 OSSwapInt32
-#define bswap_64 OSSwapInt64
-#else
 #include <byteswap.h>
-#endif 
-
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
@@ -100,11 +91,11 @@ static inline void swapLongs(jlong* dstLongs, const jlong* srcLongs, size_t coun
     }
 }
 
-extern "C" JNIEXPORT jbyte JNICALL Java_com_android_i18n_timezone_internal_Memory_peekByte(JNIEnv*, jclass, jlong srcAddress) {
+static jbyte Memory_peekByte(JNIEnv*, jclass, jlong srcAddress) {
     return *cast<const jbyte*>(srcAddress);
 }
 
-extern "C" JNIEXPORT void JNICALL Java_com_android_i18n_timezone_internal_Memory_peekByteArray(JNIEnv* env, jclass, jlong srcAddress, jbyteArray dst, jint dstOffset, jint byteCount) {
+static void Memory_peekByteArray(JNIEnv* env, jclass, jlong srcAddress, jbyteArray dst, jint dstOffset, jint byteCount) {
     env->SetByteArrayRegion(dst, dstOffset, byteCount, cast<const jbyte*>(srcAddress));
 }
 
@@ -129,35 +120,35 @@ extern "C" JNIEXPORT void JNICALL Java_com_android_i18n_timezone_internal_Memory
     } \
 }
 
-extern "C" JNIEXPORT void JNICALL Java_com_android_i18n_timezone_internal_Memory_peekCharArray(JNIEnv* env, jclass, jlong srcAddress, jcharArray dst, jint dstOffset, jint count, jboolean swap) {
+static void Memory_peekCharArray(JNIEnv* env, jclass, jlong srcAddress, jcharArray dst, jint dstOffset, jint count, jboolean swap) {
     PEEKER(jchar, Char, jshort, swapShorts);
 }
 
-extern "C" JNIEXPORT void JNICALL Java_com_android_i18n_timezone_internal_Memory_peekDoubleArray(JNIEnv* env, jclass, jlong srcAddress, jdoubleArray dst, jint dstOffset, jint count, jboolean swap) {
+static void Memory_peekDoubleArray(JNIEnv* env, jclass, jlong srcAddress, jdoubleArray dst, jint dstOffset, jint count, jboolean swap) {
     PEEKER(jdouble, Double, jlong, swapLongs);
 }
 
-extern "C" JNIEXPORT void JNICALL Java_com_android_i18n_timezone_internal_Memory_peekFloatArray(JNIEnv* env, jclass, jlong srcAddress, jfloatArray dst, jint dstOffset, jint count, jboolean swap) {
+static void Memory_peekFloatArray(JNIEnv* env, jclass, jlong srcAddress, jfloatArray dst, jint dstOffset, jint count, jboolean swap) {
     PEEKER(jfloat, Float, jint, swapInts);
 }
 
-extern "C" JNIEXPORT void JNICALL Java_com_android_i18n_timezone_internal_Memory_peekIntArray(JNIEnv* env, jclass, jlong srcAddress, jintArray dst, jint dstOffset, jint count, jboolean swap) {
+static void Memory_peekIntArray(JNIEnv* env, jclass, jlong srcAddress, jintArray dst, jint dstOffset, jint count, jboolean swap) {
     PEEKER(jint, Int, jint, swapInts);
 }
 
-extern "C" JNIEXPORT void JNICALL Java_com_android_i18n_timezone_internal_Memory_peekLongArray(JNIEnv* env, jclass, jlong srcAddress, jlongArray dst, jint dstOffset, jint count, jboolean swap) {
+static void Memory_peekLongArray(JNIEnv* env, jclass, jlong srcAddress, jlongArray dst, jint dstOffset, jint count, jboolean swap) {
     PEEKER(jlong, Long, jlong, swapLongs);
 }
 
-extern "C" JNIEXPORT void JNICALL Java_com_android_i18n_timezone_internal_Memory_peekShortArray(JNIEnv* env, jclass, jlong srcAddress, jshortArray dst, jint dstOffset, jint count, jboolean swap) {
+static void Memory_peekShortArray(JNIEnv* env, jclass, jlong srcAddress, jshortArray dst, jint dstOffset, jint count, jboolean swap) {
     PEEKER(jshort, Short, jshort, swapShorts);
 }
 
-extern "C" JNIEXPORT void JNICALL Java_com_android_i18n_timezone_internal_Memory_pokeByte(JNIEnv*, jclass, jlong dstAddress, jbyte value) {
+static void Memory_pokeByte(JNIEnv*, jclass, jlong dstAddress, jbyte value) {
     *cast<jbyte*>(dstAddress) = value;
 }
 
-extern "C" JNIEXPORT void JNICALL Java_com_android_i18n_timezone_internal_Memory_pokeByteArray(JNIEnv* env, jclass, jlong dstAddress, jbyteArray src, jint offset, jint length) {
+static void Memory_pokeByteArray(JNIEnv* env, jclass, jlong dstAddress, jbyteArray src, jint offset, jint length) {
     env->GetByteArrayRegion(src, offset, length, cast<jbyte*>(dstAddress));
 }
 
@@ -181,79 +172,78 @@ extern "C" JNIEXPORT void JNICALL Java_com_android_i18n_timezone_internal_Memory
     } \
 }
 
-extern "C" JNIEXPORT void JNICALL Java_com_android_i18n_timezone_internal_Memory_pokeCharArray(JNIEnv* env, jclass, jlong dstAddress, jcharArray src, jint srcOffset, jint count, jboolean swap) {
+static void Memory_pokeCharArray(JNIEnv* env, jclass, jlong dstAddress, jcharArray src, jint srcOffset, jint count, jboolean swap) {
     POKER(jchar, Char, jshort, swapShorts);
 }
 
-extern "C" JNIEXPORT void JNICALL Java_com_android_i18n_timezone_internal_Memory_pokeDoubleArray(JNIEnv* env, jclass, jlong dstAddress, jdoubleArray src, jint srcOffset, jint count, jboolean swap) {
+static void Memory_pokeDoubleArray(JNIEnv* env, jclass, jlong dstAddress, jdoubleArray src, jint srcOffset, jint count, jboolean swap) {
     POKER(jdouble, Double, jlong, swapLongs);
 }
 
-extern "C" JNIEXPORT void JNICALL Java_com_android_i18n_timezone_internal_Memory_pokeFloatArray(JNIEnv* env, jclass, jlong dstAddress, jfloatArray src, jint srcOffset, jint count, jboolean swap) {
+static void Memory_pokeFloatArray(JNIEnv* env, jclass, jlong dstAddress, jfloatArray src, jint srcOffset, jint count, jboolean swap) {
     POKER(jfloat, Float, jint, swapInts);
 }
 
-extern "C" JNIEXPORT void JNICALL Java_com_android_i18n_timezone_internal_Memory_pokeIntArray(JNIEnv* env, jclass, jlong dstAddress, jintArray src, jint srcOffset, jint count, jboolean swap) {
+static void Memory_pokeIntArray(JNIEnv* env, jclass, jlong dstAddress, jintArray src, jint srcOffset, jint count, jboolean swap) {
     POKER(jint, Int, jint, swapInts);
 }
 
-extern "C" JNIEXPORT void JNICALL Java_com_android_i18n_timezone_internal_Memory_pokeLongArray(JNIEnv* env, jclass, jlong dstAddress, jlongArray src, jint srcOffset, jint count, jboolean swap) {
+static void Memory_pokeLongArray(JNIEnv* env, jclass, jlong dstAddress, jlongArray src, jint srcOffset, jint count, jboolean swap) {
     POKER(jlong, Long, jlong, swapLongs);
 }
 
-extern "C" JNIEXPORT void JNICALL Java_com_android_i18n_timezone_internal_Memory_pokeShortArray(JNIEnv* env, jclass, jlong dstAddress, jshortArray src, jint srcOffset, jint count, jboolean swap) {
+static void Memory_pokeShortArray(JNIEnv* env, jclass, jlong dstAddress, jshortArray src, jint srcOffset, jint count, jboolean swap) {
     POKER(jshort, Short, jshort, swapShorts);
 }
 
-extern "C" JNIEXPORT jshort JNICALL Java_com_android_i18n_timezone_internal_Memory_peekShortNative(JNIEnv*, jclass, jlong srcAddress) {
+static jshort Memory_peekShortNative(JNIEnv*, jclass, jlong srcAddress) {
     return get_unaligned<jshort>(cast<const jshort*>(srcAddress));
 }
 
-extern "C" JNIEXPORT void JNICALL Java_com_android_i18n_timezone_internal_Memory_pokeShortNative(JNIEnv*, jclass, jlong dstAddress, jshort value) {
+static void Memory_pokeShortNative(JNIEnv*, jclass, jlong dstAddress, jshort value) {
     put_unaligned<jshort>(cast<jshort*>(dstAddress), value);
 }
 
-extern "C" JNIEXPORT jint JNICALL Java_com_android_i18n_timezone_internal_Memory_peekIntNative(JNIEnv*, jclass, jlong srcAddress) {
+static jint Memory_peekIntNative(JNIEnv*, jclass, jlong srcAddress) {
     return get_unaligned<jint>(cast<const jint*>(srcAddress));
 }
 
-extern "C" JNIEXPORT void JNICALL Java_com_android_i18n_timezone_internal_Memory_pokeIntNative(JNIEnv*, jclass, jlong dstAddress, jint value) {
+static void Memory_pokeIntNative(JNIEnv*, jclass, jlong dstAddress, jint value) {
     put_unaligned<jint>(cast<jint*>(dstAddress), value);
 }
 
-extern "C" JNIEXPORT jlong JNICALL Java_com_android_i18n_timezone_internal_Memory_peekLongNative(JNIEnv*, jclass, jlong srcAddress) {
+static jlong Memory_peekLongNative(JNIEnv*, jclass, jlong srcAddress) {
     return get_unaligned<jlong>(cast<const jlong*>(srcAddress));
 }
 
-extern "C" JNIEXPORT void JNICALL Java_com_android_i18n_timezone_internal_Memory_pokeLongNative(JNIEnv*, jclass, jlong dstAddress, jlong value) {
+static void Memory_pokeLongNative(JNIEnv*, jclass, jlong dstAddress, jlong value) {
     put_unaligned<jlong>(cast<jlong*>(dstAddress), value);
 }
 
-// RoboVM Note: Using fully qualified JNI names
-//static JNINativeMethod gMethods[] = {
-//    FAST_NATIVE_METHOD(Memory, peekByte, "(J)B"),
-//    NATIVE_METHOD(Memory, peekByteArray, "(J[BII)V"),
-//    NATIVE_METHOD(Memory, peekCharArray, "(J[CIIZ)V"),
-//    NATIVE_METHOD(Memory, peekDoubleArray, "(J[DIIZ)V"),
-//    NATIVE_METHOD(Memory, peekFloatArray, "(J[FIIZ)V"),
-//    FAST_NATIVE_METHOD(Memory, peekIntNative, "(J)I"),
-//    NATIVE_METHOD(Memory, peekIntArray, "(J[IIIZ)V"),
-//    FAST_NATIVE_METHOD(Memory, peekLongNative, "(J)J"),
-//    NATIVE_METHOD(Memory, peekLongArray, "(J[JIIZ)V"),
-//    FAST_NATIVE_METHOD(Memory, peekShortNative, "(J)S"),
-//    NATIVE_METHOD(Memory, peekShortArray, "(J[SIIZ)V"),
-//    FAST_NATIVE_METHOD(Memory, pokeByte, "(JB)V"),
-//    NATIVE_METHOD(Memory, pokeByteArray, "(J[BII)V"),
-//    NATIVE_METHOD(Memory, pokeCharArray, "(J[CIIZ)V"),
-//    NATIVE_METHOD(Memory, pokeDoubleArray, "(J[DIIZ)V"),
-//    NATIVE_METHOD(Memory, pokeFloatArray, "(J[FIIZ)V"),
-//    FAST_NATIVE_METHOD(Memory, pokeIntNative, "(JI)V"),
-//    NATIVE_METHOD(Memory, pokeIntArray, "(J[IIIZ)V"),
-//    FAST_NATIVE_METHOD(Memory, pokeLongNative, "(JJ)V"),
-//    NATIVE_METHOD(Memory, pokeLongArray, "(J[JIIZ)V"),
-//    FAST_NATIVE_METHOD(Memory, pokeShortNative, "(JS)V"),
-//    NATIVE_METHOD(Memory, pokeShortArray, "(J[SIIZ)V"),
-//};
-//void register_com_android_i18n_timezone_internal_Memory(JNIEnv* env) {
-//    jniRegisterNativeMethods(env, "com/android/i18n/timezone/internal/Memory", gMethods, NELEM(gMethods));
-//}
+static JNINativeMethod gMethods[] = {
+    FAST_NATIVE_METHOD(Memory, peekByte, "(J)B"),
+    NATIVE_METHOD(Memory, peekByteArray, "(J[BII)V"),
+    NATIVE_METHOD(Memory, peekCharArray, "(J[CIIZ)V"),
+    NATIVE_METHOD(Memory, peekDoubleArray, "(J[DIIZ)V"),
+    NATIVE_METHOD(Memory, peekFloatArray, "(J[FIIZ)V"),
+    FAST_NATIVE_METHOD(Memory, peekIntNative, "(J)I"),
+    NATIVE_METHOD(Memory, peekIntArray, "(J[IIIZ)V"),
+    FAST_NATIVE_METHOD(Memory, peekLongNative, "(J)J"),
+    NATIVE_METHOD(Memory, peekLongArray, "(J[JIIZ)V"),
+    FAST_NATIVE_METHOD(Memory, peekShortNative, "(J)S"),
+    NATIVE_METHOD(Memory, peekShortArray, "(J[SIIZ)V"),
+    FAST_NATIVE_METHOD(Memory, pokeByte, "(JB)V"),
+    NATIVE_METHOD(Memory, pokeByteArray, "(J[BII)V"),
+    NATIVE_METHOD(Memory, pokeCharArray, "(J[CIIZ)V"),
+    NATIVE_METHOD(Memory, pokeDoubleArray, "(J[DIIZ)V"),
+    NATIVE_METHOD(Memory, pokeFloatArray, "(J[FIIZ)V"),
+    FAST_NATIVE_METHOD(Memory, pokeIntNative, "(JI)V"),
+    NATIVE_METHOD(Memory, pokeIntArray, "(J[IIIZ)V"),
+    FAST_NATIVE_METHOD(Memory, pokeLongNative, "(JJ)V"),
+    NATIVE_METHOD(Memory, pokeLongArray, "(J[JIIZ)V"),
+    FAST_NATIVE_METHOD(Memory, pokeShortNative, "(JS)V"),
+    NATIVE_METHOD(Memory, pokeShortArray, "(J[SIIZ)V"),
+};
+void register_com_android_i18n_timezone_internal_Memory(JNIEnv* env) {
+    jniRegisterNativeMethods(env, "com/android/i18n/timezone/internal/Memory", gMethods, NELEM(gMethods));
+}

@@ -67,10 +67,9 @@ void EnsureJniConstantsInitialized(JNIEnv* env) {
 
 }  // namespace
 
-// RoboVM note: commented out as clashes with implementation in luni/ojluni
-//void JniConstants::Initialize(JNIEnv* env) {
-//    EnsureJniConstantsInitialized(env);
-//}
+void JniConstants::Initialize(JNIEnv* env) {
+    EnsureJniConstantsInitialized(env);
+}
 
 jclass JniConstants::GetCharsetICUClass(JNIEnv* env) {
     EnsureJniConstantsInitialized(env);
@@ -82,18 +81,16 @@ jclass JniConstants::GetPatternSyntaxExceptionClass(JNIEnv* env) {
     return patternSyntaxExceptionClass;
 }
 
-// RoboVM note: commented out as clashes with implementation in luni/ojluni
-//jclass JniConstants::GetStringClass(JNIEnv* env) {
-//    EnsureJniConstantsInitialized(env);
-//    return stringClass;
-//}
+jclass JniConstants::GetStringClass(JNIEnv* env) {
+    EnsureJniConstantsInitialized(env);
+    return stringClass;
+}
 
-// RoboVM note: commented out as event is not going to happen
-//void JniConstants::Invalidate() {
-//    // Clean shutdown would require calling DeleteGlobalRef() for each of the
-//    // class references. However, JavaVM can't be used for cleanup during
-//    // JNI_OnUnload because ART only calls this once all threads are
-//    // unregistered.
-//    std::lock_guard guard(g_constants_mutex);
-//    g_constants_valid = false;
-//}
+void JniConstants::Invalidate() {
+    // Clean shutdown would require calling DeleteGlobalRef() for each of the
+    // class references. However, JavaVM can't be used for cleanup during
+    // JNI_OnUnload because ART only calls this once all threads are
+    // unregistered.
+    std::lock_guard guard(g_constants_mutex);
+    g_constants_valid = false;
+}

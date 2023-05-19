@@ -22,12 +22,11 @@
  * A cache to avoid calling FindClass at runtime.
  */
 struct JniConstants {
-// RoboVM note: commented out as clashes with implementation in luni/ojluni
-//    // Initialized cached heap objects. This should be called in JNI_OnLoad.
-//    static void Initialize(JNIEnv* env);
-//
-//    // Invalidate cached heap objects. This should be called in JNI_OnUnload.
-//    static void Invalidate();
+    // Initialized cached heap objects. This should be called in JNI_OnLoad.
+    static void Initialize(JNIEnv* env);
+
+    // Invalidate cached heap objects. This should be called in JNI_OnUnload.
+    static void Invalidate();
 
     static jclass GetCharsetICUClass(JNIEnv* env);
     static jclass GetPatternSyntaxExceptionClass(JNIEnv* env);

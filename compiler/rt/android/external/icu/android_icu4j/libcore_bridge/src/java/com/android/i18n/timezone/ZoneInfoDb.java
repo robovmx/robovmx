@@ -26,7 +26,6 @@ import dalvik.annotation.optimization.ReachabilitySensitive;
 import libcore.util.NonNull;
 import libcore.util.Nullable;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -44,75 +43,12 @@ import java.util.List;
 @libcore.api.CorePlatformApi
 @libcore.api.IntraCoreApi
 public final class ZoneInfoDb {
-  // RoboVM note: implementation specific delegate, android code moved to TzDataAndroid
-  private final TzData delegate;
-
-  // RoboVM note: Decide whether we should use Android's TzData impl or RoboVM's.
-  private static final ZoneInfoDb DATA;
-  static {
-    if (TzDataAndroid.hasData())
-      DATA = new ZoneInfoDb(TzDataAndroid.loadTzData());
-    else
-      DATA = new ZoneInfoDb(new TzDataRoboVM());
-  }
-
-  ZoneInfoDb(TzData delegate) {
-    this.delegate = delegate;
-  }
-
-
-  /**
-   * Obtains the singleton instance.
-   *
-   * @hide
-   */
-  @libcore.api.CorePlatformApi
-  @libcore.api.IntraCoreApi
-  public static @NonNull ZoneInfoDb getInstance() {
-    return DATA;
-  }
-
-  @libcore.api.CorePlatformApi
-  @libcore.api.IntraCoreApi
-  public @Nullable ZoneInfoData makeZoneInfoData(@NonNull String id) {
-    return delegate.makeZoneInfoData(id);
-  }
-
-  @libcore.api.IntraCoreApi
-  public @NonNull String @NonNull[] getAvailableIDs() {
-    return delegate.getAvailableIDs();
-  }
-
-  @libcore.api.IntraCoreApi
-  public @NonNull String @NonNull[] getAvailableIDs(int rawUtcOffset) {
-    return delegate.getAvailableIDs(rawUtcOffset);
-  }
-
-  @libcore.api.CorePlatformApi
-  public @NonNull String getVersion() {
-    return delegate.getVersion();
-  }
-
-  public @Nullable String getDefaultID() {
-    return delegate.getDefaultID();
-  }
-}
-
-// RoboVM note: Made TzData an interface so that we can decide which
-// implementation to use at runtime.
-interface TzData {
-  @Nullable ZoneInfoData makeZoneInfoData(@NonNull String id);
-  @NonNull String @NonNull[] getAvailableIDs();
-  @NonNull String @NonNull[] getAvailableIDs(int rawUtcOffset);
-  @NonNull String getVersion();
-  // RoboVM Note: added to provide default time zone id
-  @Nullable String getDefaultID();
-}
-
-class TzDataAndroid implements TzData {
 
   // VisibleForTesting
   public static final String TZDATA_FILE_NAME = "tzdata";
+
+  private static final ZoneInfoDb DATA = ZoneInfoDb.loadTzDataWithFallback(
+          TimeZoneDataFiles.getTimeZoneFilePaths(TZDATA_FILE_NAME));
 
   // The database reserves 40 bytes for each id.
   private static final int SIZEOF_TZNAME = 40;
@@ -160,30 +96,25 @@ class TzDataAndroid implements TzData {
   private final static int CACHE_SIZE = 1;
   private final BasicLruCache<String, ZoneInfoData> cache =
           new BasicLruCache<String, ZoneInfoData>(CACHE_SIZE) {
-            @Override
-            protected ZoneInfoData create(String id) {
-              try {
-                return makeZoneInfoDataUncached(id);
-              } catch (IOException e) {
-                throw new IllegalStateException("Unable to load timezone for ID=" + id, e);
-              }
-            }
-          };
-
-  // RoboVM Note: added wrapper
-  public static TzDataAndroid loadTzData() {
-    return TzDataAndroid.loadTzDataWithFallback(TimeZoneDataFiles.getTimeZoneFilePaths(TZDATA_FILE_NAME));
-  }
-
-  // RoboVM Note: added helper
-  public static boolean hasData() {
-    String[] timeZoneFilePaths = TimeZoneDataFiles.getTimeZoneFilePaths(TZDATA_FILE_NAME);
-    for (String zoneFileName: timeZoneFilePaths) {
-      File f = new File(zoneFileName);
-      if (f.exists() && f.isFile())
-        return true;
+    @Override
+    protected ZoneInfoData create(String id) {
+      try {
+        return makeZoneInfoDataUncached(id);
+      } catch (IOException e) {
+        throw new IllegalStateException("Unable to load timezone for ID=" + id, e);
+      }
     }
-    return false;
+  };
+
+  /**
+   * Obtains the singleton instance.
+   *
+   * @hide
+   */
+  @libcore.api.CorePlatformApi
+  @libcore.api.IntraCoreApi
+  public static @NonNull ZoneInfoDb getInstance() {
+    return DATA;
   }
 
   /**
@@ -191,9 +122,9 @@ class TzDataAndroid implements TzData {
    * {@link ZoneInfoDb} object. If there is no valid one found a basic fallback instance is created
    * containing just GMT.
    */
-  public static TzDataAndroid loadTzDataWithFallback(String... paths) {
+  public static ZoneInfoDb loadTzDataWithFallback(String... paths) {
     for (String path : paths) {
-      TzDataAndroid tzData = new TzDataAndroid();
+      ZoneInfoDb tzData = new ZoneInfoDb();
       if (tzData.loadData(path)) {
         return tzData;
       }
@@ -203,7 +134,7 @@ class TzDataAndroid implements TzData {
     // This is actually implemented in TimeZone itself, so if this is the only time zone
     // we report, we won't be asked any more questions.
     // !! System.logE("Couldn't find any " + TZDATA_FILE_NAME + " file!");
-    return TzDataAndroid.createFallback();
+    return ZoneInfoDb.createFallback();
   }
 
   /**
@@ -211,18 +142,21 @@ class TzDataAndroid implements TzData {
    * otherwise {@code null}.
    */
   // VisibleForTesting
-  public static TzDataAndroid loadTzData(String path) {
-    TzDataAndroid tzData = new TzDataAndroid();
+  public static ZoneInfoDb loadTzData(String path) {
+    ZoneInfoDb tzData = new ZoneInfoDb();
     if (tzData.loadData(path)) {
       return tzData;
     }
     return null;
   }
 
-  private static TzDataAndroid createFallback() {
-    TzDataAndroid tzData = new TzDataAndroid();
+  private static ZoneInfoDb createFallback() {
+    ZoneInfoDb tzData = new ZoneInfoDb();
     tzData.populateFallback();
     return tzData;
+  }
+
+  private ZoneInfoDb() {
   }
 
   /**
@@ -363,7 +297,7 @@ class TzDataAndroid implements TzData {
    */
   @libcore.api.CorePlatformApi
   public static void validateTzData(@NonNull String path) throws IOException {
-    TzDataAndroid tzData = TzDataAndroid.loadTzData(path);
+    ZoneInfoDb tzData = ZoneInfoDb.loadTzData(path);
     if (tzData == null) {
       throw new IOException("failed to read tzData at " + path);
     }
@@ -506,10 +440,5 @@ class TzDataAndroid implements TzData {
     } finally {
       super.finalize();
     }
-  }
-
-  @Override
-  public String getDefaultID() {
-    return null;
   }
 }

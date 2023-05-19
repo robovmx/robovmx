@@ -30,26 +30,26 @@ static jstring versionString(JNIEnv* env, const UVersionInfo& version) {
     return env->NewStringUTF(versionString);
 }
 
-extern "C" JNIEXPORT jstring JNICALL Java_com_android_icu_util_Icu4cMetadata_getCldrVersion(JNIEnv* env, jclass) {
+static jstring Icu4cMetadata_getCldrVersion(JNIEnv* env, jclass) {
     UErrorCode status = U_ZERO_ERROR;
     UVersionInfo cldrVersion;
     ulocdata_getCLDRVersion(cldrVersion, &status);
     return versionString(env, cldrVersion);
 }
 
-extern "C" JNIEXPORT jstring JNICALL Java_com_android_icu_util_Icu4cMetadata_getIcuVersion(JNIEnv* env, jclass) {
+static jstring Icu4cMetadata_getIcuVersion(JNIEnv* env, jclass) {
     UVersionInfo icuVersion;
     u_getVersion(icuVersion);
     return versionString(env, icuVersion);
 }
 
-extern "C" JNIEXPORT jstring JNICALL Java_com_android_icu_util_Icu4cMetadata_getUnicodeVersion(JNIEnv* env, jclass) {
+static jstring Icu4cMetadata_getUnicodeVersion(JNIEnv* env, jclass) {
     UVersionInfo unicodeVersion;
     u_getUnicodeVersion(unicodeVersion);
     return versionString(env, unicodeVersion);
 }
 
-extern "C" JNIEXPORT jstring JNICALL Java_com_android_icu_util_Icu4cMetadata_getTzdbVersion(JNIEnv* env, jclass) {
+static jstring Icu4cMetadata_getTzdbVersion(JNIEnv* env, jclass) {
    UErrorCode status = U_ZERO_ERROR;
    const char* version = icu::TimeZone::getTZDataVersion(status);
    if (maybeThrowIcuException(env, "icu::TimeZone::getTZDataVersion", status)) {
@@ -58,14 +58,13 @@ extern "C" JNIEXPORT jstring JNICALL Java_com_android_icu_util_Icu4cMetadata_get
    return env->NewStringUTF(version);
 }
 
-// RoboVM Note: Using fully qualified JNI names
-//static JNINativeMethod gMethods[] = {
-//    NATIVE_METHOD(Icu4cMetadata, getCldrVersion, "()Ljava/lang/String;"),
-//    NATIVE_METHOD(Icu4cMetadata, getIcuVersion, "()Ljava/lang/String;"),
-//    NATIVE_METHOD(Icu4cMetadata, getUnicodeVersion, "()Ljava/lang/String;"),
-//    NATIVE_METHOD(Icu4cMetadata, getTzdbVersion, "()Ljava/lang/String;"),
-//};
-//
-//void register_com_android_icu_util_Icu4cMetadata(JNIEnv* env) {
-//    jniRegisterNativeMethods(env, "com/android/icu/util/Icu4cMetadata", gMethods, NELEM(gMethods));
-//}
+static JNINativeMethod gMethods[] = {
+    NATIVE_METHOD(Icu4cMetadata, getCldrVersion, "()Ljava/lang/String;"),
+    NATIVE_METHOD(Icu4cMetadata, getIcuVersion, "()Ljava/lang/String;"),
+    NATIVE_METHOD(Icu4cMetadata, getUnicodeVersion, "()Ljava/lang/String;"),
+    NATIVE_METHOD(Icu4cMetadata, getTzdbVersion, "()Ljava/lang/String;"),
+};
+
+void register_com_android_icu_util_Icu4cMetadata(JNIEnv* env) {
+    jniRegisterNativeMethods(env, "com/android/icu/util/Icu4cMetadata", gMethods, NELEM(gMethods));
+}
