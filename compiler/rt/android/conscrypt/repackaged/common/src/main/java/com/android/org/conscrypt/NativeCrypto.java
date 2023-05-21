@@ -57,13 +57,17 @@ import javax.security.auth.x500.X500Principal;
  * @hide This class is not part of the Android public SDK API
  */
 @Internal
+// RoboVM note: there is indirect usage in JNI, to reduce forceLinkClass entries
+@org.robovm.rt.annotation.ForceLinkClass(ConscryptForceLinkClasses.class)
 public final class NativeCrypto {
     // --- OpenSSL library initialization --------------------------------------
     private static final UnsatisfiedLinkError loadError;
     static {
         UnsatisfiedLinkError error = null;
         try {
-            NativeCryptoJni.init();
+            // RoboVM Note: library is statically linked, just call onload()
+            onload();
+//            NativeCryptoJni.init();
             clinit();
         } catch (UnsatisfiedLinkError t) {
             // Don't rethrow the error, so that we can later on interrogate the
@@ -73,6 +77,8 @@ public final class NativeCrypto {
         loadError = error;
     }
 
+    // RoboVM Note: added onload() for initialization
+    private native static void onload();
     private native static void clinit();
 
     /**
