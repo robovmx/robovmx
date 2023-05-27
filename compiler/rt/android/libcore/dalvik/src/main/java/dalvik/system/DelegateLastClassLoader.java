@@ -11,7 +11,7 @@
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
- * limitations under the License
+ * limitations under the License.
  */
 
 package dalvik.system;
@@ -132,12 +132,47 @@ public final class DelegateLastClassLoader extends PathClassLoader {
      *
      * @hide
      */
-    @libcore.api.CorePlatformApi(status = libcore.api.CorePlatformApi.Status.STABLE)
     @SystemApi(client = MODULE_LIBRARIES)
     public DelegateLastClassLoader(
             String dexPath, String librarySearchPath, ClassLoader parent,
             ClassLoader[] sharedLibraryLoaders) {
-        super(dexPath, librarySearchPath, parent, sharedLibraryLoaders);
+        this(dexPath, librarySearchPath, parent, sharedLibraryLoaders, null);
+    }
+
+    /**
+     * Creates a {@code DelegateLastClassLoader} that operates on a given {@code dexPath}
+     * and a {@code librarySearchPath}.
+     *
+     * The {@code dexPath} should consist of one or more of the following, separated by
+     * {@code File.pathSeparator}, which is {@code ":"} on Android.
+     *
+     * <ul>
+     * <li>JAR/ZIP/APK files, possibly containing a "classes.dex" file as well as arbitrary
+     * resources.
+     * <li>Raw ".dex" files (not inside a zip file).
+     * </ul>
+     *
+     * @param dexPath the list of jar/apk files containing classes and resources, delimited by
+     *                {@code File.pathSeparator}, which defaults to {@code ":"} on Android.
+     * @param librarySearchPath the list of directories containing native libraries, delimited
+     *                          by {@code File.pathSeparator}; may be {@code null}.
+     * @param parent the parent class loader. May be {@code null} for the boot classloader.
+     * @param sharedLibraryLoaders class loaders of Java shared libraries
+     *                             used by this new class loader. The shared library loaders are
+     *                             always checked before the {@code dexPath} when looking
+     *                             up classes and resources.
+     * @param sharedLibraryLoadersAfter class loaders of Java shared libraries
+     *                             used by this new class loader. These shared library loaders are
+     *                             always checked <b>after</b> the {@code dexPath} when looking
+     *                             up classes and resources.
+     *
+     * @hide
+     */
+    @SystemApi(client = MODULE_LIBRARIES)
+    public DelegateLastClassLoader(
+            String dexPath, String librarySearchPath, ClassLoader parent,
+            ClassLoader[] sharedLibraryLoaders, ClassLoader[] sharedLibraryLoadersAfter) {
+        super(dexPath, librarySearchPath, parent, sharedLibraryLoaders, sharedLibraryLoadersAfter);
         // Delegating is the default behavior.
         this.delegateResourceLoading = true;
     }

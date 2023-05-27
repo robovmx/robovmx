@@ -27,6 +27,7 @@
 package java.nio;
 
 import java.io.FileDescriptor;
+import java.util.Objects;
 
 import dalvik.system.VMRuntime;
 import libcore.io.Memory;
@@ -154,9 +155,9 @@ public class DirectByteBuffer extends MappedByteBuffer implements DirectBuffer {
     }
 
     @Override
-    public final ByteBuffer slice() {
+    public final MappedByteBuffer slice() {
         if (!memoryRef.isAccessible) {
-            throw new IllegalStateException("buffer is inaccessible");
+        throw new IllegalStateException("buffer is inaccessible");
         }
         int pos = position();
         int lim = limit();
@@ -168,7 +169,22 @@ public class DirectByteBuffer extends MappedByteBuffer implements DirectBuffer {
     }
 
     @Override
-    public final ByteBuffer duplicate() {
+    public final MappedByteBuffer slice(int index, int length) {
+        if (!memoryRef.isAccessible) {
+            throw new IllegalStateException("buffer is inaccessible");
+        }
+        Objects.checkFromIndexSize(index, length, limit());
+        return new DirectByteBuffer(memoryRef,
+                                              -1,
+                                              0,
+                                              length,
+                                              length,
+                                              index << 0,
+                                              isReadOnly);
+    }
+
+    @Override
+    public final MappedByteBuffer duplicate() {
         if (memoryRef.isFreed) {
             throw new IllegalStateException("buffer has been freed");
         }

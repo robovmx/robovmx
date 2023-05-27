@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012, 2019, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -81,7 +81,6 @@ import java.time.temporal.TemporalAdjusters;
 import java.time.temporal.TemporalField;
 import java.time.temporal.UnsupportedTemporalTypeException;
 import java.time.temporal.ValueRange;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
@@ -143,6 +142,7 @@ public final class JapaneseChronology extends AbstractChronology implements Seri
     /**
      * Serialization version.
      */
+    @java.io.Serial
     private static final long serialVersionUID = 459996390165777884L;
 
     //-----------------------------------------------------------------------
@@ -209,10 +209,11 @@ public final class JapaneseChronology extends AbstractChronology implements Seri
      */
     @Override
     public JapaneseDate date(Era era, int yearOfEra, int month, int dayOfMonth) {
-        if (era instanceof JapaneseEra == false) {
+        if (!(era instanceof JapaneseEra)) {
             throw new ClassCastException("Era must be JapaneseEra");
         }
-        return JapaneseDate.of((JapaneseEra) era, yearOfEra, month, dayOfMonth);
+        JapaneseEra jera = (JapaneseEra) era;
+        return JapaneseDate.of(jera, yearOfEra, month, dayOfMonth);
     }
 
     /**
@@ -386,7 +387,7 @@ public final class JapaneseChronology extends AbstractChronology implements Seri
 
     @Override
     public List<Era> eras() {
-        return Arrays.<Era>asList(JapaneseEra.values());
+        return List.of(JapaneseEra.values());
     }
 
     JapaneseEra getCurrentEra() {
@@ -469,38 +470,38 @@ public final class JapaneseChronology extends AbstractChronology implements Seri
         return era.getPrivateEra().getSinceDate().getYear() + yearOfEra - 1;
     }
 
-     private ChronoLocalDate resolveYMD(JapaneseEra era, int yoe, Map<TemporalField,Long> fieldValues, ResolverStyle resolverStyle) {
-         fieldValues.remove(ERA);
-         fieldValues.remove(YEAR_OF_ERA);
-         if (resolverStyle == ResolverStyle.LENIENT) {
-             int y = prolepticYearLenient(era, yoe);
-             long months = Math.subtractExact(fieldValues.remove(MONTH_OF_YEAR), 1);
-             long days = Math.subtractExact(fieldValues.remove(DAY_OF_MONTH), 1);
-             return date(y, 1, 1).plus(months, MONTHS).plus(days, DAYS);
-         }
-         int moy = range(MONTH_OF_YEAR).checkValidIntValue(fieldValues.remove(MONTH_OF_YEAR), MONTH_OF_YEAR);
-         int dom = range(DAY_OF_MONTH).checkValidIntValue(fieldValues.remove(DAY_OF_MONTH), DAY_OF_MONTH);
-         if (resolverStyle == ResolverStyle.SMART) {  // previous valid
-             if (yoe < 1) {
-                 throw new DateTimeException("Invalid YearOfEra: " + yoe);
-             }
-             int y = prolepticYearLenient(era, yoe);
-             JapaneseDate result;
-             try {
-                 result = date(y, moy, dom);
-             } catch (DateTimeException ex) {
-                 result = date(y, moy, 1).with(TemporalAdjusters.lastDayOfMonth());
-             }
-             // handle the era being changed
-             // only allow if the new date is in the same Jan-Dec as the era change
-             // determine by ensuring either original yoe or result yoe is 1
-             if (result.getEra() != era && result.get(YEAR_OF_ERA) > 1 && yoe > 1) {
-                 throw new DateTimeException("Invalid YearOfEra for Era: " + era + " " + yoe);
-             }
-             return result;
-         }
-         return date(era, yoe, moy, dom);
-     }
+    private ChronoLocalDate resolveYMD(JapaneseEra era, int yoe, Map<TemporalField,Long> fieldValues, ResolverStyle resolverStyle) {
+        fieldValues.remove(ERA);
+        fieldValues.remove(YEAR_OF_ERA);
+        if (resolverStyle == ResolverStyle.LENIENT) {
+            int y = prolepticYearLenient(era, yoe);
+            long months = Math.subtractExact(fieldValues.remove(MONTH_OF_YEAR), 1);
+            long days = Math.subtractExact(fieldValues.remove(DAY_OF_MONTH), 1);
+            return date(y, 1, 1).plus(months, MONTHS).plus(days, DAYS);
+        }
+        int moy = range(MONTH_OF_YEAR).checkValidIntValue(fieldValues.remove(MONTH_OF_YEAR), MONTH_OF_YEAR);
+        int dom = range(DAY_OF_MONTH).checkValidIntValue(fieldValues.remove(DAY_OF_MONTH), DAY_OF_MONTH);
+        if (resolverStyle == ResolverStyle.SMART) {  // previous valid
+            if (yoe < 1) {
+                throw new DateTimeException("Invalid YearOfEra: " + yoe);
+            }
+            int y = prolepticYearLenient(era, yoe);
+            JapaneseDate result;
+            try {
+                result = date(y, moy, dom);
+            } catch (DateTimeException ex) {
+                result = date(y, moy, 1).with(TemporalAdjusters.lastDayOfMonth());
+            }
+            // handle the era being changed
+            // only allow if the new date is in the same Jan-Dec as the era change
+            // determine by ensuring either original yoe or result yoe is 1
+            if (result.getEra() != era && result.get(YEAR_OF_ERA) > 1 && yoe > 1) {
+                throw new DateTimeException("Invalid YearOfEra for Era: " + era + " " + yoe);
+            }
+            return result;
+        }
+        return date(era, yoe, moy, dom);
+    }
 
     private ChronoLocalDate resolveYD(JapaneseEra era, int yoe, Map <TemporalField,Long> fieldValues, ResolverStyle resolverStyle) {
         fieldValues.remove(ERA);
@@ -517,7 +518,7 @@ public final class JapaneseChronology extends AbstractChronology implements Seri
     //-----------------------------------------------------------------------
     /**
      * Writes the Chronology using a
-     * <a href="../../../serialized-form.html#java.time.chrono.Ser">dedicated serialized form</a>.
+     * <a href="{@docRoot}/serialized-form.html#java.time.chrono.Ser">dedicated serialized form</a>.
      * @serialData
      * <pre>
      *  out.writeByte(1);     // identifies a Chronology
@@ -527,6 +528,7 @@ public final class JapaneseChronology extends AbstractChronology implements Seri
      * @return the instance of {@code Ser}, not null
      */
     @Override
+    @java.io.Serial
     Object writeReplace() {
         return super.writeReplace();
     }
@@ -537,6 +539,7 @@ public final class JapaneseChronology extends AbstractChronology implements Seri
      * @param s the stream to read
      * @throws InvalidObjectException always
      */
+    @java.io.Serial
     private void readObject(ObjectInputStream s) throws InvalidObjectException {
         throw new InvalidObjectException("Deserialization via serialization delegate");
     }

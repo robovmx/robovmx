@@ -1,18 +1,18 @@
 /*
- *  Licensed to the Apache Software Foundation (ASF) under one or more
- *  contributor license agreements.  See the NOTICE file distributed with
- *  this work for additional information regarding copyright ownership.
- *  The ASF licenses this file to You under the Apache License, Version 2.0
- *  (the "License"); you may not use this file except in compliance with
- *  the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package libcore.io;
@@ -26,7 +26,6 @@ import java.nio.ByteOrder;
 
 import dalvik.annotation.optimization.FastNative;
 
-import libcore.api.CorePlatformApi;
 import libcore.util.NonNull;
 
 /**
@@ -34,7 +33,6 @@ import libcore.util.NonNull;
  *
  * @hide
  */
-@CorePlatformApi(status = CorePlatformApi.Status.STABLE)
 @SystemApi(client = MODULE_LIBRARIES)
 public final class Memory {
     private Memory() { }
@@ -67,7 +65,6 @@ public final class Memory {
      *
      * @hide
      */
-    @CorePlatformApi(status = CorePlatformApi.Status.STABLE)
     @SystemApi(client = MODULE_LIBRARIES)
     public static int peekInt(@NonNull byte[] src, int offset, @NonNull ByteOrder order) {
         if (order == ByteOrder.BIG_ENDIAN) {
@@ -121,7 +118,6 @@ public final class Memory {
      *
      * @hide
      */
-    @CorePlatformApi(status = CorePlatformApi.Status.STABLE)
     @SystemApi(client = MODULE_LIBRARIES)
     public static short peekShort(@NonNull byte[] src, int offset, @NonNull ByteOrder order) {
         if (order == ByteOrder.BIG_ENDIAN) {
@@ -142,7 +138,6 @@ public final class Memory {
      *
      * @hide
      */
-    @CorePlatformApi(status = CorePlatformApi.Status.STABLE)
     @SystemApi(client = MODULE_LIBRARIES)
     public static void pokeInt(@NonNull byte[] dst, int offset, int value, @NonNull ByteOrder order) {
         if (order == ByteOrder.BIG_ENDIAN) {
@@ -169,7 +164,6 @@ public final class Memory {
      *
      * @hide
      */
-    @CorePlatformApi(status = CorePlatformApi.Status.STABLE)
     @SystemApi(client = MODULE_LIBRARIES)
     public static void pokeLong(@NonNull byte[] dst, int offset, long value, @NonNull ByteOrder order) {
         if (order == ByteOrder.BIG_ENDIAN) {
@@ -208,7 +202,6 @@ public final class Memory {
      *
      * @hide
      */
-    @CorePlatformApi(status = CorePlatformApi.Status.STABLE)
     @SystemApi(client = MODULE_LIBRARIES)
     public static void pokeShort(@NonNull byte[] dst, int offset, short value, @NonNull ByteOrder order) {
         if (order == ByteOrder.BIG_ENDIAN) {
@@ -239,7 +232,6 @@ public final class Memory {
      *
      * @hide make type-safe before making public?
      */
-    @CorePlatformApi(status = CorePlatformApi.Status.STABLE)
     @SystemApi(client = MODULE_LIBRARIES)
     public static native void memmove(@NonNull Object dstObject, int dstOffset, @NonNull Object srcObject, int srcOffset, long byteCount);
 
@@ -295,36 +287,43 @@ public final class Memory {
      * @hide
      */
     @UnsupportedAppUsage
+    @FastNative
     public static native void peekByteArray(long address, byte[] dst, int dstOffset, int byteCount);
 
     /**
      * @hide
      */
+    @FastNative
     public static native void peekCharArray(long address, char[] dst, int dstOffset, int charCount, boolean swap);
 
     /**
      * @hide
      */
+    @FastNative
     public static native void peekDoubleArray(long address, double[] dst, int dstOffset, int doubleCount, boolean swap);
 
     /**
      * @hide
      */
+    @FastNative
     public static native void peekFloatArray(long address, float[] dst, int dstOffset, int floatCount, boolean swap);
 
     /**
      * @hide
      */
+    @FastNative
     public static native void peekIntArray(long address, int[] dst, int dstOffset, int intCount, boolean swap);
 
     /**
      * @hide
      */
+    @FastNative
     public static native void peekLongArray(long address, long[] dst, int dstOffset, int longCount, boolean swap);
 
     /**
      * @hide
      */
+    @FastNative
     public static native void peekShortArray(long address, short[] dst, int dstOffset, int shortCount, boolean swap);
 
     /**

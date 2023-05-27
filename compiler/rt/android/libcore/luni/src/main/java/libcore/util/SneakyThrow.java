@@ -11,7 +11,7 @@
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
- * limitations under the License
+ * limitations under the License.
  */
 
 package libcore.util;
@@ -30,7 +30,6 @@ import android.annotation.SystemApi;
  * @hide
  */
 @SystemApi(client = MODULE_LIBRARIES)
-@libcore.api.CorePlatformApi(status = libcore.api.CorePlatformApi.Status.STABLE)
 public class SneakyThrow {
 
     private SneakyThrow() {
@@ -45,7 +44,6 @@ public class SneakyThrow {
      * @hide
      */
     @SystemApi(client = MODULE_LIBRARIES)
-    @libcore.api.CorePlatformApi(status = libcore.api.CorePlatformApi.Status.STABLE)
     public static void sneakyThrow(@NonNull Throwable t) {
         SneakyThrow.<RuntimeException>sneakyThrow_(t);
     }

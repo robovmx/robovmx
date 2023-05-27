@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012, 2017, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -41,7 +41,7 @@ import java.util.Spliterator;
  * contexts:
  *
  * <div>
- * <table>
+ * <table class="borderless">
  *   <caption>Type Characteristics</caption>
  *   <thead class="tableSubHeadingColor">
  *     <tr>
@@ -115,7 +115,7 @@ import java.util.Spliterator;
  * characteristics that stream has; when describing a stream operation, one need
  * describe whether the operation preserves, injects, or clears that
  * characteristic.  Accordingly, two bits are used for each flag, so as to allow
- * representing not only the presence of of a characteristic, but how an
+ * representing not only the presence of a characteristic, but how an
  * operation modifies that characteristic.  There are two common forms in which
  * flag bits are combined into an {@code int} bit set.  <em>Stream flags</em>
  * are a unioned bit set constructed by ORing the enum characteristic values of
@@ -327,12 +327,24 @@ public enum StreamOpFlag {
      */
     // 12, 0x01000000
     SHORT_CIRCUIT(12,
-                  set(Type.OP).set(Type.TERMINAL_OP));
+                  set(Type.OP).set(Type.TERMINAL_OP)),
+
+    /**
+     * Characteristic value signifying that an operation may adjust the
+     * total size of the stream.
+     * <p>
+     * The flag, if present, is only valid when SIZED is present;
+     * and is only valid for sequential streams.
+     * <p>
+     * An intermediate operation can preserve or inject this value.
+     */
+    // 13, 0x04000000
+    SIZE_ADJUSTING(13,
+                   set(Type.OP));
 
     // The following 2 flags are currently undefined and a free for any further
     // stream flags if/when required
     //
-    // 13, 0x04000000
     // 14, 0x10000000
     // 15, 0x40000000
 
@@ -652,6 +664,12 @@ public enum StreamOpFlag {
      */
     // Android-changed: Made public for CTS tests only.
     public static final int IS_SHORT_CIRCUIT = SHORT_CIRCUIT.set;
+
+    /**
+     * The bit value to inject {@link #SIZE_ADJUSTING}.
+     */
+    // Android-changed: Made public for CTS tests only.
+    public static final int IS_SIZE_ADJUSTING = SIZE_ADJUSTING.set;
 
     private static int getMask(int flags) {
         return (flags == 0)

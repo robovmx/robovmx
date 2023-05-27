@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1999, 2021, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -145,7 +145,6 @@ class MutableBigInteger {
      * Makes this number an {@code n}-int number all of whose bits are ones.
      * Used by Burnikel-Ziegler division.
      * @param n number of ints in the {@code value} array
-     * @return a number equal to {@code ((1<<(32*n)))-1}
      */
     private void ones(int n) {
         if (n > value.length)
@@ -160,8 +159,14 @@ class MutableBigInteger {
      * supposed to modify the returned array.
      */
     private int[] getMagnitudeArray() {
-        if (offset > 0 || value.length != intLen)
-            return Arrays.copyOfRange(value, offset, offset + intLen);
+        if (offset > 0 || value.length != intLen) {
+            // Shrink value to be the total magnitude
+            int[] tmp = Arrays.copyOfRange(value, offset, offset + intLen);
+            Arrays.fill(value, 0);
+            offset = 0;
+            intLen = tmp.length;
+            value = tmp;
+        }
         return value;
     }
 
@@ -254,7 +259,7 @@ class MutableBigInteger {
     /**
      * Compare the magnitude of two MutableBigIntegers. Returns -1, 0 or 1
      * as this MutableBigInteger is numerically less than, equal to, or
-     * greater than <tt>b</tt>.
+     * greater than {@code b}.
      */
     final int compare(MutableBigInteger b) {
         int blen = b.intLen;
@@ -1074,7 +1079,7 @@ class MutableBigInteger {
         z.value = zval;
     }
 
-     /**
+    /**
      * This method is used for division of an n word dividend by a one word
      * divisor. The quotient is placed into quotient. The one word divisor is
      * specified by divisor.
@@ -1167,7 +1172,7 @@ class MutableBigInteger {
      * Calculates the quotient of this div b and places the quotient in the
      * provided MutableBigInteger objects and the remainder object is returned.
      *
-     * Uses Algorithm D in Knuth section 4.3.1.
+     * Uses Algorithm D from Knuth TAOCP Vol. 2, 3rd edition, section 4.3.1.
      * Many optimizations to that algorithm have been adapted from the Colin
      * Plumb C library.
      * It special cases one word divisors for speed. The content of b is not
@@ -1867,6 +1872,96 @@ class MutableBigInteger {
     }
 
     /**
+     * Calculate the integer square root {@code floor(sqrt(this))} where
+     * {@code sqrt(.)} denotes the mathematical square root. The contents of
+     * {@code this} are <b>not</b> changed. The value of {@code this} is assumed
+     * to be non-negative.
+     *
+     * @implNote The implementation is based on the material in Henry S. Warren,
+     * Jr., <i>Hacker's Delight (2nd ed.)</i> (Addison Wesley, 2013), 279-282.
+     *
+     * @throws ArithmeticException if the value returned by {@code bitLength()}
+     * overflows the range of {@code int}.
+     * @return the integer square root of {@code this}
+     * @since 9
+     */
+    MutableBigInteger sqrt() {
+        // Special cases.
+        if (this.isZero()) {
+            return new MutableBigInteger(0);
+        } else if (this.value.length == 1
+                && (this.value[0] & LONG_MASK) < 4) { // result is unity
+            return ONE;
+        }
+
+        if (bitLength() <= 63) {
+            // Initial estimate is the square root of the positive long value.
+            long v = new BigInteger(this.value, 1).longValueExact();
+            long xk = (long)Math.floor(Math.sqrt(v));
+
+            // Refine the estimate.
+            do {
+                long xk1 = (xk + v/xk)/2;
+
+                // Terminate when non-decreasing.
+                if (xk1 >= xk) {
+                    return new MutableBigInteger(new int[] {
+                        (int)(xk >>> 32), (int)(xk & LONG_MASK)
+                    });
+                }
+
+                xk = xk1;
+            } while (true);
+        } else {
+            // Set up the initial estimate of the iteration.
+
+            // Obtain the bitLength > 63.
+            int bitLength = (int) this.bitLength();
+            if (bitLength != this.bitLength()) {
+                throw new ArithmeticException("bitLength() integer overflow");
+            }
+
+            // Determine an even valued right shift into positive long range.
+            int shift = bitLength - 63;
+            if (shift % 2 == 1) {
+                shift++;
+            }
+
+            // Shift the value into positive long range.
+            MutableBigInteger xk = new MutableBigInteger(this);
+            xk.rightShift(shift);
+            xk.normalize();
+
+            // Use the square root of the shifted value as an approximation.
+            double d = new BigInteger(xk.value, 1).doubleValue();
+            BigInteger bi = BigInteger.valueOf((long)Math.ceil(Math.sqrt(d)));
+            xk = new MutableBigInteger(bi.mag);
+
+            // Shift the approximate square root back into the original range.
+            xk.leftShift(shift / 2);
+
+            // Refine the estimate.
+            MutableBigInteger xk1 = new MutableBigInteger();
+            do {
+                // xk1 = (xk + n/xk)/2
+                this.divide(xk, xk1, false);
+                xk1.add(xk);
+                xk1.rightShift(1);
+
+                // Terminate when non-decreasing.
+                if (xk1.compare(xk) >= 0) {
+                    return xk;
+                }
+
+                // xk = xk1
+                xk.copyValue(xk1);
+
+                xk1.reset();
+            } while (true);
+        }
+    }
+
+    /**
      * Calculate GCD of this and b. This and b are changed by the computation.
      */
     MutableBigInteger hybridGCD(MutableBigInteger b) {
@@ -1891,7 +1986,7 @@ class MutableBigInteger {
      * Assumes that this and v are not zero.
      */
     private MutableBigInteger binaryGCD(MutableBigInteger v) {
-        // Algorithm B from Knuth section 4.5.2
+        // Algorithm B from Knuth TAOCP Vol. 2, 3rd edition, section 4.5.2
         MutableBigInteger u = this;
         MutableBigInteger r = new MutableBigInteger();
 

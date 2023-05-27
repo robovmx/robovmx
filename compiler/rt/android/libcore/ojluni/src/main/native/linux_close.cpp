@@ -35,13 +35,9 @@
 #include <unistd.h>
 #include <errno.h>
 
-// Android-changed: Fuchsia: Fix poll.h include location
+// Android-changed: Fix poll.h include location
 // #include <sys/poll.h>
-#if !defined(__Fuchsia__)
-#include <sys/poll.h>
-#else
 #include <poll.h>
-#endif
 
 #include <AsynchronousCloseMonitor.h>
 
@@ -52,7 +48,12 @@ extern "C" {
  */
 // Android-changed: Bionic (and AsynchronousCloseMonitor) expects libcore to use
 // __SIGRTMIN + 2, not __SIGRTMAX - 2
+// Also use SIGRTMAX instead of __SIGRTMAX, which is not defined by musl.
+#if !defined (__BIONIC__)
+static int sigWakeup = (SIGRTMAX - 2);
+#else
 static int sigWakeup = (__SIGRTMIN + 2);
+#endif
 
 /*
  * Close or dup2 a file descriptor ensuring that all threads blocked on

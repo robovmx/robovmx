@@ -71,4 +71,22 @@ public class VersionCodes {
      */
     @IntraCoreApi
     public static final int S = 31;
+
+    /**
+     * The version code for Android Sv2 (API version 32).
+     */
+    @IntraCoreApi
+    public static final int S_V2 = 32;
+
+    /**
+     * The version code for Android T (API version 33).
+     */
+    @IntraCoreApi
+    public static final int TIRAMISU = 33;
+
+    /**
+     * Upside Down Cake.
+     */
+    @IntraCoreApi
+    public static final int UPSIDE_DOWN_CAKE = CUR_DEVELOPMENT;
 }

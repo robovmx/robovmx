@@ -24,6 +24,8 @@
  */
 
 package java.lang;
+import jdk.internal.misc.TerminatingThreadLocal;
+
 import java.lang.ref.*;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -171,6 +173,19 @@ public class ThreadLocal<T> {
     }
 
     /**
+     * Returns {@code true} if there is a value in the current thread's copy of
+     * this thread-local variable, even if that values is {@code null}.
+     *
+     * @return {@code true} if current thread has associated value in this
+     *         thread-local variable; {@code false} if not
+     */
+    boolean isPresent() {
+        Thread t = Thread.currentThread();
+        ThreadLocalMap map = getMap(t);
+        return map != null && map.getEntry(this) != null;
+    }
+
+    /**
      * Variant of set() to establish initialValue. Used instead
      * of set() in case user has overridden the set() method.
      *
@@ -180,10 +195,14 @@ public class ThreadLocal<T> {
         T value = initialValue();
         Thread t = Thread.currentThread();
         ThreadLocalMap map = getMap(t);
-        if (map != null)
+        if (map != null) {
             map.set(this, value);
-        else
+        } else {
             createMap(t, value);
+        }
+        if (this instanceof TerminatingThreadLocal) {
+            TerminatingThreadLocal.register((TerminatingThreadLocal<?>) this);
+        }
         return value;
     }
 
@@ -199,10 +218,11 @@ public class ThreadLocal<T> {
     public void set(T value) {
         Thread t = Thread.currentThread();
         ThreadLocalMap map = getMap(t);
-        if (map != null)
+        if (map != null) {
             map.set(this, value);
-        else
+        } else {
             createMap(t, value);
+        }
     }
 
     /**
@@ -218,8 +238,9 @@ public class ThreadLocal<T> {
      */
      public void remove() {
          ThreadLocalMap m = getMap(Thread.currentThread());
-         if (m != null)
+         if (m != null) {
              m.remove(this);
+         }
      }
 
     /**
@@ -382,8 +403,7 @@ public class ThreadLocal<T> {
             setThreshold(len);
             table = new Entry[len];
 
-            for (int j = 0; j < len; j++) {
-                Entry e = parentTable[j];
+            for (Entry e : parentTable) {
                 if (e != null) {
                     @SuppressWarnings("unchecked")
                     ThreadLocal<Object> key = (ThreadLocal<Object>) e.get();
@@ -413,7 +433,7 @@ public class ThreadLocal<T> {
         private Entry getEntry(ThreadLocal<?> key) {
             int i = key.threadLocalHashCode & (table.length - 1);
             Entry e = table[i];
-            // Android-changed: Use refersTo()
+            // Android-changed: Use refersTo().
             if (e != null && e.refersTo(key))
                 return e;
             else
@@ -434,7 +454,7 @@ public class ThreadLocal<T> {
             int len = tab.length;
 
             while (e != null) {
-                // Android-changed: Use refersTo()
+                // Android-changed: Use refersTo() (twice).
                 if (e.refersTo(key))
                     return e;
                 if (e.refersTo(null))
@@ -466,14 +486,16 @@ public class ThreadLocal<T> {
             for (Entry e = tab[i];
                  e != null;
                  e = tab[i = nextIndex(i, len)]) {
-                ThreadLocal<?> k = e.get();
 
-                if (k == key) {
+                // Android-changed: Use refersTo() (twice).
+                // ThreadLocal<?> k = e.get();
+                // if (k == key) { ... } if (k == null) { ... }
+                if (e.refersTo(key)) {
                     e.value = value;
                     return;
                 }
 
-                if (k == null) {
+                if (e.refersTo(null)) {
                     replaceStaleEntry(key, value, i);
                     return;
                 }
@@ -495,7 +517,8 @@ public class ThreadLocal<T> {
             for (Entry e = tab[i];
                  e != null;
                  e = tab[i = nextIndex(i, len)]) {
-                if (e.get() == key) {
+                // Android-changed: Use refersTo().
+                if (e.refersTo(key)) {
                     e.clear();
                     expungeStaleEntry(i);
                     return;
@@ -532,7 +555,8 @@ public class ThreadLocal<T> {
             for (int i = prevIndex(staleSlot, len);
                  (e = tab[i]) != null;
                  i = prevIndex(i, len))
-                if (e.get() == null)
+                // Android-changed: Use refersTo().
+                if (e.refersTo(null))
                     slotToExpunge = i;
 
             // Find either the key or trailing null slot of run, whichever
@@ -540,14 +564,15 @@ public class ThreadLocal<T> {
             for (int i = nextIndex(staleSlot, len);
                  (e = tab[i]) != null;
                  i = nextIndex(i, len)) {
-                ThreadLocal<?> k = e.get();
+                // ThreadLocal<?> k = e.get();
 
                 // If we find key, then we need to swap it
                 // with the stale entry to maintain hash table order.
                 // The newly stale slot, or any other stale slot
                 // encountered above it, can then be sent to expungeStaleEntry
                 // to remove or rehash all of the other entries in run.
-                if (k == key) {
+                // Android-changed: Use refersTo().
+                if (e.refersTo(key)) {
                     e.value = value;
 
                     tab[i] = tab[staleSlot];
@@ -563,7 +588,8 @@ public class ThreadLocal<T> {
                 // If we didn't find stale entry on backward scan, the
                 // first stale entry seen while scanning for key is the
                 // first still present in the run.
-                if (k == null && slotToExpunge == staleSlot)
+                // Android-changed: Use refersTo().
+                if (e.refersTo(null) && slotToExpunge == staleSlot)
                     slotToExpunge = i;
             }
 
@@ -654,7 +680,8 @@ public class ThreadLocal<T> {
             do {
                 i = nextIndex(i, len);
                 Entry e = tab[i];
-                if (e != null && e.get() == null) {
+                // Android-changed: Use refersTo().
+                if (e != null && e.refersTo(null)) {
                     n = len;
                     removed = true;
                     i = expungeStaleEntry(i);
@@ -686,8 +713,7 @@ public class ThreadLocal<T> {
             Entry[] newTab = new Entry[newLen];
             int count = 0;
 
-            for (int j = 0; j < oldLen; ++j) {
-                Entry e = oldTab[j];
+            for (Entry e : oldTab) {
                 if (e != null) {
                     ThreadLocal<?> k = e.get();
                     if (k == null) {
@@ -715,7 +741,8 @@ public class ThreadLocal<T> {
             int len = tab.length;
             for (int j = 0; j < len; j++) {
                 Entry e = tab[j];
-                if (e != null && e.get() == null)
+                // Android-changed: Use refersTo().
+                if (e != null && e.refersTo(null))
                     expungeStaleEntry(j);
             }
         }

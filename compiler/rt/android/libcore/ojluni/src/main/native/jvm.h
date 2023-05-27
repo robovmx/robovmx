@@ -105,6 +105,9 @@ JVM_CurrentTimeMillis(JNIEnv *env, jclass ignored);
 JNIEXPORT jlong JNICALL
 JVM_NanoTime(JNIEnv *env, jclass ignored);
 
+JNIEXPORT jlong JNICALL
+JVM_GetNanoTimeAdjustment(JNIEnv *env, jclass ignored, jlong offset_secs);
+
 JNIEXPORT void JNICALL
 JVM_ArrayCopy(JNIEnv *env, jclass ignored, jobject src, jint src_pos,
               jobject dst, jint dst_pos, jint length);
@@ -1122,7 +1125,7 @@ JVM_NativePath(char *);
 /*
  * JVM I/O error codes
  */
-#define JVM_EEXIST       -100
+#define JVM_EEXIST       (-100)
 
 /*
  * Open a file descriptor. This function returns a negative error code
@@ -1394,14 +1397,14 @@ typedef struct {
     unsigned int : 32;
 } jvm_version_info;
 
-#define JVM_VERSION_MAJOR(version) ((version & 0xFF000000) >> 24)
-#define JVM_VERSION_MINOR(version) ((version & 0x00FF0000) >> 16)
-#define JVM_VERSION_MICRO(version) ((version & 0x0000FF00) >> 8)
+#define JVM_VERSION_MAJOR(version) (((version) & 0xFF000000) >> 24)
+#define JVM_VERSION_MINOR(version) (((version) & 0x00FF0000) >> 16)
+#define JVM_VERSION_MICRO(version) (((version) & 0x0000FF00) >> 8)
 
 /* Build number is available only for RE builds.
  * It will be zero for internal builds.
  */
-#define JVM_VERSION_BUILD(version) ((version & 0x000000FF))
+#define JVM_VERSION_BUILD(version) (((version) & 0x000000FF))
 
 JNIEXPORT void JNICALL
 JVM_GetVersionInfo(JNIEnv* env, jvm_version_info* info, size_t info_size);
@@ -1429,14 +1432,14 @@ typedef struct {
     unsigned int : 32;
 } jdk_version_info;
 
-#define JDK_VERSION_MAJOR(version) ((version & 0xFF000000) >> 24)
-#define JDK_VERSION_MINOR(version) ((version & 0x00FF0000) >> 16)
-#define JDK_VERSION_MICRO(version) ((version & 0x0000FF00) >> 8)
+#define JDK_VERSION_MAJOR(version) (((version) & 0xFF000000) >> 24)
+#define JDK_VERSION_MINOR(version) (((version) & 0x00FF0000) >> 16)
+#define JDK_VERSION_MICRO(version) (((version) & 0x0000FF00) >> 8)
 
 /* Build number is available only for RE build (i.e. JDK_BUILD_NUMBER is set to bNN)
  * It will be zero for internal builds.
  */
-#define JDK_VERSION_BUILD(version) ((version & 0x000000FF))
+#define JDK_VERSION_BUILD(version) (((version) & 0x000000FF))
 
 /*
  * This is the function JDK_GetVersionInfo0 defined in libjava.so

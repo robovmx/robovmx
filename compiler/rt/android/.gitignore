@@ -161,6 +161,7 @@ TEST_MAPPING
 /libcore/ojluni/src/lambda
 /libcore/ojluni/annotations/
 /libcore/ojluni/src/generated-annotation
+/libcore/ojluni/src/tools/
 !/libcore/dalvik
 !/libcore/json
 !/libcore/libart

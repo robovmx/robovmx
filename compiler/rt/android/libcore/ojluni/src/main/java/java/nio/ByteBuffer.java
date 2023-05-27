@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2014 The Android Open Source Project
- * Copyright (c) 2000, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2000, 2021, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -28,8 +28,11 @@
 
 package java.nio;
 
+import jdk.internal.misc.Unsafe;
+
 import libcore.io.Memory;
 
+import java.util.Objects;
 import dalvik.annotation.codegen.CovariantReturnType;
 
 /**
@@ -235,6 +238,10 @@ public abstract class ByteBuffer
         this(mark, pos, lim, cap, null, 0);
     }
 
+    @Override
+    Object base() {
+        return hb;
+    }
 
     /**
      * Allocates a new direct byte buffer.
@@ -278,7 +285,7 @@ public abstract class ByteBuffer
      */
     public static ByteBuffer allocate(int capacity) {
         if (capacity < 0)
-            throw new IllegalArgumentException();
+            throw createCapacityException(capacity);
         return new HeapByteBuffer(capacity, capacity);
     }
 
@@ -361,7 +368,44 @@ public abstract class ByteBuffer
      *
      * @return  The new byte buffer
      */
+    @Override
     public abstract ByteBuffer slice();
+
+    /**
+     * Creates a new byte buffer whose content is a shared subsequence of
+     * this buffer's content.
+     *
+     * <p> The content of the new buffer will start at position {@code index}
+     * in this buffer, and will contain {@code length} elements. Changes to
+     * this buffer's content will be visible in the new buffer, and vice versa;
+     * the two buffers' position, limit, and mark values will be independent.
+     *
+     * <p> The new buffer's position will be zero, its capacity and its limit
+     * will be {@code length}, its mark will be undefined, and its byte order
+     * will be {@link ByteOrder#BIG_ENDIAN BIG_ENDIAN}.
+     *
+     * The new buffer will be direct if, and only if, this buffer is direct,
+     * and it will be read-only if, and only if, this buffer is read-only. </p>
+     *
+     * @param   index
+     *          The position in this buffer at which the content of the new
+     *          buffer will start; must be non-negative and no larger than
+     *          {@link #limit() limit()}
+     *
+     * @param   length
+     *          The number of elements the new buffer will contain; must be
+     *          non-negative and no larger than {@code limit() - index}
+     *
+     * @return  The new buffer
+     *
+     * @throws  IndexOutOfBoundsException
+     *          If {@code index} is negative or greater than {@code limit()},
+     *          {@code length} is negative, or {@code length > limit() - index}
+     *
+     * @since 13
+     */
+    @Override
+    public abstract ByteBuffer slice(int index, int length);
 
     /**
      * Creates a new byte buffer that shares this buffer's content.
@@ -378,6 +422,7 @@ public abstract class ByteBuffer
      *
      * @return  The new byte buffer
      */
+    @Override
     public abstract ByteBuffer duplicate();
 
     /**
@@ -603,7 +648,7 @@ public abstract class ByteBuffer
      */
     public ByteBuffer put(ByteBuffer src) {
         if (src == this)
-            throw new IllegalArgumentException();
+            throw createSameBufferException();
         if (isReadOnly())
             throw new ReadOnlyBufferException();
         int n = src.remaining();
@@ -1027,6 +1072,44 @@ public abstract class ByteBuffer
 
     }
 
+    /**
+     * Finds and returns the relative index of the first mismatch between this
+     * buffer and a given buffer.  The index is relative to the
+     * {@link #position() position} of each buffer and will be in the range of
+     * 0 (inclusive) up to the smaller of the {@link #remaining() remaining}
+     * elements in each buffer (exclusive).
+     *
+     * <p> If the two buffers share a common prefix then the returned index is
+     * the length of the common prefix and it follows that there is a mismatch
+     * between the two buffers at that index within the respective buffers.
+     * If one buffer is a proper prefix of the other then the returned index is
+     * the smaller of the remaining elements in each buffer, and it follows that
+     * the index is only valid for the buffer with the larger number of
+     * remaining elements.
+     * Otherwise, there is no mismatch.
+     *
+     * @param  that
+     *         The byte buffer to be tested for a mismatch with this buffer
+     *
+     * @return  The relative index of the first mismatch between this and the
+     *          given buffer, otherwise -1 if no mismatch.
+     *
+     * @since 11
+     */
+    public int mismatch(ByteBuffer that) {
+        int thisPos = this.position();
+        int thisRem = this.limit() - thisPos;
+        int thatPos = that.position();
+        int thatRem = that.limit() - thatPos;
+        int length = Math.min(thisRem, thatRem);
+        if (length < 0)
+            return -1;
+        int r = BufferMismatch.mismatch(this, thisPos,
+                                        that, thatPos,
+                                        length);
+        return (r == -1 && thisRem != thatRem) ? length : r;
+    }
+
     // -- Other char stuff --
 
 
@@ -1067,6 +1150,148 @@ public abstract class ByteBuffer
         nativeByteOrder =
             (bigEndian == (Bits.byteOrder() == ByteOrder.BIG_ENDIAN));
         return this;
+    }
+
+    /**
+     * Returns the memory address, pointing to the byte at the given index,
+     * modulus the given unit size.
+     *
+     * <p> A return value greater than zero indicates the address of the byte at
+     * the index is misaligned for the unit size, and the value's quantity
+     * indicates how much the index should be rounded up or down to locate a
+     * byte at an aligned address.  Otherwise, a value of {@code 0} indicates
+     * that the address of the byte at the index is aligned for the unit size.
+     *
+     * @apiNote
+     * This method may be utilized to determine if unit size bytes from an
+     * index can be accessed atomically, if supported by the native platform.
+     *
+     * @implNote
+     * This implementation throws {@code UnsupportedOperationException} for
+     * non-direct buffers when the given unit size is greater than {@code 8}.
+     *
+     * @param  index
+     *         The index to query for alignment offset, must be non-negative, no
+     *         upper bounds check is performed
+     *
+     * @param  unitSize
+     *         The unit size in bytes, must be a power of {@code 2}
+     *
+     * @return  The indexed byte's memory address modulus the unit size
+     *
+     * @throws IllegalArgumentException
+     *         If the index is negative or the unit size is not a power of
+     *         {@code 2}
+     *
+     * @throws UnsupportedOperationException
+     *         If the native platform does not guarantee stable alignment offset
+     *         values for the given unit size when managing the memory regions
+     *         of buffers of the same kind as this buffer (direct or
+     *         non-direct).  For example, if garbage collection would result
+     *         in the moving of a memory region covered by a non-direct buffer
+     *         from one location to another and both locations have different
+     *         alignment characteristics.
+     *
+     * @see #alignedSlice(int)
+     * @since 9
+     */
+    public final int alignmentOffset(int index, int unitSize) {
+        if (index < 0)
+            throw new IllegalArgumentException("Index less than zero: " + index);
+        if (unitSize < 1 || (unitSize & (unitSize - 1)) != 0)
+            throw new IllegalArgumentException("Unit size not a power of two: " + unitSize);
+        if (unitSize > 8 && !isDirect())
+            throw new UnsupportedOperationException("Unit size unsupported for non-direct buffers: " + unitSize);
+
+        // BEGIN Android-changed: Android specific alignment calculation.
+        // return (int) ((address + index) % unitSize);
+        final long baseAddress =
+            isDirect() ? address : (Unsafe.getUnsafe().arrayBaseOffset(byte[].class) + offset);
+
+        final long elementAddress = baseAddress + index;
+        return (int) (elementAddress & (unitSize - 1));
+        // END Android-changed: Android specific alignment calculation.
+    }
+
+    /**
+     * Creates a new byte buffer whose content is a shared and aligned
+     * subsequence of this buffer's content.
+     *
+     * <p> The content of the new buffer will start at this buffer's current
+     * position rounded up to the index of the nearest aligned byte for the
+     * given unit size, and end at this buffer's limit rounded down to the index
+     * of the nearest aligned byte for the given unit size.
+     * If rounding results in out-of-bound values then the new buffer's capacity
+     * and limit will be zero.  If rounding is within bounds the following
+     * expressions will be true for a new buffer {@code nb} and unit size
+     * {@code unitSize}:
+     * <pre>{@code
+     * nb.alignmentOffset(0, unitSize) == 0
+     * nb.alignmentOffset(nb.limit(), unitSize) == 0
+     * }</pre>
+     *
+     * <p> Changes to this buffer's content will be visible in the new
+     * buffer, and vice versa; the two buffers' position, limit, and mark
+     * values will be independent.
+     *
+     * <p> The new buffer's position will be zero, its capacity and its limit
+     * will be the number of bytes remaining in this buffer or fewer subject to
+     * alignment, its mark will be undefined, and its byte order will be
+     * {@link ByteOrder#BIG_ENDIAN BIG_ENDIAN}.
+     *
+     * The new buffer will be direct if, and only if, this buffer is direct, and
+     * it will be read-only if, and only if, this buffer is read-only.  </p>
+     *
+     * @apiNote
+     * This method may be utilized to create a new buffer where unit size bytes
+     * from index, that is a multiple of the unit size, may be accessed
+     * atomically, if supported by the native platform.
+     *
+     * @implNote
+     * This implementation throws {@code UnsupportedOperationException} for
+     * non-direct buffers when the given unit size is greater than {@code 8}.
+     *
+     * @param  unitSize
+     *         The unit size in bytes, must be a power of {@code 2}
+     *
+     * @return  The new byte buffer
+     *
+     * @throws IllegalArgumentException
+     *         If the unit size not a power of {@code 2}
+     *
+     * @throws UnsupportedOperationException
+     *         If the native platform does not guarantee stable aligned slices
+     *         for the given unit size when managing the memory regions
+     *         of buffers of the same kind as this buffer (direct or
+     *         non-direct).  For example, if garbage collection would result
+     *         in the moving of a memory region covered by a non-direct buffer
+     *         from one location to another and both locations have different
+     *         alignment characteristics.
+     *
+     * @see #alignmentOffset(int, int)
+     * @see #slice()
+     * @since 9
+     */
+    public final ByteBuffer alignedSlice(int unitSize) {
+        int pos = position();
+        int lim = limit();
+
+        int pos_mod = alignmentOffset(pos, unitSize);
+        int lim_mod = alignmentOffset(lim, unitSize);
+
+        // Round up the position to align with unit size
+        int aligned_pos = (pos_mod > 0)
+            ? pos + (unitSize - pos_mod)
+            : pos;
+
+        // Round down the limit to align with unit size
+        int aligned_lim = lim - lim_mod;
+
+        if (aligned_pos > lim || aligned_lim < pos) {
+            aligned_pos = aligned_lim = pos;
+        }
+
+        return slice(aligned_pos, aligned_lim - aligned_pos);
     }
 
     // Unchecked accessors, for use by ByteBufferAs-X-Buffer classes
