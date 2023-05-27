@@ -79,22 +79,21 @@ public final class RuntimeHooks {
         return RuntimeHooks.zoneIdSupplier;
     }
 
-// RoboVM Note: TODO: commented out while using LC4 Thread class
-//    /**
-//     * Sets an {@link Thread.UncaughtExceptionHandler} that will be called before any
-//     * returned by {@link Thread#getUncaughtExceptionHandler()}. To allow the standard
-//     * handlers to run, this handler should never terminate this process. Any
-//     * throwables thrown by the handler will be ignored by
-//     * {@link Thread#dispatchUncaughtException(Throwable)}.
-//     *
-//     * @param uncaughtExceptionHandler handler for uncaught exceptions
-//     *
-//     * @hide
-//     */
-//    @SystemApi(client = MODULE_LIBRARIES)
-//    @libcore.api.CorePlatformApi(status = libcore.api.CorePlatformApi.Status.STABLE)
-//    public static void setUncaughtExceptionPreHandler(
-//            @Nullable Thread.UncaughtExceptionHandler uncaughtExceptionHandler) {
-//        Thread.setUncaughtExceptionPreHandler(uncaughtExceptionHandler);
-//    }
+    /**
+     * Sets an {@link Thread.UncaughtExceptionHandler} that will be called before any
+     * returned by {@link Thread#getUncaughtExceptionHandler()}. To allow the standard
+     * handlers to run, this handler should never terminate this process. Any
+     * throwables thrown by the handler will be ignored by
+     * {@link Thread#dispatchUncaughtException(Throwable)}.
+     *
+     * @param uncaughtExceptionHandler handler for uncaught exceptions
+     *
+     * @hide
+     */
+    @SystemApi(client = MODULE_LIBRARIES)
+    @libcore.api.CorePlatformApi(status = libcore.api.CorePlatformApi.Status.STABLE)
+    public static void setUncaughtExceptionPreHandler(
+            @Nullable Thread.UncaughtExceptionHandler uncaughtExceptionHandler) {
+        Thread.setUncaughtExceptionPreHandler(uncaughtExceptionHandler);
+    }
 }

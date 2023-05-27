@@ -48,9 +48,8 @@ static jfieldID needDictID;
 static jfieldID finishedID;
 static jfieldID bufID, offID, lenID;
 
-// RoboVM note: registerNatives will be called from class initializer
-JNIEXPORT void JNICALL
-Java_java_util_zip_Inflater_registerNatives(JNIEnv *env, jclass cls) {
+static void Inflater_initIDs(JNIEnv *env) {
+    jclass cls = (*env)->FindClass(env, "java/util/zip/Inflater");
     needDictID = (*env)->GetFieldID(env, cls, "needDict", "Z");
     finishedID = (*env)->GetFieldID(env, cls, "finished", "Z");
     bufID = (*env)->GetFieldID(env, cls, "buf", "[B");
@@ -59,7 +58,7 @@ Java_java_util_zip_Inflater_registerNatives(JNIEnv *env, jclass cls) {
 }
 
 JNIEXPORT jlong JNICALL
-Java_java_util_zip_Inflater_init(JNIEnv *env, jclass cls, jboolean nowrap)
+Inflater_init(JNIEnv *env, jclass cls, jboolean nowrap)
 {
     z_stream *strm = calloc(1, sizeof(z_stream));
 
@@ -92,7 +91,7 @@ Java_java_util_zip_Inflater_init(JNIEnv *env, jclass cls, jboolean nowrap)
 }
 
 JNIEXPORT void JNICALL
-Java_java_util_zip_Inflater_setDictionary(JNIEnv *env, jclass cls, jlong addr,
+Inflater_setDictionary(JNIEnv *env, jclass cls, jlong addr,
                                           jarray b, jint off, jint len)
 {
     Bytef *buf = (*env)->GetPrimitiveArrayCritical(env, b, 0);
@@ -115,7 +114,7 @@ Java_java_util_zip_Inflater_setDictionary(JNIEnv *env, jclass cls, jlong addr,
 }
 
 JNIEXPORT jint JNICALL
-Java_java_util_zip_Inflater_inflateBytes(JNIEnv *env, jobject this, jlong addr,
+Inflater_inflateBytes(JNIEnv *env, jobject this, jlong addr,
                                          jarray b, jint off, jint len)
 {
     z_stream *strm = jlong_to_ptr(addr);
@@ -179,13 +178,13 @@ Java_java_util_zip_Inflater_inflateBytes(JNIEnv *env, jobject this, jlong addr,
 }
 
 JNIEXPORT jint JNICALL
-Java_java_util_zip_Inflater_getAdler(JNIEnv *env, jclass cls, jlong addr)
+Inflater_getAdler(JNIEnv *env, jclass cls, jlong addr)
 {
     return ((z_stream *)jlong_to_ptr(addr))->adler;
 }
 
 JNIEXPORT void JNICALL
-Java_java_util_zip_Inflater_reset(JNIEnv *env, jclass cls, jlong addr)
+Inflater_reset(JNIEnv *env, jclass cls, jlong addr)
 {
     if (inflateReset(jlong_to_ptr(addr)) != Z_OK) {
         JNU_ThrowInternalError(env, 0);
@@ -193,7 +192,7 @@ Java_java_util_zip_Inflater_reset(JNIEnv *env, jclass cls, jlong addr)
 }
 
 JNIEXPORT void JNICALL
-Java_java_util_zip_Inflater_end(JNIEnv *env, jclass cls, jlong addr)
+Inflater_end(JNIEnv *env, jclass cls, jlong addr)
 {
     if (inflateEnd(jlong_to_ptr(addr)) == Z_STREAM_ERROR) {
         JNU_ThrowInternalError(env, 0);
@@ -202,18 +201,17 @@ Java_java_util_zip_Inflater_end(JNIEnv *env, jclass cls, jlong addr)
     }
 }
 
-// RoboVM Note: Using fully qualified JNI names
-//static JNINativeMethod gMethods[] = {
-//  NATIVE_METHOD(Inflater, init, "(Z)J"),
-//  NATIVE_METHOD(Inflater, setDictionary, "(J[BII)V"),
-//  NATIVE_METHOD(Inflater, inflateBytes, "(J[BII)I"),
-//  NATIVE_METHOD(Inflater, getAdler, "(J)I"),
-//  NATIVE_METHOD(Inflater, reset, "(J)V"),
-//  NATIVE_METHOD(Inflater, end, "(J)V"),
-//};
-//
-//void register_java_util_zip_Inflater(JNIEnv* env) {
-//    jniRegisterNativeMethods(env, "java/util/zip/Inflater", gMethods, NELEM(gMethods));
-//
-//    Inflater_initIDs(env);
-//}
+static JNINativeMethod gMethods[] = {
+  NATIVE_METHOD(Inflater, init, "(Z)J"),
+  NATIVE_METHOD(Inflater, setDictionary, "(J[BII)V"),
+  NATIVE_METHOD(Inflater, inflateBytes, "(J[BII)I"),
+  NATIVE_METHOD(Inflater, getAdler, "(J)I"),
+  NATIVE_METHOD(Inflater, reset, "(J)V"),
+  NATIVE_METHOD(Inflater, end, "(J)V"),
+};
+
+void register_java_util_zip_Inflater(JNIEnv* env) {
+    jniRegisterNativeMethods(env, "java/util/zip/Inflater", gMethods, NELEM(gMethods));
+
+    Inflater_initIDs(env);
+}

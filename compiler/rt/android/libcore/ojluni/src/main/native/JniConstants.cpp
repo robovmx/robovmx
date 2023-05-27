@@ -70,15 +70,14 @@ void EnsureJniConstantsInitialized(JNIEnv* env) {
 
 }  // namespace
 
-// RoboVM note: used lazy initialization
-//void JniConstants::Initialize(JNIEnv* env) {
-//    EnsureJniConstantsInitialized(env);
-//}
-//
-//void JniConstants::Invalidate() {
-//    std::lock_guard guard(g_constants_mutex);
-//    g_constants_valid = false;
-//}
+void JniConstants::Initialize(JNIEnv* env) {
+    EnsureJniConstantsInitialized(env);
+}
+
+void JniConstants::Invalidate() {
+    std::lock_guard guard(g_constants_mutex);
+    g_constants_valid = false;
+}
 
 jclass JniConstants::GetSocketTaggerClass(JNIEnv* env) {
     EnsureJniConstantsInitialized(env);

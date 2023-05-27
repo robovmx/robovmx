@@ -58,9 +58,9 @@ static jfieldID jzfileID;
 static int OPEN_READ = java_util_zip_ZipFile_OPEN_READ;
 static int OPEN_DELETE = java_util_zip_ZipFile_OPEN_DELETE;
 
-// RoboVM note: registerNatives will be called from class initializer
-JNIEXPORT void JNICALL
-Java_java_util_zip_ZipFile_registerNatives(JNIEnv *env, jclass cls) {
+static void ZipFile_initIDs(JNIEnv *env)
+{
+    jclass cls = (*env)->FindClass(env, "java/util/zip/ZipFile");
     jzfileID = (*env)->GetFieldID(env, cls, "jzfile", "J");
     assert(jzfileID != 0);
 }
@@ -84,7 +84,7 @@ ThrowZipException(JNIEnv *env, const char *msg)
 }
 
 JNIEXPORT jlong JNICALL
-Java_java_util_zip_ZipFile_open(JNIEnv *env, jclass cls, jstring name,
+ZipFile_open(JNIEnv *env, jclass cls, jstring name,
                                         jint mode, jlong lastModified,
                                         jboolean usemmap)
 {
@@ -135,7 +135,7 @@ finally:
 }
 
 JNIEXPORT jint JNICALL
-Java_java_util_zip_ZipFile_getTotal(JNIEnv *env, jclass cls, jlong zfile)
+ZipFile_getTotal(JNIEnv *env, jclass cls, jlong zfile)
 {
     jzfile *zip = jlong_to_ptr(zfile);
 
@@ -143,7 +143,7 @@ Java_java_util_zip_ZipFile_getTotal(JNIEnv *env, jclass cls, jlong zfile)
 }
 
 JNIEXPORT jboolean JNICALL
-Java_java_util_zip_ZipFile_startsWithLOC(JNIEnv *env, jclass cls, jlong zfile)
+ZipFile_startsWithLOC(JNIEnv *env, jclass cls, jlong zfile)
 {
     jzfile *zip = jlong_to_ptr(zfile);
 
@@ -151,19 +151,19 @@ Java_java_util_zip_ZipFile_startsWithLOC(JNIEnv *env, jclass cls, jlong zfile)
 }
 
 JNIEXPORT void JNICALL
-Java_java_util_zip_ZipFile_close(JNIEnv *env, jclass cls, jlong zfile)
+ZipFile_close(JNIEnv *env, jclass cls, jlong zfile)
 {
     ZIP_Close(jlong_to_ptr(zfile));
 }
 
 JNIEXPORT jint JNICALL
-Java_java_util_zip_ZipFile_getFileDescriptor(JNIEnv *env, jclass cls, jlong zfile) {
+ZipFile_getFileDescriptor(JNIEnv *env, jclass cls, jlong zfile) {
     jzfile *zip = jlong_to_ptr(zfile);
     return zip->zfd;
 }
 
 JNIEXPORT jlong JNICALL
-Java_java_util_zip_ZipFile_getEntry(JNIEnv *env, jclass cls, jlong zfile,
+ZipFile_getEntry(JNIEnv *env, jclass cls, jlong zfile,
                  jbyteArray name, jboolean addSlash)
 {
 #define MAXNAME 1024
@@ -191,7 +191,7 @@ Java_java_util_zip_ZipFile_getEntry(JNIEnv *env, jclass cls, jlong zfile,
 }
 
 JNIEXPORT void JNICALL
-Java_java_util_zip_ZipFile_freeEntry(JNIEnv *env, jclass cls, jlong zfile,
+ZipFile_freeEntry(JNIEnv *env, jclass cls, jlong zfile,
                                     jlong zentry)
 {
     jzfile *zip = jlong_to_ptr(zfile);
@@ -200,7 +200,7 @@ Java_java_util_zip_ZipFile_freeEntry(JNIEnv *env, jclass cls, jlong zfile,
 }
 
 JNIEXPORT jlong JNICALL
-Java_java_util_zip_ZipFile_getNextEntry(JNIEnv *env, jclass cls, jlong zfile,
+ZipFile_getNextEntry(JNIEnv *env, jclass cls, jlong zfile,
                                         jint n)
 {
     jzentry *ze = ZIP_GetNextEntry(jlong_to_ptr(zfile), n);
@@ -208,49 +208,49 @@ Java_java_util_zip_ZipFile_getNextEntry(JNIEnv *env, jclass cls, jlong zfile,
 }
 
 JNIEXPORT jint JNICALL
-Java_java_util_zip_ZipFile_getEntryMethod(JNIEnv *env, jclass cls, jlong zentry)
+ZipFile_getEntryMethod(JNIEnv *env, jclass cls, jlong zentry)
 {
     jzentry *ze = jlong_to_ptr(zentry);
     return ze->csize != 0 ? DEFLATED : STORED;
 }
 
 JNIEXPORT jint JNICALL
-Java_java_util_zip_ZipFile_getEntryFlag(JNIEnv *env, jclass cls, jlong zentry)
+ZipFile_getEntryFlag(JNIEnv *env, jclass cls, jlong zentry)
 {
     jzentry *ze = jlong_to_ptr(zentry);
     return ze->flag;
 }
 
 JNIEXPORT jlong JNICALL
-Java_java_util_zip_ZipFile_getEntryCSize(JNIEnv *env, jclass cls, jlong zentry)
+ZipFile_getEntryCSize(JNIEnv *env, jclass cls, jlong zentry)
 {
     jzentry *ze = jlong_to_ptr(zentry);
     return ze->csize != 0 ? ze->csize : ze->size;
 }
 
 JNIEXPORT jlong JNICALL
-Java_java_util_zip_ZipFile_getEntrySize(JNIEnv *env, jclass cls, jlong zentry)
+ZipFile_getEntrySize(JNIEnv *env, jclass cls, jlong zentry)
 {
     jzentry *ze = jlong_to_ptr(zentry);
     return ze->size;
 }
 
 JNIEXPORT jlong JNICALL
-Java_java_util_zip_ZipFile_getEntryTime(JNIEnv *env, jclass cls, jlong zentry)
+ZipFile_getEntryTime(JNIEnv *env, jclass cls, jlong zentry)
 {
     jzentry *ze = jlong_to_ptr(zentry);
     return (jlong)ze->time & 0xffffffffUL;
 }
 
 JNIEXPORT jlong JNICALL
-Java_java_util_zip_ZipFile_getEntryCrc(JNIEnv *env, jclass cls, jlong zentry)
+ZipFile_getEntryCrc(JNIEnv *env, jclass cls, jlong zentry)
 {
     jzentry *ze = jlong_to_ptr(zentry);
     return (jlong)ze->crc & 0xffffffffUL;
 }
 
 JNIEXPORT jbyteArray JNICALL
-Java_java_util_zip_ZipFile_getCommentBytes(JNIEnv *env, jclass cls, jlong zfile)
+ZipFile_getCommentBytes(JNIEnv *env, jclass cls, jlong zfile)
 {
     jzfile *zip = jlong_to_ptr(zfile);
     jbyteArray jba = NULL;
@@ -264,7 +264,7 @@ Java_java_util_zip_ZipFile_getCommentBytes(JNIEnv *env, jclass cls, jlong zfile)
 }
 
 JNIEXPORT jbyteArray JNICALL
-Java_java_util_zip_ZipFile_getEntryBytes(JNIEnv *env, jclass cls, jlong zentry, jint type)
+ZipFile_getEntryBytes(JNIEnv *env, jclass cls, jlong zentry, jint type)
 {
     jzentry *ze = jlong_to_ptr(zentry);
     int len = 0;
@@ -300,7 +300,7 @@ Java_java_util_zip_ZipFile_getEntryBytes(JNIEnv *env, jclass cls, jlong zentry, 
 }
 
 JNIEXPORT jint JNICALL
-Java_java_util_zip_ZipFile_read(JNIEnv *env, jclass cls, jlong zfile,
+ZipFile_read(JNIEnv *env, jclass cls, jlong zfile,
              jlong zentry, jlong pos, jbyteArray bytes,
              jint off, jint len)
 {
@@ -340,7 +340,7 @@ Java_java_util_zip_ZipFile_read(JNIEnv *env, jclass cls, jlong zfile,
 }
 
 JNIEXPORT jstring JNICALL
-Java_java_util_zip_ZipFile_getZipMessage(JNIEnv *env, jclass cls, jlong zfile)
+ZipFile_getZipMessage(JNIEnv *env, jclass cls, jlong zfile)
 {
     jzfile *zip = jlong_to_ptr(zfile);
     char *msg = zip->msg;
@@ -351,7 +351,7 @@ Java_java_util_zip_ZipFile_getZipMessage(JNIEnv *env, jclass cls, jlong zfile)
 }
 
 JNIEXPORT jobjectArray JNICALL
-Java_java_util_jar_JarFile_getMetaInfEntryNames(JNIEnv *env, jobject obj)
+JarFile_getMetaInfEntryNames(JNIEnv *env, jobject obj)
 {
     jlong zfile = (*env)->GetLongField(env, obj, jzfileID);
     jzfile *zip;
@@ -393,35 +393,34 @@ Java_java_util_jar_JarFile_getMetaInfEntryNames(JNIEnv *env, jobject obj)
     return result;
 }
 
-// RoboVM Note: using full qualified name for JNI methods
-//static JNINativeMethod gMethods[] = {
-//  NATIVE_METHOD(ZipFile, getFileDescriptor, "(J)I"),
-//  NATIVE_METHOD(ZipFile, getEntry, "(J[BZ)J"),
-//  NATIVE_METHOD(ZipFile, freeEntry, "(JJ)V"),
-//  NATIVE_METHOD(ZipFile, getNextEntry, "(JI)J"),
-//  NATIVE_METHOD(ZipFile, close, "(J)V"),
-//  NATIVE_METHOD(ZipFile, open, "(Ljava/lang/String;IJZ)J"),
-//  NATIVE_METHOD(ZipFile, getTotal, "(J)I"),
-//  NATIVE_METHOD(ZipFile, startsWithLOC, "(J)Z"),
-//  NATIVE_METHOD(ZipFile, read, "(JJJ[BII)I"),
-//  NATIVE_METHOD(ZipFile, getEntryTime, "(J)J"),
-//  NATIVE_METHOD(ZipFile, getEntryCrc, "(J)J"),
-//  NATIVE_METHOD(ZipFile, getEntryCSize, "(J)J"),
-//  NATIVE_METHOD(ZipFile, getEntrySize, "(J)J"),
-//  NATIVE_METHOD(ZipFile, getEntryMethod, "(J)I"),
-//  NATIVE_METHOD(ZipFile, getEntryFlag, "(J)I"),
-//  NATIVE_METHOD(ZipFile, getCommentBytes, "(J)[B"),
-//  NATIVE_METHOD(ZipFile, getEntryBytes, "(JI)[B"),
-//  NATIVE_METHOD(ZipFile, getZipMessage, "(J)Ljava/lang/String;"),
-//};
-//
-//static JNINativeMethod gJarFileMethods[] = {
-//  NATIVE_METHOD(JarFile, getMetaInfEntryNames, "()[Ljava/lang/String;"),
-//};
-//
-//void register_java_util_zip_ZipFile(JNIEnv* env) {
-//  jniRegisterNativeMethods(env, "java/util/zip/ZipFile", gMethods, NELEM(gMethods));
-//  ZipFile_initIDs(env);
-//
-//  jniRegisterNativeMethods(env, "java/util/jar/JarFile", gJarFileMethods, NELEM(gJarFileMethods));
-//}
+static JNINativeMethod gMethods[] = {
+  NATIVE_METHOD(ZipFile, getFileDescriptor, "(J)I"),
+  NATIVE_METHOD(ZipFile, getEntry, "(J[BZ)J"),
+  NATIVE_METHOD(ZipFile, freeEntry, "(JJ)V"),
+  NATIVE_METHOD(ZipFile, getNextEntry, "(JI)J"),
+  NATIVE_METHOD(ZipFile, close, "(J)V"),
+  NATIVE_METHOD(ZipFile, open, "(Ljava/lang/String;IJZ)J"),
+  NATIVE_METHOD(ZipFile, getTotal, "(J)I"),
+  NATIVE_METHOD(ZipFile, startsWithLOC, "(J)Z"),
+  NATIVE_METHOD(ZipFile, read, "(JJJ[BII)I"),
+  NATIVE_METHOD(ZipFile, getEntryTime, "(J)J"),
+  NATIVE_METHOD(ZipFile, getEntryCrc, "(J)J"),
+  NATIVE_METHOD(ZipFile, getEntryCSize, "(J)J"),
+  NATIVE_METHOD(ZipFile, getEntrySize, "(J)J"),
+  NATIVE_METHOD(ZipFile, getEntryMethod, "(J)I"),
+  NATIVE_METHOD(ZipFile, getEntryFlag, "(J)I"),
+  NATIVE_METHOD(ZipFile, getCommentBytes, "(J)[B"),
+  NATIVE_METHOD(ZipFile, getEntryBytes, "(JI)[B"),
+  NATIVE_METHOD(ZipFile, getZipMessage, "(J)Ljava/lang/String;"),
+};
+
+static JNINativeMethod gJarFileMethods[] = {
+  NATIVE_METHOD(JarFile, getMetaInfEntryNames, "()[Ljava/lang/String;"),
+};
+
+void register_java_util_zip_ZipFile(JNIEnv* env) {
+  jniRegisterNativeMethods(env, "java/util/zip/ZipFile", gMethods, NELEM(gMethods));
+  ZipFile_initIDs(env);
+
+  jniRegisterNativeMethods(env, "java/util/jar/JarFile", gJarFileMethods, NELEM(gJarFileMethods));
+}

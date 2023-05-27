@@ -86,12 +86,6 @@ import static android.system.OsConstants.*;
 
 public final
 class Inet4Address extends InetAddress {
-    // RoboVM note: invoking registerNatives to initialize missing native elements
-    private static native void registerNatives();
-    static {
-        registerNatives();
-    }
-
     final static int INADDRSZ = 4;
 
     /** use serialVersionUID from InetAddress, but Inet4Address instance
@@ -139,12 +133,12 @@ class Inet4Address extends InetAddress {
         super();
         holder().hostName = null;
         holder().address = 0;
-        holder().family = AF_INET();
+        holder().family = AF_INET;
     }
 
     Inet4Address(String hostName, byte addr[]) {
         holder().hostName = hostName;
-        holder().family = AF_INET();
+        holder().family = AF_INET;
         if (addr != null) {
             if (addr.length == INADDRSZ) {
                 int address  = addr[3] & 0xFF;
@@ -158,7 +152,7 @@ class Inet4Address extends InetAddress {
     }
     Inet4Address(String hostName, int address) {
         holder().hostName = hostName;
-        holder().family = AF_INET();
+        holder().family = AF_INET;
         holder().address = address;
         holder().originalHostName = hostName;
     }

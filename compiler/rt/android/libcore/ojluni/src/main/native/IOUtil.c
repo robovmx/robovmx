@@ -42,9 +42,8 @@
 
 static jfieldID fd_fdID;        /* for jint 'fd' in java.io.FileDescriptor */
 
-// RoboVM note: registerNatives will be called from class initializer
-JNIEXPORT void JNICALL
-Java_sun_nio_ch_IOUtil_registerNatives(JNIEnv *env, jclass cls) {
+static void IOUtil_initIDs(JNIEnv *env)
+{
     jclass clazz = (*env)->FindClass(env, "java/io/FileDescriptor");
     CHECK_NULL(clazz);
     fd_fdID = (*env)->GetFieldID(env, clazz, "descriptor", "I");
@@ -52,7 +51,7 @@ Java_sun_nio_ch_IOUtil_registerNatives(JNIEnv *env, jclass cls) {
 }
 
 JNIEXPORT jboolean JNICALL
-Java_sun_nio_ch_IOUtil_randomBytes(JNIEnv *env, jclass clazz,
+IOUtil_randomBytes(JNIEnv *env, jclass clazz,
                                   jbyteArray randArray)
 {
     JNU_ThrowByName(env, "java/lang/UnsupportedOperationException", NULL);
@@ -60,13 +59,13 @@ Java_sun_nio_ch_IOUtil_randomBytes(JNIEnv *env, jclass clazz,
 }
 
 JNIEXPORT jint JNICALL
-Java_sun_nio_ch_IOUtil_fdVal(JNIEnv *env, jclass clazz, jobject fdo)
+IOUtil_fdVal(JNIEnv *env, jclass clazz, jobject fdo)
 {
     return (*env)->GetIntField(env, fdo, fd_fdID);
 }
 
 JNIEXPORT void JNICALL
-Java_sun_nio_ch_IOUtil_setfdVal(JNIEnv *env, jclass clazz, jobject fdo, jint val)
+IOUtil_setfdVal(JNIEnv *env, jclass clazz, jobject fdo, jint val)
 {
     (*env)->SetIntField(env, fdo, fd_fdID, val);
 }
@@ -81,7 +80,7 @@ configureBlocking(int fd, jboolean blocking)
 }
 
 JNIEXPORT void JNICALL
-Java_sun_nio_ch_IOUtil_configureBlocking(JNIEnv *env, jclass clazz,
+IOUtil_configureBlocking(JNIEnv *env, jclass clazz,
                                          jobject fdo, jboolean blocking)
 {
     if (configureBlocking(fdval(env, fdo), blocking) < 0)
@@ -89,7 +88,7 @@ Java_sun_nio_ch_IOUtil_configureBlocking(JNIEnv *env, jclass clazz,
 }
 
 JNIEXPORT jlong JNICALL
-Java_sun_nio_ch_IOUtil_makePipe(JNIEnv *env, jobject this, jboolean blocking)
+IOUtil_makePipe(JNIEnv *env, jobject this, jboolean blocking)
 {
     int fd[2];
 
@@ -110,7 +109,7 @@ Java_sun_nio_ch_IOUtil_makePipe(JNIEnv *env, jobject this, jboolean blocking)
 }
 
 JNIEXPORT jboolean JNICALL
-Java_sun_nio_ch_IOUtil_drain(JNIEnv *env, jclass cl, jint fd)
+IOUtil_drain(JNIEnv *env, jclass cl, jint fd)
 {
     char buf[128];
     int tn = 0;
@@ -127,7 +126,7 @@ Java_sun_nio_ch_IOUtil_drain(JNIEnv *env, jclass cl, jint fd)
 }
 
 JNIEXPORT jint JNICALL
-Java_sun_nio_ch_IOUtil_fdLimit(JNIEnv *env, jclass this)
+IOUtil_fdLimit(JNIEnv *env, jclass this)
 {
     struct rlimit rlp;
     if (getrlimit(RLIMIT_NOFILE, &rlp) < 0) {
@@ -143,7 +142,7 @@ Java_sun_nio_ch_IOUtil_fdLimit(JNIEnv *env, jclass this)
 }
 
 JNIEXPORT jint JNICALL
-Java_sun_nio_ch_IOUtil_iovMax(JNIEnv *env, jclass this)
+IOUtil_iovMax(JNIEnv *env, jclass this)
 {
     jlong iov_max = sysconf(_SC_IOV_MAX);
     if (iov_max == -1)
@@ -207,20 +206,19 @@ fdval(JNIEnv *env, jobject fdo)
     return (*env)->GetIntField(env, fdo, fd_fdID);
 }
 
-// RoboVM Note: Using fully qualified JNI names
-//static JNINativeMethod gMethods[] = {
-//  NATIVE_METHOD(IOUtil, iovMax, "()I"),
-//  NATIVE_METHOD(IOUtil, fdLimit, "()I"),
-//  NATIVE_METHOD(IOUtil, drain, "(I)Z"),
-//  NATIVE_METHOD(IOUtil, makePipe, "(Z)J"),
-//  NATIVE_METHOD(IOUtil, configureBlocking, "(Ljava/io/FileDescriptor;Z)V"),
-//  NATIVE_METHOD(IOUtil, setfdVal, "(Ljava/io/FileDescriptor;I)V"),
-//  NATIVE_METHOD(IOUtil, fdVal, "(Ljava/io/FileDescriptor;)I"),
-//  NATIVE_METHOD(IOUtil, randomBytes, "([B)Z"),
-//};
-//
-//void register_sun_nio_ch_IOUtil(JNIEnv* env) {
-//  jniRegisterNativeMethods(env, "sun/nio/ch/IOUtil", gMethods, NELEM(gMethods));
-//
-//  IOUtil_initIDs(env);
-//}
+static JNINativeMethod gMethods[] = {
+  NATIVE_METHOD(IOUtil, iovMax, "()I"),
+  NATIVE_METHOD(IOUtil, fdLimit, "()I"),
+  NATIVE_METHOD(IOUtil, drain, "(I)Z"),
+  NATIVE_METHOD(IOUtil, makePipe, "(Z)J"),
+  NATIVE_METHOD(IOUtil, configureBlocking, "(Ljava/io/FileDescriptor;Z)V"),
+  NATIVE_METHOD(IOUtil, setfdVal, "(Ljava/io/FileDescriptor;I)V"),
+  NATIVE_METHOD(IOUtil, fdVal, "(Ljava/io/FileDescriptor;)I"),
+  NATIVE_METHOD(IOUtil, randomBytes, "([B)Z"),
+};
+
+void register_sun_nio_ch_IOUtil(JNIEnv* env) {
+  jniRegisterNativeMethods(env, "sun/nio/ch/IOUtil", gMethods, NELEM(gMethods));
+
+  IOUtil_initIDs(env);
+}

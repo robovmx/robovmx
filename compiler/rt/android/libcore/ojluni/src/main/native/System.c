@@ -40,11 +40,6 @@
 #include <nativehelper/JNIHelp.h>
 #include <nativehelper/jni_macros.h>
 
-#ifdef __APPLE__
-// RoboVM note: Needed for mach_absolute_time() on Darwin
-#include <mach/mach_time.h>
-#endif
-
 #if defined(__ANDROID__)
 void android_get_LD_LIBRARY_PATH(char*, size_t);
 #endif
@@ -111,7 +106,7 @@ void android_get_LD_LIBRARY_PATH(char*, size_t);
  * variable).
  */
 JNIEXPORT void JNICALL
-Java_java_lang_System_setIn0(JNIEnv *env, jclass cla, jobject stream)
+System_setIn0(JNIEnv *env, jclass cla, jobject stream)
 {
     jfieldID fid =
         (*env)->GetStaticFieldID(env,cla,"in","Ljava/io/InputStream;");
@@ -121,7 +116,7 @@ Java_java_lang_System_setIn0(JNIEnv *env, jclass cla, jobject stream)
 }
 
 JNIEXPORT void JNICALL
-Java_java_lang_System_setOut0(JNIEnv *env, jclass cla, jobject stream)
+System_setOut0(JNIEnv *env, jclass cla, jobject stream)
 {
     jfieldID fid =
         (*env)->GetStaticFieldID(env,cla,"out","Ljava/io/PrintStream;");
@@ -131,7 +126,7 @@ Java_java_lang_System_setOut0(JNIEnv *env, jclass cla, jobject stream)
 }
 
 JNIEXPORT void JNICALL
-Java_java_lang_System_setErr0(JNIEnv *env, jclass cla, jobject stream)
+System_setErr0(JNIEnv *env, jclass cla, jobject stream)
 {
     jfieldID fid =
         (*env)->GetStaticFieldID(env,cla,"err","Ljava/io/PrintStream;");
@@ -149,7 +144,7 @@ static void cpchars(jchar *dst, char *src, int n)
 }
 
 JNIEXPORT jstring JNICALL
-Java_java_lang_System_mapLibraryName(JNIEnv *env, jclass ign, jstring libname)
+System_mapLibraryName(JNIEnv *env, jclass ign, jstring libname)
 {
     int len;
     int prefix_len = (int) strlen(JNI_LIB_PREFIX);
@@ -174,8 +169,7 @@ Java_java_lang_System_mapLibraryName(JNIEnv *env, jclass ign, jstring libname)
     return (*env)->NewString(env, chars, len);
 }
 
-JNIEXPORT jobjectArray JNICALL
-Java_java_lang_System_specialProperties(JNIEnv* env, jclass ignored) {
+static jobjectArray System_specialProperties(JNIEnv* env, jclass ignored) {
     jclass stringClass = (*env)->FindClass(env, "java/lang/String");
     jobjectArray result = (*env)->NewObjectArray(env, 4, stringClass, NULL);
 
@@ -235,7 +229,7 @@ Java_java_lang_System_specialProperties(JNIEnv* env, jclass ignored) {
     return result;
 }
 
-JNIEXPORT void JNICALL Java_java_lang_System_log(JNIEnv* env, jclass ignored, jchar type, jstring javaMessage, jthrowable exception) {
+static void System_log(JNIEnv* env, jclass ignored, jchar type, jstring javaMessage, jthrowable exception) {
     int priority;
     switch (type) {
     case 'D': case 'd': priority = ANDROID_LOG_DEBUG;   break;
@@ -257,38 +251,27 @@ JNIEXPORT void JNICALL Java_java_lang_System_log(JNIEnv* env, jclass ignored, jc
     }
 }
 
-JNIEXPORT jlong JNICALL Java_java_lang_System_nanoTime() {
-// RoboVM note: Darwin doesn't have CLOCK_MONOTONIC till iOS 10
-#if defined(__APPLE__)
-    mach_timebase_info_data_t info;
-    mach_timebase_info(&info);
-    uint64_t t = mach_absolute_time();
-    t *= info.numer;
-    t /= info.denom;
-    return (jlong) t;
-#else
-    timespec now;
-    clock_gettime(CLOCK_MONOTONIC, &now);
-    return now.tv_sec * 1000000000LL + now.tv_nsec;
-#endif
+static jlong System_nanoTime() {
+  struct timespec now;
+  clock_gettime(CLOCK_MONOTONIC, &now);
+  return now.tv_sec * 1000000000LL + now.tv_nsec;
 }
 
-JNIEXPORT jlong JNICALL Java_java_lang_System_currentTimeMillis() {
+static jlong System_currentTimeMillis() {
   return JVM_CurrentTimeMillis(NULL, NULL);
 }
 
-// RoboVM Note: using fully qualified JNI names
-//static JNINativeMethod gMethods[] = {
-//  NATIVE_METHOD(System, mapLibraryName, "(Ljava/lang/String;)Ljava/lang/String;"),
-//  NATIVE_METHOD(System, setErr0, "(Ljava/io/PrintStream;)V"),
-//  NATIVE_METHOD(System, setOut0, "(Ljava/io/PrintStream;)V"),
-//  NATIVE_METHOD(System, setIn0, "(Ljava/io/InputStream;)V"),
-//  NATIVE_METHOD(System, specialProperties, "()[Ljava/lang/String;"),
-//  NATIVE_METHOD(System, log, "(CLjava/lang/String;Ljava/lang/Throwable;)V"),
-//  CRITICAL_NATIVE_METHOD(System, currentTimeMillis, "()J"),
-//  CRITICAL_NATIVE_METHOD(System, nanoTime, "()J"),
-//};
-//
-//void register_java_lang_System(JNIEnv* env) {
-//  jniRegisterNativeMethods(env, "java/lang/System", gMethods, NELEM(gMethods));
-//}
+static JNINativeMethod gMethods[] = {
+  NATIVE_METHOD(System, mapLibraryName, "(Ljava/lang/String;)Ljava/lang/String;"),
+  NATIVE_METHOD(System, setErr0, "(Ljava/io/PrintStream;)V"),
+  NATIVE_METHOD(System, setOut0, "(Ljava/io/PrintStream;)V"),
+  NATIVE_METHOD(System, setIn0, "(Ljava/io/InputStream;)V"),
+  NATIVE_METHOD(System, specialProperties, "()[Ljava/lang/String;"),
+  NATIVE_METHOD(System, log, "(CLjava/lang/String;Ljava/lang/Throwable;)V"),
+  CRITICAL_NATIVE_METHOD(System, currentTimeMillis, "()J"),
+  CRITICAL_NATIVE_METHOD(System, nanoTime, "()J"),
+};
+
+void register_java_lang_System(JNIEnv* env) {
+  jniRegisterNativeMethods(env, "java/lang/System", gMethods, NELEM(gMethods));
+}

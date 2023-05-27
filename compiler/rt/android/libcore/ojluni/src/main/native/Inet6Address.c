@@ -44,10 +44,9 @@ jfieldID ia6_scopeidsetID;
 jfieldID ia6_scopeifnameID;
 jmethodID ia6_ctrID;
 
-// RoboVM note: registerNatives will be called from class initializer
-JNIEXPORT void JNICALL
-Java_java_net_Inet6Address_registerNatives(JNIEnv *env, jclass c) {
+static void Inet6Address_init(JNIEnv *env) {
     jclass ia6h_class;
+    jclass c = (*env)->FindClass(env, "java/net/Inet6Address");
     CHECK_NULL(c);
     ia6_class = (*env)->NewGlobalRef(env, c);
     CHECK_NULL(ia6_class);
@@ -66,6 +65,6 @@ Java_java_net_Inet6Address_registerNatives(JNIEnv *env, jclass c) {
     ia6_ctrID = (*env)->GetMethodID(env, ia6_class, "<init>", "()V");
 }
 
-//void register_java_net_Inet6Address(JNIEnv* env) {
-//    Inet6Address_init(env);
-//}
+void register_java_net_Inet6Address(JNIEnv* env) {
+    Inet6Address_init(env);
+}

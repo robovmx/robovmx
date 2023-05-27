@@ -154,10 +154,7 @@ public class DefaultSelectorProvider {
         if (osname.equals("Linux"))
             return createProvider("sun.nio.ch.EPollSelectorProvider");
         */
-//        return new sun.nio.ch.PollSelectorProvider();
-        // RoboVM Note: using KQueueSelectorProvider that is available on MAC/iOS
-        // RoboVM Note: TODO: FIXME: linux should use Poll one!
-        return new sun.nio.ch.KQueueSelectorProvider();
+        return new sun.nio.ch.PollSelectorProvider();
     }
 
 }

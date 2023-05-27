@@ -36,7 +36,7 @@
  * Find the float corresponding to a given bit pattern
  */
 JNIEXPORT jfloat JNICALL
-Java_java_lang_Float_intBitsToFloat(JNIEnv *env, jclass unused, jint v)
+Float_intBitsToFloat(JNIEnv *env, jclass unused, jint v)
 {
     union {
         int i;
@@ -50,7 +50,7 @@ Java_java_lang_Float_intBitsToFloat(JNIEnv *env, jclass unused, jint v)
  * Find the bit pattern corresponding to a given float, NOT collapsing NaNs
  */
 JNIEXPORT jint JNICALL
-Java_java_lang_Float_floatToRawIntBits(JNIEnv *env, jclass unused, jfloat v)
+Float_floatToRawIntBits(JNIEnv *env, jclass unused, jfloat v)
 {
     union {
         int i;
@@ -59,13 +59,11 @@ Java_java_lang_Float_floatToRawIntBits(JNIEnv *env, jclass unused, jfloat v)
     u.f = (float)v;
     return (jint)u.i;
 }
+static JNINativeMethod gMethods[] = {
+  NATIVE_METHOD(Float, intBitsToFloat, "(I)F"),
+  NATIVE_METHOD(Float, floatToRawIntBits, "(F)I"),
+};
 
-// RoboVM Note: Using fully qualified JNI names
-//static JNINativeMethod gMethods[] = {
-//  NATIVE_METHOD(Float, intBitsToFloat, "(I)F"),
-//  NATIVE_METHOD(Float, floatToRawIntBits, "(F)I"),
-//};
-//
-//void register_java_lang_Float(JNIEnv* env) {
-//  jniRegisterNativeMethods(env, "java/lang/Float", gMethods, NELEM(gMethods));
-//}
+void register_java_lang_Float(JNIEnv* env) {
+  jniRegisterNativeMethods(env, "java/lang/Float", gMethods, NELEM(gMethods));
+}

@@ -33,9 +33,7 @@
 
 static jclass noSuchMethodErrCl;
 
-// RoboVM note: registerNatives will be called from class initializer
-JNIEXPORT void JNICALL
-Java_java_io_ObjectStreamClass_registerNatives(JNIEnv *env, jclass c)
+static void ObjectStreamClass_initNative(JNIEnv *env)
 {
     jclass cl = (*env)->FindClass(env, "java/lang/NoSuchMethodError");
     if (cl == NULL) {           /* exception thrown */
@@ -56,7 +54,7 @@ JNIEXPORT jboolean JNICALL
 // Android-changed: Added inheritStaticInitializer parameter.
 // The inheritStaticInitializer parameter is set to JNI_TRUE when behavior compatible with
 // Android version 23 is required.
-Java_java_io_ObjectStreamClass_hasStaticInitializer(JNIEnv *env, jclass this,
+ObjectStreamClass_hasStaticInitializer(JNIEnv *env, jclass this,
                                        jclass clazz,
                                        jboolean inheritStaticInitializer)
 {
@@ -112,12 +110,11 @@ Java_java_io_ObjectStreamClass_hasStaticInitializer(JNIEnv *env, jclass this,
     return (clinitId != superClinitId);
 }
 
-// RoboVM Note: using fully qualified names
-//static JNINativeMethod gMethods[] = {
-//  NATIVE_METHOD(ObjectStreamClass, hasStaticInitializer, "(Ljava/lang/Class;Z)Z"),
-//};
-//
-//void register_java_io_ObjectStreamClass(JNIEnv* env) {
-//  jniRegisterNativeMethods(env, "java/io/ObjectStreamClass", gMethods, NELEM(gMethods));
-//  ObjectStreamClass_initNative(env);
-//}
+static JNINativeMethod gMethods[] = {
+  NATIVE_METHOD(ObjectStreamClass, hasStaticInitializer, "(Ljava/lang/Class;Z)Z"),
+};
+
+void register_java_io_ObjectStreamClass(JNIEnv* env) {
+  jniRegisterNativeMethods(env, "java/io/ObjectStreamClass", gMethods, NELEM(gMethods));
+  ObjectStreamClass_initNative(env);
+}

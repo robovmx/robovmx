@@ -497,21 +497,20 @@ Java_java_io_UnixFileSystem_getSpace0(JNIEnv *env, jobject this,
     return rv;
 }
 
-// RoboVM Note: using fully qualified JNI names
-//static JNINativeMethod gMethods[] = {
-//    NATIVE_METHOD(UnixFileSystem, initIDs, "()V"),
-//    NATIVE_METHOD(UnixFileSystem, canonicalize0, "(Ljava/lang/String;)Ljava/lang/String;"),
-//    NATIVE_METHOD(UnixFileSystem, getBooleanAttributes0, "(Ljava/lang/String;)I"),
-//    NATIVE_METHOD(UnixFileSystem, setPermission0, "(Ljava/io/File;IZZ)Z"),
-//    NATIVE_METHOD(UnixFileSystem, getLastModifiedTime0, "(Ljava/io/File;)J"),
-//    NATIVE_METHOD(UnixFileSystem, createFileExclusively0, "(Ljava/lang/String;)Z"),
-//    NATIVE_METHOD(UnixFileSystem, list0, "(Ljava/io/File;)[Ljava/lang/String;"),
-//    NATIVE_METHOD(UnixFileSystem, createDirectory0, "(Ljava/io/File;)Z"),
-//    NATIVE_METHOD(UnixFileSystem, setLastModifiedTime0, "(Ljava/io/File;J)Z"),
-//    NATIVE_METHOD(UnixFileSystem, setReadOnly0, "(Ljava/io/File;)Z"),
-//    NATIVE_METHOD(UnixFileSystem, getSpace0, "(Ljava/io/File;I)J"),
-//};
-//
-//void register_java_io_UnixFileSystem(JNIEnv* env) {
-//    jniRegisterNativeMethods(env, "java/io/UnixFileSystem", gMethods, NELEM(gMethods));
-//}
+static JNINativeMethod gMethods[] = {
+    NATIVE_METHOD(UnixFileSystem, initIDs, "()V"),
+    NATIVE_METHOD(UnixFileSystem, canonicalize0, "(Ljava/lang/String;)Ljava/lang/String;"),
+    NATIVE_METHOD(UnixFileSystem, getBooleanAttributes0, "(Ljava/lang/String;)I"),
+    NATIVE_METHOD(UnixFileSystem, setPermission0, "(Ljava/io/File;IZZ)Z"),
+    NATIVE_METHOD(UnixFileSystem, getLastModifiedTime0, "(Ljava/io/File;)J"),
+    NATIVE_METHOD(UnixFileSystem, createFileExclusively0, "(Ljava/lang/String;)Z"),
+    NATIVE_METHOD(UnixFileSystem, list0, "(Ljava/io/File;)[Ljava/lang/String;"),
+    NATIVE_METHOD(UnixFileSystem, createDirectory0, "(Ljava/io/File;)Z"),
+    NATIVE_METHOD(UnixFileSystem, setLastModifiedTime0, "(Ljava/io/File;J)Z"),
+    NATIVE_METHOD(UnixFileSystem, setReadOnly0, "(Ljava/io/File;)Z"),
+    NATIVE_METHOD(UnixFileSystem, getSpace0, "(Ljava/io/File;I)J"),
+};
+
+void register_java_io_UnixFileSystem(JNIEnv* env) {
+    jniRegisterNativeMethods(env, "java/io/UnixFileSystem", gMethods, NELEM(gMethods));
+}

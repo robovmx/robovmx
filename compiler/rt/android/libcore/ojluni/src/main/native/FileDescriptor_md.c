@@ -45,8 +45,8 @@ jfieldID IO_fd_fdID;
  * static methods to store field ID's in initializers
  */
 
-JNIEXPORT void JNICALL
-Java_java_io_FileDescriptor_registerNatives(JNIEnv *env, jclass fdClass) {
+static void FileDescriptor_initIDs(JNIEnv *env) {
+    jclass fdClass = (*env)->FindClass(env, "java/io/FileDescriptor");
     IO_fd_fdID = (*env)->GetFieldID(env, fdClass, "descriptor", "I");
 }
 
@@ -54,36 +54,29 @@ Java_java_io_FileDescriptor_registerNatives(JNIEnv *env, jclass fdClass) {
  * File Descriptor
  */
 
-JNIEXPORT void JNICALL Java_java_io_FileDescriptor_sync(JNIEnv *env, jobject this) {
+JNIEXPORT void JNICALL
+FileDescriptor_sync(JNIEnv *env, jobject this) {
     int fd = (*env)->GetIntField(env, this, IO_fd_fdID);
     if (JVM_Sync(fd) == -1) {
         JNU_ThrowByName(env, "java/io/SyncFailedException", "sync failed");
     }
 }
 
-JNIEXPORT jboolean JNICALL Java_java_io_FileDescriptor_isSocket(JNIEnv *env, jclass ignored, jint fd) {
-// RoboVM Note: SO_DOMAIN is not available on Darwin
-#if defined(DARWIN)
-    int error;
-    socklen_t error_length = sizeof(error);
-    return TEMP_FAILURE_RETRY(getsockopt(fd, SOL_SOCKET, SO_ERROR, &error, &error_length)) == 0;
-#else
+JNIEXPORT jboolean JNICALL FileDescriptor_isSocket(JNIEnv *env, jclass ignored, jint fd) {
     // BEGIN Android-changed: isSocket - do not clear socket error code
     int domain;
     socklen_t domain_length = sizeof(domain);
     return TEMP_FAILURE_RETRY(getsockopt(fd, SOL_SOCKET, SO_DOMAIN, &domain, &domain_length)) == 0;
     // END Android-changed: isSocket - do not clear socket error code
-#endif
 }
 
-// RoboVM Note: using fully qualified JNI names
-//static JNINativeMethod gMethods[] = {
-//  NATIVE_METHOD(FileDescriptor, sync, "()V"),
-//  NATIVE_METHOD(FileDescriptor, isSocket, "(I)Z"),
-//};
-//
-//void register_java_io_FileDescriptor(JNIEnv* env) {
-//    jniRegisterNativeMethods(env, "java/io/FileDescriptor", gMethods, NELEM(gMethods));
-//
-//    FileDescriptor_initIDs(env);
-//}
+static JNINativeMethod gMethods[] = {
+  NATIVE_METHOD(FileDescriptor, sync, "()V"),
+  NATIVE_METHOD(FileDescriptor, isSocket, "(I)Z"),
+};
+
+void register_java_io_FileDescriptor(JNIEnv* env) {
+    jniRegisterNativeMethods(env, "java/io/FileDescriptor", gMethods, NELEM(gMethods));
+
+    FileDescriptor_initIDs(env);
+}

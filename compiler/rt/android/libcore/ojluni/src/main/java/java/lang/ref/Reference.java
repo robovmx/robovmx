@@ -111,10 +111,7 @@ public abstract class Reference<T> {
     }
 
     @FastNative
-    private final T getReferent() {
-        // RoboVM Note: it is native on Android
-        return referent;
-    }
+    private final native T getReferent();
 
     /**
      * Tests if the referent of this reference object is {@code obj}.
@@ -126,15 +123,12 @@ public abstract class Reference<T> {
      * @hide
      */
     public final boolean refersTo(T obj) {
-// RoboVM: not available
-//        return refersTo0(obj);
-        throw new UnsupportedOperationException();
+        return refersTo0(obj);
     }
 
-// RoboVM Note: not available
-//    /* Implementation of refersTo(). */
-//    @FastNative
-//    private final native boolean refersTo0(Object o);
+    /* Implementation of refersTo(). */
+    @FastNative
+    private final native boolean refersTo0(Object o);
 
     /**
      * Clears this reference object.  Invoking this method will not cause this
@@ -150,10 +144,7 @@ public abstract class Reference<T> {
     // Direct access to the referent is prohibited, clearReferent blocks and set
     // the referent to null when it is safe to do so.
     @FastNative
-    void clearReferent() {
-        // RoboVM Note: its native on Android. FIXME: probably should handle in memory.c
-        referent = null;
-    }
+    native void clearReferent();
 
     /* -- Queue operations -- */
 
@@ -221,14 +212,8 @@ public abstract class Reference<T> {
     Reference(T referent, ReferenceQueue<? super T> queue) {
         this.referent = referent;
         this.queue = queue;
-        register(referent);
     }
     // END Android-changed: Reimplemented to accommodate a different GC and compiler.
-
-    /**
-     * RoboVM note: This is not present in Android.
-     */
-    private native void register(T r);
 
     // BEGIN Android-added: reachabilityFence() from upstream OpenJDK9+181.
     // The actual implementation differs from OpenJDK9.

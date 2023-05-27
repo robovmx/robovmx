@@ -45,19 +45,13 @@
 
 static jfieldID IO_fd_fdID;
 
-// RoboVM note: registerNatives will be called from class initializer
-JNIEXPORT void JNICALL
-Java_java_net_SocketInputStream_registerNatives(JNIEnv *env, jclass fdClass) {
-    IO_fd_fdID = NET_GetFileDescriptorID(env);
-}
-
 /*
  * Class:     java_net_SocketInputStream
  * Method:    socketRead0
  * Signature: (Ljava/io/FileDescriptor;[BIII)I
  */
 JNIEXPORT jint JNICALL
-Java_java_net_SocketInputStream_socketRead0(JNIEnv *env, jobject this,
+SocketInputStream_socketRead0(JNIEnv *env, jobject this,
                                             jobject fdObj, jbyteArray data,
                                             jint off, jint len, jint timeout)
 {
@@ -159,14 +153,13 @@ Java_java_net_SocketInputStream_socketRead0(JNIEnv *env, jobject this,
     return nread;
 }
 
-// RoboVM Note: using fully qualified JNI names
-//static JNINativeMethod gMethods[] = {
-//  NATIVE_METHOD(SocketInputStream, socketRead0, "(Ljava/io/FileDescriptor;[BIII)I"),
-//};
-//
-//void register_java_net_SocketInputStream(JNIEnv* env) {
-//  jniRegisterNativeMethods(env, "java/net/SocketInputStream", gMethods, NELEM(gMethods));
-//
-//  // Init field ids
-//  IO_fd_fdID = NET_GetFileDescriptorID(env);
-//}
+static JNINativeMethod gMethods[] = {
+  NATIVE_METHOD(SocketInputStream, socketRead0, "(Ljava/io/FileDescriptor;[BIII)I"),
+};
+
+void register_java_net_SocketInputStream(JNIEnv* env) {
+  jniRegisterNativeMethods(env, "java/net/SocketInputStream", gMethods, NELEM(gMethods));
+
+  // Init field ids
+  IO_fd_fdID = NET_GetFileDescriptorID(env);
+}

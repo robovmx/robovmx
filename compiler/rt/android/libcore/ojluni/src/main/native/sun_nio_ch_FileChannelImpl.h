@@ -63,10 +63,10 @@ JNIEXPORT jint JNICALL Java_sun_nio_ch_FileChannelImpl_unmap0
 /*
  * Class:     sun_nio_ch_FileChannelImpl
  * Method:    transferTo0
- * Signature: (Ljava/io/FileDescriptor;JJLjava/io/FileDescriptor;)J
+ * Signature: (IJJI)J
  */
 JNIEXPORT jlong JNICALL Java_sun_nio_ch_FileChannelImpl_transferTo0
-  (JNIEnv *, jobject, jobject, jlong, jlong, jobject);
+  (JNIEnv *, jobject, jint, jlong, jlong, jint);
 
 /*
  * Class:     sun_nio_ch_FileChannelImpl

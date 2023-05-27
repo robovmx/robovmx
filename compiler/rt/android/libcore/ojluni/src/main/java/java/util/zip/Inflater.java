@@ -76,11 +76,6 @@ import dalvik.system.CloseGuard;
  */
 public
 class Inflater {
-    // RoboVM note: invoking registerNatives to initialize missing native elements
-    private static native void registerNatives();
-    static {
-        registerNatives();
-    }
 
     // Android-added: @ReachabilitySensitive
     // Finalization clears zsRef, and thus can't be allowed to occur early.

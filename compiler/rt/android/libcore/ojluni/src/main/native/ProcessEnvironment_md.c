@@ -38,7 +38,7 @@
 { #functionName, signature, (void*)(className ## _ ## functionName) }
 
 JNIEXPORT jobjectArray JNICALL
-Java_java_lang_ProcessEnvironment_environ(JNIEnv *env, jclass ign)
+ProcessEnvironment_environ(JNIEnv *env, jclass ign)
 {
     /* This is one of the rare times it's more portable to declare an
      * external symbol explicitly, rather than via a system header.
@@ -91,11 +91,10 @@ Java_java_lang_ProcessEnvironment_environ(JNIEnv *env, jclass ign)
     return result;
 }
 
-// RoboVM Note: using fully qualified JNI names
-//static JNINativeMethod gMethods[] = {
-//  NATIVE_METHOD(ProcessEnvironment, environ, "()[[B"),
-//};
-//
-//void register_java_lang_ProcessEnvironment(JNIEnv* env) {
-//  jniRegisterNativeMethods(env, "java/lang/ProcessEnvironment", gMethods, NELEM(gMethods));
-//}
+static JNINativeMethod gMethods[] = {
+  NATIVE_METHOD(ProcessEnvironment, environ, "()[[B"),
+};
+
+void register_java_lang_ProcessEnvironment(JNIEnv* env) {
+  jniRegisterNativeMethods(env, "java/lang/ProcessEnvironment", gMethods, NELEM(gMethods));
+}

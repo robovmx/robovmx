@@ -67,9 +67,8 @@ nullHandler(int sig)
 {
 }
 
-// RoboVM note: registerNatives will be called from class initializer
-JNIEXPORT void JNICALL
-Java_sun_nio_ch_NativeThread_registerNatives(JNIEnv *env, jclass cls) {
+static void  NativeThread_init(JNIEnv *env)
+{
     /* Install the null handler for INTERRUPT_SIGNAL.  This might overwrite the
      * handler previously installed by java/net/linux_close.c, but that's okay
      * since neither handler actually does anything.  We install our own
@@ -87,7 +86,7 @@ Java_sun_nio_ch_NativeThread_registerNatives(JNIEnv *env, jclass cls) {
 }
 
 JNIEXPORT jlong JNICALL
-Java_sun_nio_ch_NativeThread_current(JNIEnv *env, jclass cl)
+NativeThread_current(JNIEnv *env, jclass cl)
 {
 #ifdef __solaris__
     return (jlong)thr_self();
@@ -97,7 +96,7 @@ Java_sun_nio_ch_NativeThread_current(JNIEnv *env, jclass cl)
 }
 
 JNIEXPORT void JNICALL
-Java_sun_nio_ch_NativeThread_signal(JNIEnv *env, jclass cl, jlong thread)
+NativeThread_signal(JNIEnv *env, jclass cl, jlong thread)
 {
     int ret;
 #ifdef __solaris__
@@ -109,13 +108,12 @@ Java_sun_nio_ch_NativeThread_signal(JNIEnv *env, jclass cl, jlong thread)
         JNU_ThrowIOExceptionWithLastError(env, "Thread signal failed");
 }
 
-// RoboVM Note: Using fully qualified JNI names
-//static JNINativeMethod gMethods[] = {
-//  NATIVE_METHOD(NativeThread, current, "()J"),
-//  NATIVE_METHOD(NativeThread, signal, "(J)V"),
-//};
-//
-//void register_sun_nio_ch_NativeThread(JNIEnv* env) {
-//  jniRegisterNativeMethods(env, "sun/nio/ch/NativeThread", gMethods, NELEM(gMethods));
-//  NativeThread_init(env);
-//}
+static JNINativeMethod gMethods[] = {
+  NATIVE_METHOD(NativeThread, current, "()J"),
+  NATIVE_METHOD(NativeThread, signal, "(J)V"),
+};
+
+void register_sun_nio_ch_NativeThread(JNIEnv* env) {
+  jniRegisterNativeMethods(env, "sun/nio/ch/NativeThread", gMethods, NELEM(gMethods));
+  NativeThread_init(env);
+}

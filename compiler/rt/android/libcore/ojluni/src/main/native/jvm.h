@@ -127,9 +127,8 @@ JVM_Exit(jint code);
 JNIEXPORT void JNICALL
 JVM_Halt(jint code);
 
-// RoboVM note: commented out as robovm runtime is used
-//JNIEXPORT void JNICALL
-//JVM_GC(void);
+JNIEXPORT void JNICALL
+JVM_GC(void);
 
 /* Returns the number of real-time milliseconds that have elapsed since the
  * least-recently-inspected heap object was last inspected by the garbage
@@ -154,24 +153,20 @@ JVM_TraceInstructions(jboolean on);
 JNIEXPORT void JNICALL
 JVM_TraceMethodCalls(jboolean on);
 
-// RoboVM note: commented out as robovm runtime is used
-//JNIEXPORT jlong JNICALL
-//JVM_TotalMemory(void);
+JNIEXPORT jlong JNICALL
+JVM_TotalMemory(void);
 
-// RoboVM note: commented out as robovm runtime is used
-//JNIEXPORT jlong JNICALL
-//JVM_FreeMemory(void);
+JNIEXPORT jlong JNICALL
+JVM_FreeMemory(void);
 
-// RoboVM note: commented out as robovm runtime is used
-//JNIEXPORT jlong JNICALL
-//JVM_MaxMemory(void);
+JNIEXPORT jlong JNICALL
+JVM_MaxMemory(void);
 
 JNIEXPORT jint JNICALL
 JVM_ActiveProcessorCount(void);
 
-// RoboVM note: commented out as robovm runtime is used
-//JNIEXPORT jstring JVM_NativeLoad(JNIEnv* env, jstring javaFilename,
-//                                 jobject javaLoader, jclass caller);
+JNIEXPORT jstring JVM_NativeLoad(JNIEnv* env, jstring javaFilename,
+                                 jobject javaLoader, jclass caller);
 
 JNIEXPORT void * JNICALL
 JVM_LoadLibrary(const char *name);

@@ -48,9 +48,8 @@ static jfieldID finishID;
 static jfieldID finishedID;
 static jfieldID bufID, offID, lenID;
 
-// RoboVM note: registerNatives will be called from class initializer
-JNIEXPORT void JNICALL
-Java_java_util_zip_Deflater_registerNatives(JNIEnv *env, jclass cls) {
+static void Deflater_initIDs(JNIEnv *env) {
+    jclass cls = (*env)->FindClass(env, "java/util/zip/Deflater");
     levelID = (*env)->GetFieldID(env, cls, "level", "I");
     strategyID = (*env)->GetFieldID(env, cls, "strategy", "I");
     setParamsID = (*env)->GetFieldID(env, cls, "setParams", "Z");
@@ -62,7 +61,7 @@ Java_java_util_zip_Deflater_registerNatives(JNIEnv *env, jclass cls) {
 }
 
 JNIEXPORT jlong JNICALL
-Java_java_util_zip_Deflater_init(JNIEnv *env, jclass cls, jint level,
+Deflater_init(JNIEnv *env, jclass cls, jint level,
                                  jint strategy, jboolean nowrap)
 {
     z_stream *strm = calloc(1, sizeof(z_stream));
@@ -100,7 +99,7 @@ Java_java_util_zip_Deflater_init(JNIEnv *env, jclass cls, jint level,
 }
 
 JNIEXPORT void JNICALL
-Java_java_util_zip_Deflater_setDictionary(JNIEnv *env, jclass cls, jlong addr,
+Deflater_setDictionary(JNIEnv *env, jclass cls, jlong addr,
                                           jarray b, jint off, jint len)
 {
     Bytef *buf = (*env)->GetPrimitiveArrayCritical(env, b, 0);
@@ -123,7 +122,7 @@ Java_java_util_zip_Deflater_setDictionary(JNIEnv *env, jclass cls, jlong addr,
 }
 
 JNIEXPORT jint JNICALL
-Java_java_util_zip_Deflater_deflateBytes(JNIEnv *env, jobject this, jlong addr,
+Deflater_deflateBytes(JNIEnv *env, jobject this, jlong addr,
                                          jarray b, jint off, jint len, jint flush)
 {
     z_stream *strm = jlong_to_ptr(addr);
@@ -218,13 +217,13 @@ Java_java_util_zip_Deflater_deflateBytes(JNIEnv *env, jobject this, jlong addr,
 }
 
 JNIEXPORT jint JNICALL
-Java_java_util_zip_Deflater_getAdler(JNIEnv *env, jclass cls, jlong addr)
+Deflater_getAdler(JNIEnv *env, jclass cls, jlong addr)
 {
     return ((z_stream *)jlong_to_ptr(addr))->adler;
 }
 
 JNIEXPORT void JNICALL
-Java_java_util_zip_Deflater_reset(JNIEnv *env, jclass cls, jlong addr)
+Deflater_reset(JNIEnv *env, jclass cls, jlong addr)
 {
     if (deflateReset((z_stream *)jlong_to_ptr(addr)) != Z_OK) {
         JNU_ThrowInternalError(env, 0);
@@ -232,7 +231,7 @@ Java_java_util_zip_Deflater_reset(JNIEnv *env, jclass cls, jlong addr)
 }
 
 JNIEXPORT void JNICALL
-Java_java_util_zip_Deflater_end(JNIEnv *env, jclass cls, jlong addr)
+Deflater_end(JNIEnv *env, jclass cls, jlong addr)
 {
     if (deflateEnd((z_stream *)jlong_to_ptr(addr)) == Z_STREAM_ERROR) {
         JNU_ThrowInternalError(env, 0);
@@ -241,18 +240,17 @@ Java_java_util_zip_Deflater_end(JNIEnv *env, jclass cls, jlong addr)
     }
 }
 
-// RoboVM Note: Using fully qualified JNI names
-//static JNINativeMethod gMethods[] = {
-//  NATIVE_METHOD(Deflater, init, "(IIZ)J"),
-//  NATIVE_METHOD(Deflater, setDictionary, "(J[BII)V"),
-//  NATIVE_METHOD(Deflater, deflateBytes, "(J[BIII)I"),
-//  NATIVE_METHOD(Deflater, getAdler, "(J)I"),
-//  NATIVE_METHOD(Deflater, reset, "(J)V"),
-//  NATIVE_METHOD(Deflater, end, "(J)V"),
-//};
-//
-//void register_java_util_zip_Deflater(JNIEnv* env) {
-//    jniRegisterNativeMethods(env, "java/util/zip/Deflater", gMethods, NELEM(gMethods));
-//
-//    Deflater_initIDs(env);
-//}
+static JNINativeMethod gMethods[] = {
+  NATIVE_METHOD(Deflater, init, "(IIZ)J"),
+  NATIVE_METHOD(Deflater, setDictionary, "(J[BII)V"),
+  NATIVE_METHOD(Deflater, deflateBytes, "(J[BIII)I"),
+  NATIVE_METHOD(Deflater, getAdler, "(J)I"),
+  NATIVE_METHOD(Deflater, reset, "(J)V"),
+  NATIVE_METHOD(Deflater, end, "(J)V"),
+};
+
+void register_java_util_zip_Deflater(JNIEnv* env) {
+    jniRegisterNativeMethods(env, "java/util/zip/Deflater", gMethods, NELEM(gMethods));
+
+    Deflater_initIDs(env);
+}
