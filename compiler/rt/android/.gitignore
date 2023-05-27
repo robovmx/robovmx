@@ -183,3 +183,9 @@ TEST_MAPPING
 /libnativehelper/OWNERS
 /libnativehelper/PREUPLOAD.cfg
 /libnativehelper/TEST_MAPPING
+
+##
+## system/logging -- keep only liblog
+##
+/system/logging/*
+!/system/logging/liblog
