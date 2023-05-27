@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 The Android Open Source Project
+ * Copyright (C) 2020 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,33 +14,29 @@
  * limitations under the License.
  */
 
-#include "android-base/quick_exit.h"
+#pragma once
 
-#if !defined(__linux__)
+#include "errno.h"
 
-#include <mutex>
-#include <vector>
+#include "android-base/macros.h"
 
 namespace android {
 namespace base {
 
-static auto& quick_exit_mutex = *new std::mutex();
-static auto& quick_exit_handlers = *new std::vector<void (*)()>();
+class ErrnoRestorer {
+ public:
+  ErrnoRestorer() : saved_errno_(errno) {}
 
-void quick_exit(int exit_code) {
-  std::lock_guard<std::mutex> lock(quick_exit_mutex);
-  for (auto it = quick_exit_handlers.rbegin(); it != quick_exit_handlers.rend(); ++it) {
-    (*it)();
-  }
-  _Exit(exit_code);
-}
+  ~ErrnoRestorer() { errno = saved_errno_; }
 
-int at_quick_exit(void (*func)()) {
-  std::lock_guard<std::mutex> lock(quick_exit_mutex);
-  quick_exit_handlers.push_back(func);
-  return 0;
-}
+  // Allow this object to be used as part of && operation.
+  explicit operator bool() const { return true; }
+
+ private:
+  const int saved_errno_;
+
+  DISALLOW_COPY_AND_ASSIGN(ErrnoRestorer);
+};
 
 }  // namespace base
 }  // namespace android
-#endif

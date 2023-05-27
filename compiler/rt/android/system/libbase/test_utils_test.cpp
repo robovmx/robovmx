@@ -27,39 +27,56 @@ namespace base {
 TEST(TestUtilsTest, AssertMatch) {
   ASSERT_MATCH("foobar", R"(fo+baz?r)");
   EXPECT_FATAL_FAILURE(ASSERT_MATCH("foobar", R"(foobaz)"), "regex mismatch");
+
+  ASSERT_MATCH(L"foobar", LR"(fo+baz?r)");
+  EXPECT_FATAL_FAILURE(ASSERT_MATCH(L"foobar", LR"(foobaz)"), "regex mismatch");
 }
 
 TEST(TestUtilsTest, AssertNotMatch) {
   ASSERT_NOT_MATCH("foobar", R"(foobaz)");
   EXPECT_FATAL_FAILURE(ASSERT_NOT_MATCH("foobar", R"(foobar)"), "regex mismatch");
+
+  ASSERT_NOT_MATCH(L"foobar", LR"(foobaz)");
+  EXPECT_FATAL_FAILURE(ASSERT_NOT_MATCH(L"foobar", LR"(foobar)"), "regex mismatch");
 }
 
 TEST(TestUtilsTest, ExpectMatch) {
   EXPECT_MATCH("foobar", R"(fo+baz?r)");
   EXPECT_NONFATAL_FAILURE(EXPECT_MATCH("foobar", R"(foobaz)"), "regex mismatch");
+
+  EXPECT_MATCH(L"foobar", LR"(fo+baz?r)");
+  EXPECT_NONFATAL_FAILURE(EXPECT_MATCH(L"foobar", LR"(foobaz)"), "regex mismatch");
 }
 
 TEST(TestUtilsTest, ExpectNotMatch) {
   EXPECT_NOT_MATCH("foobar", R"(foobaz)");
   EXPECT_NONFATAL_FAILURE(EXPECT_NOT_MATCH("foobar", R"(foobar)"), "regex mismatch");
+
+  EXPECT_NOT_MATCH(L"foobar", LR"(foobaz)");
+  EXPECT_NONFATAL_FAILURE(EXPECT_NOT_MATCH(L"foobar", LR"(foobar)"), "regex mismatch");
 }
 
 TEST(TestUtilsTest, CaptureStdout_smoke) {
   CapturedStdout cap;
   printf("This should be captured.\n");
+  fflush(stdout);
   cap.Stop();
   printf("This will not be captured.\n");
+  fflush(stdout);
   ASSERT_EQ("This should be captured.\n", cap.str());
 
   cap.Start();
   printf("And this text should be captured too.\n");
+  fflush(stdout);
   cap.Stop();
   ASSERT_EQ("This should be captured.\nAnd this text should be captured too.\n", cap.str());
 
   printf("Still not going to be captured.\n");
+  fflush(stdout);
   cap.Reset();
   cap.Start();
   printf("Only this will be captured.\n");
+  fflush(stdout);
   ASSERT_EQ("Only this will be captured.\n", cap.str());
 }
 

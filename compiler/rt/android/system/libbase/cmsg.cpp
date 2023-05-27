@@ -29,11 +29,12 @@
 namespace android {
 namespace base {
 
-ssize_t SendFileDescriptorVector(int sockfd, const void* data, size_t len,
+ssize_t SendFileDescriptorVector(borrowed_fd sockfd, const void* data, size_t len,
                                  const std::vector<int>& fds) {
+  static const size_t page_size = sysconf(_SC_PAGE_SIZE);
   size_t cmsg_space = CMSG_SPACE(sizeof(int) * fds.size());
   size_t cmsg_len = CMSG_LEN(sizeof(int) * fds.size());
-  if (cmsg_space >= PAGE_SIZE) {
+  if (cmsg_space >= page_size) {
     errno = ENOMEM;
     return -1;
   }
@@ -67,15 +68,16 @@ ssize_t SendFileDescriptorVector(int sockfd, const void* data, size_t len,
   int flags = 0;
 #endif
 
-  return TEMP_FAILURE_RETRY(sendmsg(sockfd, &msg, flags));
+  return TEMP_FAILURE_RETRY(sendmsg(sockfd.get(), &msg, flags));
 }
 
-ssize_t ReceiveFileDescriptorVector(int sockfd, void* data, size_t len, size_t max_fds,
+ssize_t ReceiveFileDescriptorVector(borrowed_fd sockfd, void* data, size_t len, size_t max_fds,
                                     std::vector<unique_fd>* fds) {
   fds->clear();
 
+  static const size_t page_size = sysconf(_SC_PAGE_SIZE);
   size_t cmsg_space = CMSG_SPACE(sizeof(int) * max_fds);
-  if (cmsg_space >= PAGE_SIZE) {
+  if (cmsg_space >= page_size) {
     errno = ENOMEM;
     return -1;
   }
@@ -98,7 +100,7 @@ ssize_t ReceiveFileDescriptorVector(int sockfd, void* data, size_t len, size_t m
   flags |= MSG_CMSG_CLOEXEC | MSG_NOSIGNAL;
 #endif
 
-  ssize_t rc = TEMP_FAILURE_RETRY(recvmsg(sockfd, &msg, flags));
+  ssize_t rc = TEMP_FAILURE_RETRY(recvmsg(sockfd.get(), &msg, flags));
 
   if (rc == -1) {
     return -1;

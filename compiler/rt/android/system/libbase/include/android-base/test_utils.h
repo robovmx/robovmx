@@ -18,6 +18,7 @@
 
 #include <regex>
 #include <string>
+#include <type_traits>
 
 #include <android-base/file.h>
 #include <android-base/macros.h>
@@ -53,30 +54,44 @@ class CapturedStdout : public CapturedStdFd {
   CapturedStdout() : CapturedStdFd(STDOUT_FILENO) {}
 };
 
-#define ASSERT_MATCH(str, pattern)                                             \
+#define __LIBBASE_GENERIC_REGEX_SEARCH(__s, __pattern) \
+  (std::regex_search(__s, std::basic_regex<std::decay<decltype(__s[0])>::type>((__pattern))))
+
+#define ASSERT_MATCH(__string, __pattern)                                      \
   do {                                                                         \
-    if (!std::regex_search((str), std::regex((pattern)))) {                    \
-      FAIL() << "regex mismatch: expected " << (pattern) << " in:\n" << (str); \
+    auto __s = (__string);                                                     \
+    if (!__LIBBASE_GENERIC_REGEX_SEARCH(__s, (__pattern))) {                   \
+      FAIL() << "regex mismatch: expected " << (__pattern) << " in:\n" << __s; \
     }                                                                          \
   } while (0)
 
-#define ASSERT_NOT_MATCH(str, pattern)                                                     \
+#define ASSERT_NOT_MATCH(__string, __pattern)                                              \
   do {                                                                                     \
-    if (std::regex_search((str), std::regex((pattern)))) {                                 \
-      FAIL() << "regex mismatch: expected to not find " << (pattern) << " in:\n" << (str); \
+    auto __s = (__string);                                                                 \
+    if (__LIBBASE_GENERIC_REGEX_SEARCH(__s, (__pattern))) {                                \
+      FAIL() << "regex mismatch: expected to not find " << (__pattern) << " in:\n" << __s; \
     }                                                                                      \
   } while (0)
 
-#define EXPECT_MATCH(str, pattern)                                                    \
+#define EXPECT_MATCH(__string, __pattern)                                             \
   do {                                                                                \
-    if (!std::regex_search((str), std::regex((pattern)))) {                           \
-      ADD_FAILURE() << "regex mismatch: expected " << (pattern) << " in:\n" << (str); \
+    auto __s = (__string);                                                            \
+    if (!__LIBBASE_GENERIC_REGEX_SEARCH(__s, (__pattern))) {                          \
+      ADD_FAILURE() << "regex mismatch: expected " << (__pattern) << " in:\n" << __s; \
     }                                                                                 \
   } while (0)
 
-#define EXPECT_NOT_MATCH(str, pattern)                                                            \
+#define EXPECT_NOT_MATCH(__string, __pattern)                                                     \
   do {                                                                                            \
-    if (std::regex_search((str), std::regex((pattern)))) {                                        \
-      ADD_FAILURE() << "regex mismatch: expected to not find " << (pattern) << " in:\n" << (str); \
+    auto __s = (__string);                                                                        \
+    if (__LIBBASE_GENERIC_REGEX_SEARCH(__s, (__pattern))) {                                       \
+      ADD_FAILURE() << "regex mismatch: expected to not find " << (__pattern) << " in:\n" << __s; \
     }                                                                                             \
   } while (0)
+
+extern "C" void __hwasan_init() __attribute__((weak));
+static inline bool running_with_hwasan() {
+  return &__hwasan_init != 0;
+}
+
+#define SKIP_WITH_HWASAN if (running_with_hwasan()) GTEST_SKIP()

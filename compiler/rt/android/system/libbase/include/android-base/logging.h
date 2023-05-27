@@ -27,6 +27,8 @@
 //   LOG(INFO) << "Some text; " << some_value;
 //
 // Replace `INFO` with any severity from `enum LogSeverity`.
+// Most devices filter out VERBOSE logs by default, run
+// `adb shell setprop log.tag.<TAG> V` to see them in adb logcat.
 //
 // To log the result of a failed function and include the string
 // representation of `errno` at the end:
@@ -64,6 +66,7 @@
 #include <memory>
 #include <ostream>
 
+#include "android-base/errno_restorer.h"
 #include "android-base/macros.h"
 
 // Note: DO NOT USE DIRECTLY. Use LOG_TAG instead.
@@ -85,7 +88,7 @@ enum LogSeverity {
   INFO,
   WARNING,
   ERROR,
-  FATAL_WITHOUT_ABORT,
+  FATAL_WITHOUT_ABORT,  // For loggability tests, this is considered identical to FATAL.
   FATAL,
 };
 
@@ -93,32 +96,38 @@ enum LogId {
   DEFAULT,
   MAIN,
   SYSTEM,
+  RADIO,
+  CRASH,
 };
 
-using LogFunction = std::function<void(LogId, LogSeverity, const char*, const char*,
-                                       unsigned int, const char*)>;
-using AbortFunction = std::function<void(const char*)>;
+using LogFunction = std::function<void(LogId /*log_buffer_id*/,
+                                       LogSeverity /*severity*/,
+                                       const char* /*tag*/,
+                                       const char* /*file*/,
+                                       unsigned int /*line*/,
+                                       const char* /*message*/)>;
+using AbortFunction = std::function<void(const char* /*abort_message*/)>;
 
 // Loggers for use with InitLogging/SetLogger.
 
 // Log to the kernel log (dmesg).
-void KernelLogger(LogId, LogSeverity, const char*, const char*, unsigned int, const char*);
+void KernelLogger(LogId log_buffer_id, LogSeverity severity, const char* tag, const char* file, unsigned int line, const char* message);
 // Log to stderr in the full logcat format (with pid/tid/time/tag details).
-void StderrLogger(LogId, LogSeverity, const char*, const char*, unsigned int, const char*);
+void StderrLogger(LogId log_buffer_id, LogSeverity severity, const char* tag, const char* file, unsigned int line, const char* message);
 // Log just the message to stdout/stderr (without pid/tid/time/tag details).
 // The choice of stdout versus stderr is based on the severity.
 // Errors are also prefixed by the program name (as with err(3)/error(3)).
 // Useful for replacing printf(3)/perror(3)/err(3)/error(3) in command-line tools.
-void StdioLogger(LogId, LogSeverity, const char*, const char*, unsigned int, const char*);
+void StdioLogger(LogId log_buffer_id, LogSeverity severity, const char* tag, const char* file, unsigned int line, const char* message);
 
 void DefaultAborter(const char* abort_message);
 
-std::string GetDefaultTag();
 void SetDefaultTag(const std::string& tag);
 
-#ifdef __ANDROID__
-// We expose this even though it is the default because a user that wants to
-// override the default log buffer will have to construct this themselves.
+// The LogdLogger sends chunks of up to ~4000 bytes at a time to logd.  It does not prevent other
+// threads from writing to logd between sending each chunk, so other threads may interleave their
+// messages.  If preventing interleaving is required, then a custom logger that takes a lock before
+// calling this logger should be provided.
 class LogdLogger {
  public:
   explicit LogdLogger(LogId default_log_id = android::base::MAIN);
@@ -129,7 +138,6 @@ class LogdLogger {
  private:
   LogId default_log_id_;
 };
-#endif
 
 // Configure logging based on ANDROID_LOG_TAGS environment variable.
 // We need to parse a string that looks like
@@ -149,32 +157,11 @@ void InitLogging(char* argv[],
                  AbortFunction&& aborter = DefaultAborter);
 #undef INIT_LOGGING_DEFAULT_LOGGER
 
-// Replace the current logger.
-void SetLogger(LogFunction&& logger);
+// Replace the current logger and return the old one.
+LogFunction SetLogger(LogFunction&& logger);
 
-// Replace the current aborter.
-void SetAborter(AbortFunction&& aborter);
-
-class ErrnoRestorer {
- public:
-  ErrnoRestorer()
-      : saved_errno_(errno) {
-  }
-
-  ~ErrnoRestorer() {
-    errno = saved_errno_;
-  }
-
-  // Allow this object to be used as part of && operation.
-  operator bool() const {
-    return true;
-  }
-
- private:
-  const int saved_errno_;
-
-  DISALLOW_COPY_AND_ASSIGN(ErrnoRestorer);
-};
+// Replace the current aborter and return the old one.
+AbortFunction SetAborter(AbortFunction&& aborter);
 
 // A helper macro that produces an expression that accepts both a qualified name and an
 // unqualified name for a LogSeverity, and returns a LogSeverity value.
@@ -211,8 +198,8 @@ struct LogAbortAfterFullExpr {
 #define ABORT_AFTER_LOG_FATAL_EXPR(x) ABORT_AFTER_LOG_EXPR_IF(true, x)
 
 // Defines whether the given severity will be logged or silently swallowed.
-#define WOULD_LOG(severity) \
-  (UNLIKELY((SEVERITY_LAMBDA(severity)) >= ::android::base::GetMinimumLogSeverity()) || \
+#define WOULD_LOG(severity)                                                              \
+  (UNLIKELY(::android::base::ShouldLog(SEVERITY_LAMBDA(severity), _LOG_TAG_INTERNAL)) || \
    MUST_LOG_MESSAGE(severity))
 
 // Get an ostream that can be used for logging at the given severity and to the default
@@ -222,20 +209,16 @@ struct LogAbortAfterFullExpr {
 // 1) This will not check whether the severity is high enough. One should use WOULD_LOG to filter
 //    usage manually.
 // 2) This does not save and restore errno.
-#define LOG_STREAM(severity) LOG_STREAM_TO(DEFAULT, severity)
-
-// Get an ostream that can be used for logging at the given severity and to the
-// given destination. The same notes as for LOG_STREAM apply.
-#define LOG_STREAM_TO(dest, severity)                                           \
-  ::android::base::LogMessage(__FILE__, __LINE__, ::android::base::dest,        \
-                              SEVERITY_LAMBDA(severity), _LOG_TAG_INTERNAL, -1) \
+#define LOG_STREAM(severity)                                                                    \
+  ::android::base::LogMessage(__FILE__, __LINE__, SEVERITY_LAMBDA(severity), _LOG_TAG_INTERNAL, \
+                              -1)                                                               \
       .stream()
 
 // Logs a message to logcat on Android otherwise to stderr. If the severity is
 // FATAL it also causes an abort. For example:
 //
 //     LOG(FATAL) << "We didn't expect to reach here";
-#define LOG(severity) LOG_TO(DEFAULT, severity)
+#define LOG(severity) LOGGING_PREAMBLE(severity) && LOG_STREAM(severity)
 
 // Checks if we want to log something, and sets up appropriate RAII objects if
 // so.
@@ -245,21 +228,12 @@ struct LogAbortAfterFullExpr {
    ABORT_AFTER_LOG_EXPR_IF((SEVERITY_LAMBDA(severity)) == ::android::base::FATAL, true) && \
    ::android::base::ErrnoRestorer())
 
-// Logs a message to logcat with the specified log ID on Android otherwise to
-// stderr. If the severity is FATAL it also causes an abort.
-// Use an expression here so we can support the << operator following the macro,
-// like "LOG(DEBUG) << xxx;".
-#define LOG_TO(dest, severity) LOGGING_PREAMBLE(severity) && LOG_STREAM_TO(dest, severity)
-
 // A variant of LOG that also logs the current errno value. To be used when
 // library calls fail.
-#define PLOG(severity) PLOG_TO(DEFAULT, severity)
-
-// Behaves like PLOG, but logs to the specified log ID.
-#define PLOG_TO(dest, severity)                                                        \
-  LOGGING_PREAMBLE(severity) &&                                                        \
-      ::android::base::LogMessage(__FILE__, __LINE__, ::android::base::dest,           \
-                                  SEVERITY_LAMBDA(severity), _LOG_TAG_INTERNAL, errno) \
+#define PLOG(severity)                                                           \
+  LOGGING_PREAMBLE(severity) &&                                                  \
+      ::android::base::LogMessage(__FILE__, __LINE__, SEVERITY_LAMBDA(severity), \
+                                  _LOG_TAG_INTERNAL, errno)                      \
           .stream()
 
 // Marker that code is yet to be implemented.
@@ -272,25 +246,27 @@ struct LogAbortAfterFullExpr {
 //
 //     CHECK(false == true) results in a log message of
 //       "Check failed: false == true".
-#define CHECK(x)                                                                 \
-  LIKELY((x)) || ABORT_AFTER_LOG_FATAL_EXPR(false) ||                            \
-      ::android::base::LogMessage(__FILE__, __LINE__, ::android::base::DEFAULT,  \
-                                  ::android::base::FATAL, _LOG_TAG_INTERNAL, -1) \
-              .stream()                                                          \
+#define CHECK(x)                                                                                 \
+  LIKELY((x)) || ABORT_AFTER_LOG_FATAL_EXPR(false) ||                                            \
+      ::android::base::LogMessage(__FILE__, __LINE__, ::android::base::FATAL, _LOG_TAG_INTERNAL, \
+                                  -1)                                                            \
+              .stream()                                                                          \
           << "Check failed: " #x << " "
 
 // clang-format off
 // Helper for CHECK_xx(x,y) macros.
-#define CHECK_OP(LHS, RHS, OP)                                                                 \
-  for (auto _values = ::android::base::MakeEagerEvaluator(LHS, RHS);                           \
-       UNLIKELY(!(_values.lhs OP _values.rhs));                                                \
-       /* empty */)                                                                            \
-  ABORT_AFTER_LOG_FATAL                                                                        \
-  ::android::base::LogMessage(__FILE__, __LINE__, ::android::base::DEFAULT,                    \
-                              ::android::base::FATAL, _LOG_TAG_INTERNAL, -1)                   \
-          .stream()                                                                            \
-      << "Check failed: " << #LHS << " " << #OP << " " << #RHS << " (" #LHS "=" << _values.lhs \
-      << ", " #RHS "=" << _values.rhs << ") "
+#define CHECK_OP(LHS, RHS, OP)                                                                   \
+  for (auto _values = ::android::base::MakeEagerEvaluator(LHS, RHS);                             \
+       UNLIKELY(!(_values.lhs.v OP _values.rhs.v));                                              \
+       /* empty */)                                                                              \
+  ABORT_AFTER_LOG_FATAL                                                                          \
+  ::android::base::LogMessage(__FILE__, __LINE__, ::android::base::FATAL, _LOG_TAG_INTERNAL, -1) \
+          .stream()                                                                              \
+      << "Check failed: " << #LHS << " " << #OP << " " << #RHS << " (" #LHS "="                  \
+      << ::android::base::LogNullGuard<decltype(_values.lhs.v)>::Guard(_values.lhs.v)            \
+      << ", " #RHS "="                                                                           \
+      << ::android::base::LogNullGuard<decltype(_values.rhs.v)>::Guard(_values.rhs.v)            \
+      << ") "
 // clang-format on
 
 // Check whether a condition holds between x and y, LOG(FATAL) if not. The value
@@ -311,8 +287,8 @@ struct LogAbortAfterFullExpr {
 #define CHECK_STROP(s1, s2, sense)                                             \
   while (UNLIKELY((strcmp(s1, s2) == 0) != (sense)))                           \
     ABORT_AFTER_LOG_FATAL                                                      \
-    ::android::base::LogMessage(__FILE__, __LINE__, ::android::base::DEFAULT,  \
-                                ::android::base::FATAL, _LOG_TAG_INTERNAL, -1) \
+    ::android::base::LogMessage(__FILE__, __LINE__,  ::android::base::FATAL,   \
+                                 _LOG_TAG_INTERNAL, -1)                        \
         .stream()                                                              \
         << "Check failed: " << "\"" << (s1) << "\""                            \
         << ((sense) ? " == " : " != ") << "\"" << (s2) << "\""
@@ -332,20 +308,6 @@ struct LogAbortAfterFullExpr {
       PLOG(FATAL) << #call << " failed for " << (what);                \
     }                                                                  \
   } while (false)
-
-// CHECK that can be used in a constexpr function. For example:
-//
-//    constexpr int half(int n) {
-//      return
-//          DCHECK_CONSTEXPR(n >= 0, , 0)
-//          CHECK_CONSTEXPR((n & 1) == 0),
-//              << "Extra debugging output: n = " << n, 0)
-//          n / 2;
-//    }
-#define CHECK_CONSTEXPR(x, out, dummy)                                     \
-  (UNLIKELY(!(x)))                                                         \
-      ? (LOG(FATAL) << "Check failed: " << #x out, dummy) \
-      :
 
 // DCHECKs are debug variants of CHECKs only enabled in debug builds. Generally
 // CHECK should be used unless profiling identifies a CHECK as being in
@@ -374,54 +336,77 @@ static constexpr bool kEnableDChecks = true;
   if (::android::base::kEnableDChecks) CHECK_STREQ(s1, s2)
 #define DCHECK_STRNE(s1, s2) \
   if (::android::base::kEnableDChecks) CHECK_STRNE(s1, s2)
-#if defined(NDEBUG) && !defined(__clang_analyzer__)
-#define DCHECK_CONSTEXPR(x, out, dummy)
-#else
-#define DCHECK_CONSTEXPR(x, out, dummy) CHECK_CONSTEXPR(x, out, dummy)
-#endif
+
+namespace log_detail {
+
+// Temporary storage for a single eagerly evaluated check expression operand.
+template <typename T> struct Storage {
+  template <typename U> explicit constexpr Storage(U&& u) : v(std::forward<U>(u)) {}
+  explicit Storage(const Storage& t) = delete;
+  explicit Storage(Storage&& t) = delete;
+  T v;
+};
+
+// Partial specialization for smart pointers to avoid copying.
+template <typename T> struct Storage<std::unique_ptr<T>> {
+  explicit constexpr Storage(const std::unique_ptr<T>& ptr) : v(ptr.get()) {}
+  const T* v;
+};
+template <typename T> struct Storage<std::shared_ptr<T>> {
+  explicit constexpr Storage(const std::shared_ptr<T>& ptr) : v(ptr.get()) {}
+  const T* v;
+};
+
+// Type trait that checks if a type is a (potentially const) char pointer.
+template <typename T> struct IsCharPointer {
+  using Pointee = std::remove_cv_t<std::remove_pointer_t<T>>;
+  static constexpr bool value = std::is_pointer_v<T> &&
+      (std::is_same_v<Pointee, char> || std::is_same_v<Pointee, signed char> ||
+       std::is_same_v<Pointee, unsigned char>);
+};
+
+// Counterpart to Storage that depends on both operands. This is used to prevent
+// char pointers being treated as strings in the log output - they might point
+// to buffers of unprintable binary data.
+template <typename LHS, typename RHS> struct StorageTypes {
+  static constexpr bool voidptr = IsCharPointer<LHS>::value && IsCharPointer<RHS>::value;
+  using LHSType = std::conditional_t<voidptr, const void*, LHS>;
+  using RHSType = std::conditional_t<voidptr, const void*, RHS>;
+};
 
 // Temporary class created to evaluate the LHS and RHS, used with
 // MakeEagerEvaluator to infer the types of LHS and RHS.
 template <typename LHS, typename RHS>
 struct EagerEvaluator {
-  constexpr EagerEvaluator(LHS l, RHS r) : lhs(l), rhs(r) {
-  }
-  LHS lhs;
-  RHS rhs;
+  template <typename A, typename B> constexpr EagerEvaluator(A&& l, B&& r)
+      : lhs(std::forward<A>(l)), rhs(std::forward<B>(r)) {}
+  const Storage<typename StorageTypes<LHS, RHS>::LHSType> lhs;
+  const Storage<typename StorageTypes<LHS, RHS>::RHSType> rhs;
+};
+
+}  // namespace log_detail
+
+// Converts std::nullptr_t and null char pointers to the string "null"
+// when writing the failure message.
+template <typename T> struct LogNullGuard {
+  static const T& Guard(const T& v) { return v; }
+};
+template <> struct LogNullGuard<std::nullptr_t> {
+  static const char* Guard(const std::nullptr_t&) { return "(null)"; }
+};
+template <> struct LogNullGuard<char*> {
+  static const char* Guard(const char* v) { return v ? v : "(null)"; }
+};
+template <> struct LogNullGuard<const char*> {
+  static const char* Guard(const char* v) { return v ? v : "(null)"; }
 };
 
 // Helper function for CHECK_xx.
 template <typename LHS, typename RHS>
-constexpr EagerEvaluator<LHS, RHS> MakeEagerEvaluator(LHS lhs, RHS rhs) {
-  return EagerEvaluator<LHS, RHS>(lhs, rhs);
+constexpr auto MakeEagerEvaluator(LHS&& lhs, RHS&& rhs) {
+  return log_detail::EagerEvaluator<std::decay_t<LHS>, std::decay_t<RHS>>(
+      std::forward<LHS>(lhs), std::forward<RHS>(rhs));
 }
-
-// Explicitly instantiate EagerEvalue for pointers so that char*s aren't treated
-// as strings. To compare strings use CHECK_STREQ and CHECK_STRNE. We rely on
-// signed/unsigned warnings to protect you against combinations not explicitly
-// listed below.
-#define EAGER_PTR_EVALUATOR(T1, T2)               \
-  template <>                                     \
-  struct EagerEvaluator<T1, T2> {                 \
-    EagerEvaluator(T1 l, T2 r)                    \
-        : lhs(reinterpret_cast<const void*>(l)),  \
-          rhs(reinterpret_cast<const void*>(r)) { \
-    }                                             \
-    const void* lhs;                              \
-    const void* rhs;                              \
-  }
-EAGER_PTR_EVALUATOR(const char*, const char*);
-EAGER_PTR_EVALUATOR(const char*, char*);
-EAGER_PTR_EVALUATOR(char*, const char*);
-EAGER_PTR_EVALUATOR(char*, char*);
-EAGER_PTR_EVALUATOR(const unsigned char*, const unsigned char*);
-EAGER_PTR_EVALUATOR(const unsigned char*, unsigned char*);
-EAGER_PTR_EVALUATOR(unsigned char*, const unsigned char*);
-EAGER_PTR_EVALUATOR(unsigned char*, unsigned char*);
-EAGER_PTR_EVALUATOR(const signed char*, const signed char*);
-EAGER_PTR_EVALUATOR(const signed char*, signed char*);
-EAGER_PTR_EVALUATOR(signed char*, const signed char*);
-EAGER_PTR_EVALUATOR(signed char*, signed char*);
 
 // Data for the log message, not stored in LogMessage to avoid increasing the
 // stack size.
@@ -431,8 +416,10 @@ class LogMessageData;
 // of a CHECK. The destructor will abort if the severity is FATAL.
 class LogMessage {
  public:
-  LogMessage(const char* file, unsigned int line, LogId id, LogSeverity severity, const char* tag,
+  // LogId has been deprecated, but this constructor must exist for prebuilts.
+  LogMessage(const char* file, unsigned int line, LogId, LogSeverity severity, const char* tag,
              int error);
+  LogMessage(const char* file, unsigned int line, LogSeverity severity, const char* tag, int error);
 
   ~LogMessage();
 
@@ -441,8 +428,8 @@ class LogMessage {
   std::ostream& stream();
 
   // The routine that performs the actual logging.
-  static void LogLine(const char* file, unsigned int line, LogId id, LogSeverity severity,
-                      const char* tag, const char* msg);
+  static void LogLine(const char* file, unsigned int line, LogSeverity severity, const char* tag,
+                      const char* msg);
 
  private:
   const std::unique_ptr<LogMessageData> data_;
@@ -455,6 +442,9 @@ LogSeverity GetMinimumLogSeverity();
 
 // Set the minimum severity level for logging, returning the old severity.
 LogSeverity SetMinimumLogSeverity(LogSeverity new_severity);
+
+// Return whether or not a log message with the associated tag should be logged.
+bool ShouldLog(LogSeverity severity, const char* tag);
 
 // Allows to temporarily change the minimum severity level for logging.
 class ScopedLogSeverity {
@@ -469,14 +459,11 @@ class ScopedLogSeverity {
 }  // namespace base
 }  // namespace android
 
-namespace std {
+namespace std {  // NOLINT(cert-dcl58-cpp)
 
 // Emit a warning of ostream<< with std::string*. The intention was most likely to print *string.
 //
 // Note: for this to work, we need to have this in a namespace.
-// Note: lots of ifdef magic to make this work with Clang (platform) vs GCC (windows tools)
-// Note: using diagnose_if(true) under Clang and nothing under GCC/mingw as there is no common
-//       attribute support.
 // Note: using a pragma because "-Wgcc-compat" (included in "-Weverything") complains about
 //       diagnose_if.
 // Note: to print the pointer, use "<< static_cast<const void*>(string_pointer)" instead.
@@ -486,8 +473,8 @@ namespace std {
 #pragma clang diagnostic ignored "-Wgcc-compat"
 #define OSTREAM_STRING_POINTER_USAGE_WARNING \
     __attribute__((diagnose_if(true, "Unexpected logging of string pointer", "warning")))
-inline std::ostream& operator<<(std::ostream& stream, const std::string* string_pointer)
-    OSTREAM_STRING_POINTER_USAGE_WARNING {
+inline OSTREAM_STRING_POINTER_USAGE_WARNING
+std::ostream& operator<<(std::ostream& stream, const std::string* string_pointer) {
   return stream << static_cast<const void*>(string_pointer);
 }
 #pragma clang diagnostic pop

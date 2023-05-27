@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 The Android Open Source Project
+ * Copyright (C) 2019 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,21 +14,22 @@
  * limitations under the License.
  */
 
-#pragma once
+#include "android-base/process.h"
 
-#include <stdlib.h>
+#include <unistd.h>
 
-// Provide emulation for at_quick_exit/quick_exit on platforms that don't have it.
-namespace android {
-namespace base {
+#include <gtest/gtest.h>
 
-// Bionic and glibc have quick_exit, Darwin and Windows don't.
-#if !defined(__linux__)
-  void quick_exit(int exit_code) __attribute__((noreturn));
-  int at_quick_exit(void (*func)());
-#else
-  using ::at_quick_exit;
-  using ::quick_exit;
+TEST(process, find_ourselves) {
+#if defined(__linux__)
+  bool found_our_pid = false;
+  for (const auto& pid : android::base::AllPids{}) {
+    if (pid == getpid()) {
+      found_our_pid = true;
+    }
+  }
+
+  EXPECT_TRUE(found_our_pid);
+
 #endif
-}
 }

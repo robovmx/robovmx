@@ -83,6 +83,52 @@ TEST(strings, split_any_with_empty_part) {
   ASSERT_EQ("bar", parts[2]);
 }
 
+TEST(strings, tokenize_empty) {
+  std::vector<std::string> parts = android::base::Tokenize("", " ");
+  ASSERT_EQ(0U, parts.size());
+}
+
+TEST(strings, tokenize_all_delimiter) {
+  std::vector<std::string> parts = android::base::Tokenize("  \t ", " \t");
+  ASSERT_EQ(0U, parts.size());
+}
+
+TEST(strings, tokenize_trivial) {
+  std::vector<std::string> parts = android::base::Tokenize("foo", "\t");
+  ASSERT_EQ(1U, parts.size());
+  ASSERT_EQ("foo", parts[0]);
+}
+
+TEST(strings, tokenize_single) {
+  std::vector<std::string> parts = android::base::Tokenize("foo\t", "\t");
+  ASSERT_EQ(1U, parts.size());
+  ASSERT_EQ("foo", parts[0]);
+}
+
+TEST(strings, tokenize_simple) {
+  std::vector<std::string> parts = android::base::Tokenize("foo   bar baz", " ");
+  ASSERT_EQ(3U, parts.size());
+  ASSERT_EQ("foo", parts[0]);
+  ASSERT_EQ("bar", parts[1]);
+  ASSERT_EQ("baz", parts[2]);
+}
+
+TEST(strings, tokenize_any) {
+  std::vector<std::string> parts = android::base::Tokenize("foo \tbar\t\t baz", " \t");
+  ASSERT_EQ(3U, parts.size());
+  ASSERT_EQ("foo", parts[0]);
+  ASSERT_EQ("bar", parts[1]);
+  ASSERT_EQ("baz", parts[2]);
+}
+
+TEST(strings, tokenize_beginning_trailing_delimiters) {
+  std::vector<std::string> parts = android::base::Tokenize(" foo bar baz \t", " \t");
+  ASSERT_EQ(3U, parts.size());
+  ASSERT_EQ("foo", parts[0]);
+  ASSERT_EQ("bar", parts[1]);
+  ASSERT_EQ("baz", parts[2]);
+}
+
 TEST(strings, trim_empty) {
   ASSERT_EQ("", android::base::Trim(""));
 }
@@ -109,6 +155,22 @@ TEST(strings, trim_no_trim_middle) {
 
 TEST(strings, trim_other_whitespace) {
   ASSERT_EQ("foo", android::base::Trim("\v\tfoo\n\f"));
+}
+
+TEST(strings, trim_build_implicit_string_conversion) {
+  struct Foo {
+    operator std::string() { return " foo "; }
+    explicit operator std::string_view() { return " foo "; }
+  };
+  ASSERT_EQ("foo", android::base::Trim(Foo()));
+}
+
+TEST(strings, trim_build_implicit_string_view_conversion) {
+  struct Foo {
+    explicit operator std::string() { return " foo "; }
+    operator std::string_view() { return " foo "; }
+  };
+  ASSERT_EQ("foo", android::base::Trim(Foo()));
 }
 
 TEST(strings, join_nothing) {
@@ -294,4 +356,67 @@ TEST(strings, EqualsIgnoreCase) {
 
 TEST(strings, ubsan_28729303) {
   android::base::Split("/dev/null", ":");
+}
+
+TEST(strings, ConsumePrefix) {
+  std::string_view s{"foo.bar"};
+  ASSERT_FALSE(android::base::ConsumePrefix(&s, "bar."));
+  ASSERT_EQ("foo.bar", s);
+  ASSERT_TRUE(android::base::ConsumePrefix(&s, "foo."));
+  ASSERT_EQ("bar", s);
+}
+
+TEST(strings, ConsumeSuffix) {
+  std::string_view s{"foo.bar"};
+  ASSERT_FALSE(android::base::ConsumeSuffix(&s, ".foo"));
+  ASSERT_EQ("foo.bar", s);
+  ASSERT_TRUE(android::base::ConsumeSuffix(&s, ".bar"));
+  ASSERT_EQ("foo", s);
+}
+
+TEST(strings, StringReplace_false) {
+  // No change.
+  ASSERT_EQ("abcabc", android::base::StringReplace("abcabc", "z", "Z", false));
+  ASSERT_EQ("", android::base::StringReplace("", "z", "Z", false));
+  ASSERT_EQ("abcabc", android::base::StringReplace("abcabc", "", "Z", false));
+
+  // Equal lengths.
+  ASSERT_EQ("Abcabc", android::base::StringReplace("abcabc", "a", "A", false));
+  ASSERT_EQ("aBcabc", android::base::StringReplace("abcabc", "b", "B", false));
+  ASSERT_EQ("abCabc", android::base::StringReplace("abcabc", "c", "C", false));
+
+  // Longer replacement.
+  ASSERT_EQ("foobcabc", android::base::StringReplace("abcabc", "a", "foo", false));
+  ASSERT_EQ("afoocabc", android::base::StringReplace("abcabc", "b", "foo", false));
+  ASSERT_EQ("abfooabc", android::base::StringReplace("abcabc", "c", "foo", false));
+
+  // Shorter replacement.
+  ASSERT_EQ("xxyz", android::base::StringReplace("abcxyz", "abc", "x", false));
+  ASSERT_EQ("axyz", android::base::StringReplace("abcxyz", "bcx", "x", false));
+  ASSERT_EQ("abcx", android::base::StringReplace("abcxyz", "xyz", "x", false));
+}
+
+TEST(strings, StringReplace_true) {
+  // No change.
+  ASSERT_EQ("abcabc", android::base::StringReplace("abcabc", "z", "Z", true));
+  ASSERT_EQ("", android::base::StringReplace("", "z", "Z", true));
+  ASSERT_EQ("abcabc", android::base::StringReplace("abcabc", "", "Z", true));
+
+  // Equal lengths.
+  ASSERT_EQ("AbcAbc", android::base::StringReplace("abcabc", "a", "A", true));
+  ASSERT_EQ("aBcaBc", android::base::StringReplace("abcabc", "b", "B", true));
+  ASSERT_EQ("abCabC", android::base::StringReplace("abcabc", "c", "C", true));
+
+  // Longer replacement.
+  ASSERT_EQ("foobcfoobc", android::base::StringReplace("abcabc", "a", "foo", true));
+  ASSERT_EQ("afoocafooc", android::base::StringReplace("abcabc", "b", "foo", true));
+  ASSERT_EQ("abfooabfoo", android::base::StringReplace("abcabc", "c", "foo", true));
+
+  // Shorter replacement.
+  ASSERT_EQ("xxyzx", android::base::StringReplace("abcxyzabc", "abc", "x", true));
+  ASSERT_EQ("<xx>", android::base::StringReplace("<abcabc>", "abc", "x", true));
+}
+
+TEST(strings, ErrnoNumberAsString) {
+  EXPECT_EQ("No such file or directory", android::base::ErrnoNumberAsString(ENOENT));
 }

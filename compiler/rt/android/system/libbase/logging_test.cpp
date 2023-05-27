@@ -22,10 +22,13 @@
 #include <signal.h>
 #endif
 
+#include <memory>
 #include <regex>
 #include <string>
+#include <thread>
 
 #include "android-base/file.h"
+#include "android-base/scopeguard.h"
 #include "android-base/stringprintf.h"
 #include "android-base/test_utils.h"
 
@@ -64,6 +67,16 @@ TEST(logging, CHECK) {
   ASSERT_DEATH({SuppressAbortUI(); CHECK_EQ(0, 1);}, "Check failed: 0 == 1 ");
   CHECK_EQ(0, 0);
 
+  std::unique_ptr<int> p;
+  ASSERT_DEATH(CHECK_NE(p, nullptr), "Check failed");
+  CHECK_EQ(p, nullptr);
+  CHECK_EQ(p, p);
+
+  const char* kText = "Some text";
+  ASSERT_DEATH(CHECK_NE(kText, kText), "Check failed");
+  ASSERT_DEATH(CHECK_EQ(kText, nullptr), "Check failed.*null");
+  CHECK_EQ(kText, kText);
+
   ASSERT_DEATH({SuppressAbortUI(); CHECK_STREQ("foo", "bar");},
                R"(Check failed: "foo" == "bar")");
   CHECK_STREQ("foo", "foo");
@@ -94,6 +107,13 @@ TEST(logging, DCHECK) {
     ASSERT_DEATH({SuppressAbortUI(); DCHECK_EQ(0, 1);}, "DCheck failed: 0 == 1 ");
   }
   DCHECK_EQ(0, 0);
+
+  std::unique_ptr<int> p;
+  if (android::base::kEnableDChecks) {
+    ASSERT_DEATH(DCHECK_NE(p, nullptr), "DCheck failed");
+  }
+  DCHECK_EQ(p, nullptr);
+  DCHECK_EQ(p, p);
 
   if (android::base::kEnableDChecks) {
     ASSERT_DEATH({SuppressAbortUI(); DCHECK_STREQ("foo", "bar");},
@@ -138,10 +158,6 @@ TEST(logging, DCHECK) {
 
 TEST(logging, WOULD_LOG_FATAL) {
   CHECK_WOULD_LOG_ENABLED(FATAL);
-}
-
-TEST(logging, WOULD_LOG_FATAL_WITHOUT_ABORT_disabled) {
-  CHECK_WOULD_LOG_DISABLED(FATAL_WITHOUT_ABORT);
 }
 
 TEST(logging, WOULD_LOG_FATAL_WITHOUT_ABORT_enabled) {
@@ -266,10 +282,6 @@ static void CheckMessage(CapturedStderr& cap, android::base::LogSeverity severit
     CheckMessage(cap2, android::base::severity, "foobar"); \
   } \
 
-TEST(logging, LOG_STREAM_FATAL_WITHOUT_ABORT_disabled) {
-  CHECK_LOG_STREAM_DISABLED(FATAL_WITHOUT_ABORT);
-}
-
 TEST(logging, LOG_STREAM_FATAL_WITHOUT_ABORT_enabled) {
   ASSERT_NO_FATAL_FAILURE(CHECK_LOG_STREAM_ENABLED(FATAL_WITHOUT_ABORT));
 }
@@ -350,10 +362,6 @@ TEST(logging, LOG_STREAM_VERBOSE_enabled) {
 TEST(logging, LOG_FATAL) {
   ASSERT_DEATH({SuppressAbortUI(); LOG(FATAL) << "foobar";}, "foobar");
   ASSERT_DEATH({SuppressAbortUI(); LOG(::android::base::FATAL) << "foobar";}, "foobar");
-}
-
-TEST(logging, LOG_FATAL_WITHOUT_ABORT_disabled) {
-  CHECK_LOG_DISABLED(FATAL_WITHOUT_ABORT);
 }
 
 TEST(logging, LOG_FATAL_WITHOUT_ABORT_enabled) {
@@ -508,10 +516,6 @@ TEST(logging, PLOG_FATAL) {
   ASSERT_DEATH({SuppressAbortUI(); PLOG(::android::base::FATAL) << "foobar";}, "foobar");
 }
 
-TEST(logging, PLOG_FATAL_WITHOUT_ABORT_disabled) {
-  CHECK_PLOG_DISABLED(FATAL_WITHOUT_ABORT);
-}
-
 TEST(logging, PLOG_FATAL_WITHOUT_ABORT_enabled) {
   ASSERT_NO_FATAL_FAILURE(CHECK_PLOG_ENABLED(FATAL_WITHOUT_ABORT));
 }
@@ -612,26 +616,19 @@ TEST(logging, LOG_FATAL_ABORTER_MESSAGE) {
   CapturedStderr cap;
   LOG(FATAL) << "foo\nbar";
 
-  EXPECT_EQ(CountLineAborter::newline_count, 1U + 1U);  // +1 for final '\n'.
+  EXPECT_EQ(CountLineAborter::newline_count, 1U);
+}
+
+TEST(logging, SetAborterReturnsOldFunction) {
+  // std::function is not comparable, it only supports a null check.
+  android::base::AbortFunction old_aborter;
+  EXPECT_FALSE(old_aborter);
+  old_aborter = android::base::SetAborter(android::base::DefaultAborter);
+  EXPECT_TRUE(old_aborter);
 }
 
 __attribute__((constructor)) void TestLoggingInConstructor() {
   LOG(ERROR) << "foobar";
-}
-
-TEST(logging, SetDefaultTag) {
-  constexpr const char* expected_tag = "test_tag";
-  constexpr const char* expected_msg = "foobar";
-  CapturedStderr cap;
-  {
-    std::string old_default_tag = android::base::GetDefaultTag();
-    android::base::SetDefaultTag(expected_tag);
-    android::base::ScopedLogSeverity sls(android::base::LogSeverity::INFO);
-    LOG(INFO) << expected_msg;
-    android::base::SetDefaultTag(old_default_tag);
-  }
-  ASSERT_NO_FATAL_FAILURE(
-      CheckMessage(cap, android::base::LogSeverity::INFO, expected_msg, expected_tag));
 }
 
 TEST(logging, StdioLogger) {
@@ -647,4 +644,64 @@ TEST(logging, StdioLogger) {
   ASSERT_EQ("out\n", cap_out.str());
   // Whereas ERROR logging includes the program name.
   ASSERT_EQ(android::base::Basename(android::base::GetExecutablePath()) + ": err\n", cap_err.str());
+}
+
+TEST(logging, SetLoggerReturnsOldFunction) {
+  // std::function is not comparable, it only supports a null check.
+  android::base::LogFunction old_function;
+  EXPECT_FALSE(old_function);
+  old_function = android::base::SetLogger(android::base::StdioLogger);
+  EXPECT_TRUE(old_function);
+}
+
+TEST(logging, ForkSafe) {
+#if !defined(_WIN32)
+  using namespace android::base;
+  SetLogger(
+      [&](LogId, LogSeverity, const char*, const char*, unsigned int, const char*) { sleep(3); });
+
+  auto guard = make_scope_guard([&] {
+#ifdef __ANDROID__
+    SetLogger(LogdLogger());
+#else
+    SetLogger(StderrLogger);
+#endif
+  });
+
+  auto thread = std::thread([] {
+    LOG(ERROR) << "This should sleep for 3 seconds, long enough to fork another process, if there "
+                  "is no intervention";
+  });
+  thread.detach();
+
+  auto pid = fork();
+  ASSERT_NE(-1, pid);
+
+  if (pid == 0) {
+    // Reset the logger, so the next message doesn't sleep().
+    SetLogger([](LogId, LogSeverity, const char*, const char*, unsigned int, const char*) {});
+    LOG(ERROR) << "This should succeed in the child, only if libbase is forksafe.";
+    _exit(EXIT_SUCCESS);
+  }
+
+  // Wait for up to 3 seconds for the child to exit.
+  int tries = 3;
+  bool found_child = false;
+  while (tries-- > 0) {
+    auto result = waitpid(pid, nullptr, WNOHANG);
+    EXPECT_NE(-1, result);
+    if (result == pid) {
+      found_child = true;
+      break;
+    }
+    sleep(1);
+  }
+
+  EXPECT_TRUE(found_child);
+
+  // Kill the child if it did not exit.
+  if (!found_child) {
+    kill(pid, SIGKILL);
+  }
+#endif
 }
