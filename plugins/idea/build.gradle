@@ -1,10 +1,10 @@
 plugins {
     id 'java'
-    id "org.jetbrains.intellij" version "1.5.2"
+    id "org.jetbrains.intellij" version "1.13.2"
 }
 
 ext {
-    roboVMVersion = '10.2.2-SNAPSHOT'
+    roboVMVersion = '10.2.2.1-SNAPSHOT'
 }
 
 group 'com.robovmx'
@@ -45,7 +45,7 @@ intellij {
     updateSinceUntilBuild = false
 }
 
-task copyRoboVmDist(type: Copy) {
+def copyRoboVmDist = tasks.register("copyRoboVmDist", Copy) {
     from configurations.robovm_dist
     into "src/main/resources/"
     rename "robovm-dist-${roboVMVersion}-nocompiler.tar.gz", "robovm-dist"
@@ -54,6 +54,6 @@ task copyRoboVmDist(type: Copy) {
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
-compileJava {
+tasks.named("patchPluginXml").configure {
     dependsOn copyRoboVmDist
 }

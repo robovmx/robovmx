@@ -1,5 +1,5 @@
 plugins {
-    id "com.github.johnrengelman.shadow" version "7.1.0"
+    id "com.github.johnrengelman.shadow" version "8.1.0"
     id 'java'
     id 'groovy'
     id 'maven-publish'
@@ -10,7 +10,7 @@ plugins {
 
 group = 'com.robovmx'
 archivesBaseName = 'robovm-gradle-plugin'
-version = '10.2.2-SNAPSHOT'
+version = '10.2.2.1-SNAPSHOT'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -20,7 +20,7 @@ compileJava {
 }
 
 ext {
-    roboVMVersion = '10.2.2-SNAPSHOT'
+    roboVMVersion = '10.2.2.1-SNAPSHOT'
     nexusUsername = System.getenv('MAVEN_USERNAME')
     nexusPassword = System.getenv('MAVEN_PASSWORD')
 }
@@ -103,13 +103,18 @@ java {
 }
 
 shadowJar {
-    classifier = ''
+    archiveClassifier.set('')
     dependencies {
         exclude(dependency("com.robovmx:robovm-compiler:${roboVMVersion}"));
     }
     relocate 'org.apache.http', 'com.robovmx.org.apache.http'
     relocate 'org.apache.commons.io', 'com.robovmx.org.apache.commons.io'
     relocate 'org.objectweb.asm', 'com.robovmx.asm'
+}
+
+// suppress "warning: no comment"
+tasks.withType(Javadoc) {
+    options.addBooleanOption("Xdoclint:-missing", true)
 }
 
 signing {

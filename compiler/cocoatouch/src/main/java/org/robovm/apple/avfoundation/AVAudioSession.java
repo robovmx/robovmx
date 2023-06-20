@@ -38,6 +38,8 @@ import org.robovm.apple.coremedia.*;
 import org.robovm.apple.corevideo.*;
 import org.robovm.apple.mediatoolbox.*;
 import org.robovm.apple.audiotoolbox.*;
+import org.robovm.apple.coremidi.*;
+import org.robovm.apple.uikit.*;
 /*</imports>*/
 
 /*<javadoc>*/
@@ -52,7 +54,7 @@ import org.robovm.apple.audiotoolbox.*;
         /**
          * @since Available in iOS 6.0 and later.
          */
-        public static NSObjectProtocol observeInterruption(final VoidBlock1<AVAudioSessionInterruptionNotification> block) {
+        public static NSObject observeInterruption(final VoidBlock1<AVAudioSessionInterruptionNotification> block) {
             return NSNotificationCenter.getDefaultCenter().addObserver(InterruptionNotification(), null, NSOperationQueue.getMainQueue(), new VoidBlock1<NSNotification>() {
                 @Override
                 public void invoke(NSNotification a) {
@@ -69,7 +71,7 @@ import org.robovm.apple.audiotoolbox.*;
         /**
          * @since Available in iOS 6.0 and later.
          */
-        public static NSObjectProtocol observeRouteChange(final VoidBlock1<AVAudioSessionRouteChangeNotification> block) {
+        public static NSObject observeRouteChange(final VoidBlock1<AVAudioSessionRouteChangeNotification> block) {
             return NSNotificationCenter.getDefaultCenter().addObserver(RouteChangeNotification(), null, NSOperationQueue.getMainQueue(), new VoidBlock1<NSNotification>() {
                 @Override
                 public void invoke(NSNotification a) {
@@ -85,7 +87,7 @@ import org.robovm.apple.audiotoolbox.*;
         /**
          * @since Available in iOS 7.0 and later.
          */
-        public static NSObjectProtocol observeMediaServicesWereLost(final Runnable block) {
+        public static NSObject observeMediaServicesWereLost(final Runnable block) {
             return NSNotificationCenter.getDefaultCenter().addObserver(MediaServicesWereLostNotification(), null, NSOperationQueue.getMainQueue(), new VoidBlock1<NSNotification>() {
                 @Override
                 public void invoke(NSNotification a) {
@@ -96,7 +98,7 @@ import org.robovm.apple.audiotoolbox.*;
         /**
          * @since Available in iOS 6.0 and later.
          */
-        public static NSObjectProtocol observeMediaServicesWereReset(final Runnable block) {
+        public static NSObject observeMediaServicesWereReset(final Runnable block) {
             return NSNotificationCenter.getDefaultCenter().addObserver(MediaServicesWereResetNotification(), null, NSOperationQueue.getMainQueue(), new VoidBlock1<NSNotification>() {
                 @Override
                 public void invoke(NSNotification a) {
@@ -107,7 +109,7 @@ import org.robovm.apple.audiotoolbox.*;
         /**
          * @since Available in iOS 8.0 and later.
          */
-        public static NSObjectProtocol observeSilenceSecondaryAudioHint(final VoidBlock1<AVAudioSessionSilenceSecondaryAudioHintType> block) {
+        public static NSObject observeSilenceSecondaryAudioHint(final VoidBlock1<AVAudioSessionSilenceSecondaryAudioHintType> block) {
             return NSNotificationCenter.getDefaultCenter().addObserver(SilenceSecondaryAudioHintNotification(), null, NSOperationQueue.getMainQueue(), new VoidBlock1<NSNotification>() {
                 @Override
                 public void invoke(NSNotification a) {
@@ -255,6 +257,16 @@ import org.robovm.apple.audiotoolbox.*;
     public static native NSString SpatialPlaybackCapabilitiesChangedNotification();
     @GlobalValue(symbol="AVAudioSessionSilenceSecondaryAudioHintTypeKey", optional=true)
     protected static native NSString SilenceSecondaryAudioHintTypeKey();
+    @Library("AVFoundation")
+    public static class Keys {
+        static { Bro.bind(Keys.class); }
+
+        /**
+         * @since Available in iOS 15.0 and later.
+         */
+        @GlobalValue(symbol="AVAudioSessionSpatialAudioEnabledKey", optional=true)
+        public static native NSString SpatialAudioEnabled();
+    }
     
     public boolean setCategory(AVAudioSessionCategory category) throws NSErrorException {
        NSError.NSErrorPtr ptr = new NSError.NSErrorPtr();

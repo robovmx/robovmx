@@ -68,6 +68,16 @@ import org.robovm.apple.corehaptic.*;
     @Property(selector = "hasRemappedElements")
     public native boolean hasRemappedElements();
     /**
+     * @since Available in iOS 16.0 and later.
+     */
+    @Property(selector = "valueDidChangeHandler")
+    public native @Block VoidBlock2<GCPhysicalInputProfile, GCControllerElement> getValueDidChangeHandler();
+    /**
+     * @since Available in iOS 16.0 and later.
+     */
+    @Property(selector = "setValueDidChangeHandler:")
+    public native void setValueDidChangeHandler(@Block VoidBlock2<GCPhysicalInputProfile, GCControllerElement> v);
+    /**
      * @since Available in iOS 14.0 and later.
      */
     @Property(selector = "elements")

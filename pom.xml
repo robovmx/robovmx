@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.robovmx</groupId>
-    <version>10.2.2-SNAPSHOT</version>
+    <version>10.2.2.1-SNAPSHOT</version>
     <artifactId>robovm-parent</artifactId>
     <organization>
         <name>com.robovmx</name>
@@ -347,7 +347,7 @@
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>3.8.1</version>
                     <configuration>
-                        <release>8</release>
+                        <release>9</release>
                         <debug>true</debug>
                         <optimize>true</optimize>
                         <encoding>UTF-8</encoding>
@@ -509,7 +509,7 @@
                 </executions>
                 <configuration>
                     <doclint>none</doclint>
-                    <release>8</release>
+                    <release>9</release>
                     <detectJavaApiLink>false</detectJavaApiLink>
                 </configuration>
             </plugin>
