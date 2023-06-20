@@ -473,10 +473,6 @@ public final class Unsafe {
 
     public native void putShort(Object obj, long offset, short newValue);
 
-    public native double getDouble(Object obj, long offset);
-
-    public native void putDouble(Object obj, long offset, double newValue);
-
     // The following contain CAS-based Java implementations used on
     // platforms not supporting native instructions
 

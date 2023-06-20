@@ -37,6 +37,7 @@ import org.robovm.compiler.config.OS;
 import org.robovm.compiler.log.Logger;
 import org.robovm.compiler.target.ios.ProvisioningProfile;
 import org.robovm.compiler.target.ios.SigningIdentity;
+import org.robovm.compiler.branding.Locations;
 import org.robovm.gradle.RoboVMGradleException;
 import org.robovm.gradle.RoboVMPlugin;
 import org.robovm.gradle.RoboVMPluginExtension;
