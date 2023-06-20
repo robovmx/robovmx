@@ -38,6 +38,8 @@ import org.robovm.apple.coremedia.*;
 import org.robovm.apple.corevideo.*;
 import org.robovm.apple.mediatoolbox.*;
 import org.robovm.apple.audiotoolbox.*;
+import org.robovm.apple.coremidi.*;
+import org.robovm.apple.uikit.*;
 /*</imports>*/
 
 /*<javadoc>*/
@@ -52,7 +54,7 @@ import org.robovm.apple.audiotoolbox.*;
         /**
          * @since Available in iOS 4.0 and later.
          */
-        public static NSObjectProtocol observeWasConnected(final VoidBlock1<AVCaptureDevice> block) {
+        public static NSObject observeWasConnected(final VoidBlock1<AVCaptureDevice> block) {
             return NSNotificationCenter.getDefaultCenter().addObserver(WasConnectedNotification(), null, NSOperationQueue.getMainQueue(), new VoidBlock1<NSNotification>() {
                 @Override
                 public void invoke(NSNotification a) {
@@ -63,7 +65,7 @@ import org.robovm.apple.audiotoolbox.*;
         /**
          * @since Available in iOS 4.0 and later.
          */
-        public static NSObjectProtocol observeWasDisconnected(final VoidBlock1<AVCaptureDevice> block) {
+        public static NSObject observeWasDisconnected(final VoidBlock1<AVCaptureDevice> block) {
             return NSNotificationCenter.getDefaultCenter().addObserver(WasDisconnectedNotification(), null, NSOperationQueue.getMainQueue(), new VoidBlock1<NSNotification>() {
                 @Override
                 public void invoke(NSNotification a) {
@@ -74,7 +76,7 @@ import org.robovm.apple.audiotoolbox.*;
         /**
          * @since Available in iOS 5.0 and later.
          */
-        public static NSObjectProtocol observeSubjectAreaDidChange(AVCaptureDevice object, final VoidBlock1<AVCaptureDevice> block) {
+        public static NSObject observeSubjectAreaDidChange(AVCaptureDevice object, final VoidBlock1<AVCaptureDevice> block) {
             return NSNotificationCenter.getDefaultCenter().addObserver(SubjectAreaDidChangeNotification(), null, NSOperationQueue.getMainQueue(), new VoidBlock1<NSNotification>() {
                 @Override
                 public void invoke(NSNotification a) {
@@ -489,6 +491,16 @@ import org.robovm.apple.audiotoolbox.*;
     @Property(selector = "isPortraitEffectActive")
     public native boolean isPortraitEffectActive();
     /**
+     * @since Available in iOS 16.0 and later.
+     */
+    @Property(selector = "isContinuityCamera")
+    public native boolean isContinuityCamera();
+    /**
+     * @since Available in iOS 16.0 and later.
+     */
+    @Property(selector = "companionDeskViewCamera")
+    public native AVCaptureDevice getCompanionDeskViewCamera();
+    /**
      * @since Available in iOS 15.0 and later.
      */
     @Property(selector = "preferredMicrophoneMode")
@@ -498,6 +510,21 @@ import org.robovm.apple.audiotoolbox.*;
      */
     @Property(selector = "activeMicrophoneMode")
     public static native AVCaptureMicrophoneMode getActiveMicrophoneMode();
+    /**
+     * @since Available in iOS 16.0 and later.
+     */
+    @Property(selector = "isStudioLightEnabled")
+    public static native boolean isStudioLightEnabled();
+    /**
+     * @since Available in iOS 16.0 and later.
+     */
+    @Property(selector = "setStudioLightEnabled:")
+    public static native void setStudioLightEnabled(boolean v);
+    /**
+     * @since Available in iOS 16.0 and later.
+     */
+    @Property(selector = "isStudioLightActive")
+    public native boolean isStudioLightActive();
     /*</properties>*/
     /*<members>*//*</members>*/
     /*<methods>*/

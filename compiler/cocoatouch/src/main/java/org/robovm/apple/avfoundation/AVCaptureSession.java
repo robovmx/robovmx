@@ -38,6 +38,8 @@ import org.robovm.apple.coremedia.*;
 import org.robovm.apple.corevideo.*;
 import org.robovm.apple.mediatoolbox.*;
 import org.robovm.apple.audiotoolbox.*;
+import org.robovm.apple.coremidi.*;
+import org.robovm.apple.uikit.*;
 /*</imports>*/
 
 /*<javadoc>*/
@@ -52,7 +54,7 @@ import org.robovm.apple.audiotoolbox.*;
         /**
          * @since Available in iOS 4.0 and later.
          */
-        public static NSObjectProtocol observeRuntimeError(AVCaptureSession object, final VoidBlock2<AVCaptureSession, NSError> block) {
+        public static NSObject observeRuntimeError(AVCaptureSession object, final VoidBlock2<AVCaptureSession, NSError> block) {
             return NSNotificationCenter.getDefaultCenter().addObserver(RuntimeErrorNotification(), object, NSOperationQueue.getMainQueue(), new VoidBlock1<NSNotification>() {
                 @Override
                 public void invoke(NSNotification a) {
@@ -68,7 +70,7 @@ import org.robovm.apple.audiotoolbox.*;
         /**
          * @since Available in iOS 4.0 and later.
          */
-        public static NSObjectProtocol observeDidStartRunning(AVCaptureSession object, final VoidBlock1<AVCaptureSession> block) {
+        public static NSObject observeDidStartRunning(AVCaptureSession object, final VoidBlock1<AVCaptureSession> block) {
             return NSNotificationCenter.getDefaultCenter().addObserver(DidStartRunningNotification(), object, NSOperationQueue.getMainQueue(), new VoidBlock1<NSNotification>() {
                 @Override
                 public void invoke(NSNotification a) {
@@ -79,7 +81,7 @@ import org.robovm.apple.audiotoolbox.*;
         /**
          * @since Available in iOS 4.0 and later.
          */
-        public static NSObjectProtocol observeDidStopRunning(AVCaptureSession object, final VoidBlock1<AVCaptureSession> block) {
+        public static NSObject observeDidStopRunning(AVCaptureSession object, final VoidBlock1<AVCaptureSession> block) {
             return NSNotificationCenter.getDefaultCenter().addObserver(DidStopRunningNotification(), object, NSOperationQueue.getMainQueue(), new VoidBlock1<NSNotification>() {
                 @Override
                 public void invoke(NSNotification a) {
@@ -90,7 +92,7 @@ import org.robovm.apple.audiotoolbox.*;
         /**
          * @since Available in iOS 4.0 and later.
          */
-        public static NSObjectProtocol observeWasInterrupted(AVCaptureSession object, final VoidBlock2<AVCaptureSession, AVCaptureSessionInterruptionReason> block) {
+        public static NSObject observeWasInterrupted(AVCaptureSession object, final VoidBlock2<AVCaptureSession, AVCaptureSessionInterruptionReason> block) {
             return NSNotificationCenter.getDefaultCenter().addObserver(WasInterruptedNotification(), object, NSOperationQueue.getMainQueue(), new VoidBlock1<NSNotification>() {
                 @Override
                 public void invoke(NSNotification notification) {
@@ -109,7 +111,7 @@ import org.robovm.apple.audiotoolbox.*;
         /**
          * @since Available in iOS 4.0 and later.
          */
-        public static NSObjectProtocol observeInterruptionEnded(AVCaptureSession object, final VoidBlock1<AVCaptureSession> block) {
+        public static NSObject observeInterruptionEnded(AVCaptureSession object, final VoidBlock1<AVCaptureSession> block) {
             return NSNotificationCenter.getDefaultCenter().addObserver(InterruptionEndedNotification(), object, NSOperationQueue.getMainQueue(), new VoidBlock1<NSNotification>() {
                 @Override
                 public void invoke(NSNotification a) {
@@ -145,6 +147,21 @@ import org.robovm.apple.audiotoolbox.*;
     public native boolean isRunning();
     @Property(selector = "isInterrupted")
     public native boolean isInterrupted();
+    /**
+     * @since Available in iOS 16.0 and later.
+     */
+    @Property(selector = "isMultitaskingCameraAccessSupported")
+    public native boolean isMultitaskingCameraAccessSupported();
+    /**
+     * @since Available in iOS 16.0 and later.
+     */
+    @Property(selector = "isMultitaskingCameraAccessEnabled")
+    public native boolean isMultitaskingCameraAccessEnabled();
+    /**
+     * @since Available in iOS 16.0 and later.
+     */
+    @Property(selector = "setMultitaskingCameraAccessEnabled:")
+    public native void setMultitaskingCameraAccessEnabled(boolean v);
     @Property(selector = "usesApplicationAudioSession")
     public native boolean usesApplicationAudioSession();
     @Property(selector = "setUsesApplicationAudioSession:")
@@ -174,6 +191,11 @@ import org.robovm.apple.audiotoolbox.*;
     @Deprecated
     @Property(selector = "masterClock")
     public native CMClock getMasterClock();
+    /**
+     * @since Available in iOS 16.0 and later.
+     */
+    @Property(selector = "hardwareCost")
+    public native float getHardwareCost();
     /*</properties>*/
     /*<members>*//*</members>*/
     /*<methods>*/

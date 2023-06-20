@@ -27,6 +27,7 @@ enums:
     WKPermissionDecision: {} #since 15.0
     WKMediaCaptureType: {} #since 15.0
     WKFullscreenState: {} #since 15.0
+    WKDialogResult: {} #since 16.0
 categories:
     NSAttributedString:
         methods:
@@ -210,6 +211,8 @@ classes:
                 name: loadSimulatedRequest
             '-loadSimulatedRequest:withResponseHTMLString:':
                 name: loadSimulatedReques
+            '-setMinimumViewportInset:maximumViewportInset:':
+                name: setMinimumViewportInset
     WKPreviewElementInfo: {}
     WKContentRuleList: {} #since 11.0
     WKContentRuleListStore: #since 11.0
@@ -306,6 +309,8 @@ protocols:
                 name: requestMediaCapturePermission
             '-webView:requestDeviceOrientationAndMotionPermissionForOrigin:initiatedByFrame:decisionHandler:':
                 name: requestDeviceOrientationAndMotionPermission
+            '-webView:showLockdownModeFirstUseMessage:completionHandler:':
+                name: showLockdownModeFirstUseMessage
     WKHTTPCookieStoreObserver: {} #since 11.0
     WKPreviewActionItem: {} #since 10.0
     WKURLSchemeHandler: #since 11.0
@@ -353,6 +358,9 @@ values:
     WKPreviewActionItemIdentifier(.*):
         class: WKPreviewActionItemIdentifiers
         name: '#{g[0]}'
+
+    NSReadAccessURLDocumentOption:
+        exclude: true # FIXME: it extends NSAttributedStringDocumentReadingOptionKey that is defined in different framework
 
     # Make sure we don't miss any values if new ones are introduced in a later version
     (k?WK.*):

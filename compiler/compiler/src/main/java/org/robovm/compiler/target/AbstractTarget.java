@@ -264,6 +264,10 @@ public abstract class AbstractTarget implements Target {
             }
         }
 
+        if (config.getTools() != null && config.getTools().getLinker() != null) {
+            ccArgs.addAll(config.getTools().getLinker().getLinkerFlags());
+        }
+
         doBuild(outFile, ccArgs, objectFiles, libs);
         return outFile;
     }
@@ -691,8 +695,8 @@ public abstract class AbstractTarget implements Target {
         List<String> archesToRemove = new ArrayList<>();
 
         // simulator ones
-        if(archs.contains(CpuArch.x86.getClangName())) {
-            archesToRemove.add(CpuArch.x86.getClangName());
+        if(archs.contains("i386")) {
+            archesToRemove.add("i386");
         }
         if(archs.contains(CpuArch.x86_64.getClangName())) {
             archesToRemove.add(CpuArch.x86_64.getClangName());
@@ -914,6 +918,7 @@ public abstract class AbstractTarget implements Target {
         } catch (IOException e) {
             IOUtils.closeQuietly(out);
             output.delete();
+            config.getLogger().error("Filed to strip archive file %s due %s", output, e.getMessage());
         } finally {
             IOUtils.closeQuietly(out);
         }

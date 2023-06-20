@@ -44,7 +44,7 @@ import org.robovm.apple.coreanimation.*;
     /*<implements>*//*</implements>*/ {
 
     public static class Notifications {
-        public static NSObjectProtocol observeDidChange(final VoidBlock1<PKPassLibraryNotification> block) {
+        public static NSObject observeDidChange(final VoidBlock1<PKPassLibraryNotification> block) {
             return NSNotificationCenter.getDefaultCenter().addObserver(DidChangeNotification(), null, NSOperationQueue.getMainQueue(), new VoidBlock1<NSNotification>() {
                 @Override
                 public void invoke (NSNotification a) {
@@ -57,7 +57,7 @@ import org.robovm.apple.coreanimation.*;
                 }
             });
         }
-        public static NSObjectProtocol observeRemotePaymentPassesDidChange(final VoidBlock1<PKPassLibraryNotification> block) {
+        public static NSObject observeRemotePaymentPassesDidChange(final VoidBlock1<PKPassLibraryNotification> block) {
             return NSNotificationCenter.getDefaultCenter().addObserver(RemotePaymentPassesDidChangeNotification(), null, NSOperationQueue.getMainQueue(), new VoidBlock1<NSNotification>() {
                 @Override
                 public void invoke (NSNotification a) {
@@ -186,6 +186,11 @@ import org.robovm.apple.coreanimation.*;
      */
     @Method(selector = "signData:withSecureElementPass:completion:")
     public native void signData(NSData signData, PKSecureElementPass secureElementPass, @Block VoidBlock3<NSData, NSData, NSError> completion);
+    /**
+     * @since Available in iOS 16.0 and later.
+     */
+    @Method(selector = "encryptedServiceProviderDataForSecureElementPass:completion:")
+    public native void encryptedServiceProviderDataForSecureElementPass(PKSecureElementPass secureElementPass, @Block VoidBlock2<NSDictionary<?, ?>, NSError> completion);
     /**
      * @since Available in iOS 15.0 and later.
      */

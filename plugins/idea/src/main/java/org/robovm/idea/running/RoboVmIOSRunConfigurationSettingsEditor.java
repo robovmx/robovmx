@@ -19,6 +19,7 @@ package org.robovm.idea.running;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
+import com.intellij.ui.components.JBTextField;
 import org.jetbrains.annotations.NotNull;
 import org.robovm.compiler.config.Arch;
 import org.robovm.compiler.config.Config;
@@ -31,6 +32,7 @@ import org.robovm.idea.RoboVmPlugin;
 import org.robovm.idea.running.RoboVmRunConfiguration.EntryType;
 
 import javax.swing.*;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -41,7 +43,7 @@ import static org.robovm.idea.running.RoboVmRunConfiguration.AUTO_SIGNING_IDENTI
 
 public class RoboVmIOSRunConfigurationSettingsEditor extends SettingsEditor<RoboVmRunConfiguration> {
     private static final CpuArch[] DEVICE_ARCHS = {CpuArch.arm64, CpuArch.thumbv7};
-    private static final CpuArch[] SIMULATOR_ARCHS = {CpuArch.x86_64, CpuArch.x86, CpuArch.arm64};
+    private static final CpuArch[] SIMULATOR_ARCHS = {CpuArch.arm64, CpuArch.x86_64};
 
     public static final String AUTO_SIMULATOR_IPHONE_TITLE = "Auto (prefers '" + DeviceType.PREFERRED_IPHONE_SIM_NAME + "')";
     public static final String AUTO_SIMULATOR_IPAD_TITLE = "Auto (prefers '" + DeviceType.PREFERRED_IPAD_SIM_NAME + "')";
@@ -59,6 +61,7 @@ public class RoboVmIOSRunConfigurationSettingsEditor extends SettingsEditor<Robo
     private JComboBox<CpuArch> deviceArch;
     private JTextArea args;
     private JCheckBox pairedWatch;
+    private JBTextField targetDeviceUDID;
 
     // copy of data that is time consuming to fetch (fetched only once when dialog is created)
     private List<ModuleNameDecorator> roboVmModules;
@@ -109,6 +112,7 @@ public class RoboVmIOSRunConfigurationSettingsEditor extends SettingsEditor<Robo
             deviceArch.setSelectedItem(config.getDeviceArch());
             signingIdentity.setSelectedItem(getSigningIdentityFromConfig(config));
             provisioningProfile.setSelectedItem(getProvisioningProfileFromConfig(config));
+            targetDeviceUDID.setText(config.getTargetDeviceUDID());
             attachedDeviceRadioButton.setSelected(config.getTargetType() == RoboVmRunConfiguration.TargetType.Device || simType.getItemCount() == 0);
             args.setText(config.getArguments());
         } finally {
@@ -141,6 +145,7 @@ public class RoboVmIOSRunConfigurationSettingsEditor extends SettingsEditor<Robo
         config.setSigningIdentity(Decorator.from(signingIdentity).id);
         config.setProvisioningProfileType(Decorator.from(provisioningProfile).entryType);
         config.setProvisioningProfile(Decorator.from(provisioningProfile).id);
+        config.setTargetDeviceUDID(targetDeviceUDID.getText());
         // simulator related
         config.setSimulatorArch((CpuArch) simArch.getSelectedItem());
         config.setSimulatorType(Decorator.from(simType).entryType);
@@ -154,20 +159,24 @@ public class RoboVmIOSRunConfigurationSettingsEditor extends SettingsEditor<Robo
         CpuArch result = null;
         simArch.removeAllItems();
         if (simulator != null) {
+            Set<CpuArch> simArches;
             if (simulator == simulatorAutoIPad || simulator == simulatorAutoIPhone){
-                // auto simulator, use default OS arch (x86_64 or arm64 on m1)is allowed, if arch doesn't match -- override
-                simArch.addItem(DeviceType.DEFAULT_HOST_ARCH);
-                result = DeviceType.DEFAULT_HOST_ARCH;
+                simArches = new HashSet<>();
+                // auto simulator, use default OS arch (x86_64 or arm64 on m1) is allowed, if arch doesn't match -- override
+                simArches.add(DeviceType.DEFAULT_HOST_ARCH);
+                // also allow to have x86_64 on m1 to allow old projects without arm64 support to run on auto sim
+                if (DeviceType.DEFAULT_HOST_ARCH == CpuArch.arm64)
+                    simArches.add(CpuArch.x86_64);
             } else {
-                Set<CpuArch> simArches = simulator.data.getArchs().stream()
+                simArches = simulator.data.getArchs().stream()
                         .map(Arch::getCpuArch)
                         .collect(Collectors.toSet());
-                for (CpuArch a : SIMULATOR_ARCHS) {
-                    if (simArches.contains(a)) {
-                        simArch.addItem(a);
-                        if (a == arch)
-                            result = a;
-                    }
+            }
+            for (CpuArch a : SIMULATOR_ARCHS) {
+                if (simArches.contains(a)) {
+                    simArch.addItem(a);
+                    if (a == arch)
+                        result = a;
                 }
             }
         }
