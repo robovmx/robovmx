@@ -4,7 +4,7 @@ plugins {
 }
 
 ext {
-    roboVMVersion = '10.2.2.1-SNAPSHOT'
+    roboVMVersion = '10.2.2.2-SNAPSHOT'
 }
 
 group 'com.robovmx'
