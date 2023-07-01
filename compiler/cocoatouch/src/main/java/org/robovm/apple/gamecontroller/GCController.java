@@ -42,7 +42,7 @@ import org.robovm.apple.corehaptic.*;
     /*<implements>*/implements GCDevice/*</implements>*/ {
 
     public static class Notifications {
-        public static NSObjectProtocol observeDidConnect(final VoidBlock1<GCController> block) {
+        public static NSObject observeDidConnect(final VoidBlock1<GCController> block) {
             return NSNotificationCenter.getDefaultCenter().addObserver(DidConnectNotification(), null, NSOperationQueue.getMainQueue(), new VoidBlock1<NSNotification>() {
                 @Override
                 public void invoke(NSNotification a) {
@@ -50,7 +50,7 @@ import org.robovm.apple.corehaptic.*;
                 }
             });
         }
-        public static NSObjectProtocol observeDidDisconnect(final VoidBlock1<GCController> block) {
+        public static NSObject observeDidDisconnect(final VoidBlock1<GCController> block) {
             return NSNotificationCenter.getDefaultCenter().addObserver(DidDisconnectNotification(), null, NSOperationQueue.getMainQueue(), new VoidBlock1<NSNotification>() {
                 @Override
                 public void invoke(NSNotification a) {
@@ -112,6 +112,11 @@ import org.robovm.apple.corehaptic.*;
     @Property(selector = "battery")
     public native GCDeviceBattery getBattery();
     /**
+     * @since Available in iOS 14.0 and later.
+     */
+    @Property(selector = "physicalInputProfile")
+    public native GCPhysicalInputProfile getPhysicalInputProfile();
+    /**
      * @deprecated Deprecated in iOS 10.0. Use extendedGamepad
      */
     @Deprecated
@@ -144,11 +149,6 @@ import org.robovm.apple.corehaptic.*;
      */
     @Property(selector = "productCategory")
     public native String getProductCategory();
-    /**
-     * @since Available in iOS 14.0 and later.
-     */
-    @Property(selector = "physicalInputProfile")
-    public native GCPhysicalInputProfile getPhysicalInputProfile();
     /*</properties>*/
     /*<members>*//*</members>*/
     /*<methods>*/
@@ -166,6 +166,11 @@ import org.robovm.apple.corehaptic.*;
      */
     @GlobalValue(symbol="GCControllerDidStopBeingCurrentNotification", optional=true)
     public static native NSString DidStopBeingCurrentNotification();
+    /**
+     * @since Available in iOS 16.0 and later.
+     */
+    @GlobalValue(symbol="GCControllerUserCustomizationsDidChangeNotification", optional=true)
+    public static native NSString UserCustomizationsDidChangeNotification();
     
     /**
      * @since Available in iOS 13.0 and later.

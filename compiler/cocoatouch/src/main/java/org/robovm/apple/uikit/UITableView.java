@@ -50,7 +50,7 @@ import org.robovm.apple.linkpresentation.*;
     /*<implements>*/implements NSCoding, UIDataSourceTranslating, UISpringLoadedInteractionSupporting/*</implements>*/ {
 
     public static class Notifications {
-        public static NSObjectProtocol observeSelectionDidChange(UITableView object, final VoidBlock1<UITableView> block) {
+        public static NSObject observeSelectionDidChange(UITableView object, final VoidBlock1<UITableView> block) {
             return NSNotificationCenter.getDefaultCenter().addObserver(SelectionDidChangeNotification(), object, NSOperationQueue.getMainQueue(), new VoidBlock1<NSNotification>() {
                 @Override
                 public void invoke(NSNotification a) {
@@ -182,6 +182,16 @@ import org.robovm.apple.linkpresentation.*;
      */
     @Property(selector = "setSeparatorInsetReference:")
     public native void setSeparatorInsetReference(UITableViewSeparatorInsetReference v);
+    /**
+     * @since Available in iOS 16.0 and later.
+     */
+    @Property(selector = "selfSizingInvalidation")
+    public native UITableViewSelfSizingInvalidation getSelfSizingInvalidation();
+    /**
+     * @since Available in iOS 16.0 and later.
+     */
+    @Property(selector = "setSelfSizingInvalidation:")
+    public native void setSelfSizingInvalidation(UITableViewSelfSizingInvalidation v);
     @Property(selector = "backgroundView")
     public native UIView getBackgroundView();
     @Property(selector = "setBackgroundView:")

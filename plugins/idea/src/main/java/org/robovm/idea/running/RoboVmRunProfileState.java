@@ -31,6 +31,7 @@ import org.robovm.compiler.config.Config;
 import org.robovm.compiler.config.OS;
 import org.robovm.compiler.target.LaunchParameters;
 import org.robovm.compiler.target.ios.DeviceType;
+import org.robovm.compiler.target.ios.IOSDeviceLaunchParameters;
 import org.robovm.compiler.target.ios.IOSSimulatorLaunchParameters;
 import org.robovm.compiler.util.io.Fifos;
 import org.robovm.compiler.util.io.OpenOnReadFileInputStream;
@@ -81,7 +82,6 @@ public class RoboVmRunProfileState extends CommandLineState {
             }
             process = new ProcessProxy(process, pipedOut, stdoutStream, stderrStream, compiler);
         }
-        RoboVmPlugin.logInfo(getEnvironment().getProject(), "Launch done");
 
         final OSProcessHandler processHandler = new ColoredProcessHandler(process, null);
         ProcessTerminatedListener.attach(processHandler);
@@ -106,6 +106,9 @@ public class RoboVmRunProfileState extends CommandLineState {
                 simParams.setDeviceType(exactType);
                 simParams.setPairedWatchAppName(config.getWatchKitApp() != null && runConfig.simulatorLaunchWatch()
                         ? config.getWatchKitApp().getWatchAppName() : null);
+            } else if (launchParameters instanceof IOSDeviceLaunchParameters) {
+                IOSDeviceLaunchParameters deviceParams = (IOSDeviceLaunchParameters) launchParameters;
+                deviceParams.setDeviceId(runConfig.getTargetDeviceUDID());
             }
         }
     }

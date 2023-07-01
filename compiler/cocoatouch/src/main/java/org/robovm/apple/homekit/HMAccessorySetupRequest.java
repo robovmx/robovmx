@@ -66,6 +66,10 @@ import org.robovm.apple.corelocation.*;
     public native String getSuggestedAccessoryName();
     @Property(selector = "setSuggestedAccessoryName:")
     public native void setSuggestedAccessoryName(String v);
+    @Property(selector = "matterPayload")
+    public native NSObject getMatterPayload();
+    @Property(selector = "setMatterPayload:")
+    public native void setMatterPayload(NSObject v);
     /*</properties>*/
     /*<members>*//*</members>*/
     /*<methods>*/
