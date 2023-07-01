@@ -21,6 +21,8 @@ Options:
                              ios-arm64-simulator
                           Linux:
                              linux-x86_64
+                          xrOS:
+                             xros-arm64, xros-arm64-simulator, xros-x86_64-simulator
                           Enclose multiple targets in quotes and 
                           separate with spaces or specify --target multiple
                           times. If not set the current host OS determines the
@@ -58,7 +60,7 @@ if [ "x$TARGETS" = 'x' ]; then
   OS=$(uname)
   case $OS in
   Darwin)
-    TARGETS="macosx-x86_64 macosx-arm64 ios-x86_64-simulator ios-arm64-simulator ios-thumbv7 ios-arm64"
+    TARGETS="macosx-x86_64 macosx-arm64 ios-x86_64-simulator ios-arm64-simulator ios-thumbv7 ios-arm64 xros-x86_64-simulator xros-arm64-simulator xros-arm64"
     ;;
   Linux)
     TARGETS="linux-x86_64"
@@ -75,7 +77,7 @@ fi
 
 # Validate targets
 for T in $TARGETS; do
-  if ! [[ $T =~ (macosx-(x86_64|arm64))|(ios-(x86_64-simulator|arm64-simulator|thumbv7|arm64))|(linux-(x86_64)) ]] ; then
+  if ! [[ $T =~ (macosx-(x86_64|arm64))|(ios-(x86_64-simulator|arm64-simulator|thumbv7|arm64))|(xros-(x86_64-simulator|arm64-simulator|arm64))|(linux-(x86_64)) ]] ; then
     echo "Unsupported target: $T"
     exit 1
   fi
@@ -124,6 +126,9 @@ for T in $TARGETS; do
     ;;
   ios)
     SYSTEM_NAME_PARAM="-DCMAKE_SYSTEM_NAME=iOS"
+    ;;
+  xros)
+    SYSTEM_NAME_PARAM="-DCMAKE_SYSTEM_NAME=Darwin"
     ;;
   *)
     SYSTEM_NAME_PARAM=""
