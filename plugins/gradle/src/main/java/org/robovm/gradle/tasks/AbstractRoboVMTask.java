@@ -31,6 +31,7 @@ import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.api.tasks.Internal;
 import org.robovm.compiler.AppCompiler;
+import org.robovm.compiler.branding.Locations;
 import org.robovm.compiler.config.Arch;
 import org.robovm.compiler.config.Config;
 import org.robovm.compiler.config.OS;
