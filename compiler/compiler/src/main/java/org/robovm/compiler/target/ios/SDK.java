@@ -20,6 +20,9 @@ import com.dd.plist.NSDictionary;
 import com.dd.plist.NSObject;
 import com.dd.plist.PropertyListParser;
 import org.apache.commons.exec.util.StringUtils;
+import org.robovm.compiler.config.Arch;
+import org.robovm.compiler.config.Environment;
+import org.robovm.compiler.config.OS;
 import org.robovm.compiler.util.ToolchainUtil;
 
 import java.io.File;
@@ -129,13 +132,17 @@ public class SDK implements Comparable<SDK> {
         }
     }
 
-    public static List<SDK> listDeviceSDKs() {
-        return listSDKs("iPhoneOS");
-    }
-
-    public static List<SDK> listSimulatorSDKs() {
-        List<SDK> sdks = listSDKs("iPhoneSimulator");
-        return sdks;
+    public static List<SDK> getSdks(OS os, Arch arch) {
+        // build platform name
+        String platform;
+        if (os == OS.ios) {
+            platform = arch.getEnv() == Environment.Simulator ? "iPhoneSimulator" : "iPhoneOS";
+        } else if (os == OS.macosx) {
+            platform = "MacOSX";
+        } else if (os == OS.xros) {
+            platform = arch.getEnv() == Environment.Simulator ? "XRSimulator" : "XROS";
+        } else throw new IllegalArgumentException("Unsupported combination " + os + " " + arch);
+        return listSDKs(platform);
     }
 
     public String getDisplayName() {

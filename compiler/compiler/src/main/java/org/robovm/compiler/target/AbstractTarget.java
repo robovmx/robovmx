@@ -249,7 +249,7 @@ public abstract class AbstractTarget implements Target {
         }
 
         ccArgs.add("-fPIC");
-        if (config.getOs() == OS.macosx) {
+        if (config.getOs() == OS.macosx || config.getOs() == OS.xros) {
             if (!config.getFrameworks().contains("CoreServices")) {
                 libs.add("-framework");
                 libs.add("CoreServices");

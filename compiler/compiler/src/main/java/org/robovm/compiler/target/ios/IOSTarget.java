@@ -143,11 +143,7 @@ public class IOSTarget extends AbstractTarget {
     }
 
     public List<SDK> getSDKs() {
-        if (isSimulatorArch(arch)) {
-            return SDK.listSimulatorSDKs();
-        } else {
-            return SDK.listDeviceSDKs();
-        }
+        return SDK.getSdks(getOs(), arch);
     }
 
     /**

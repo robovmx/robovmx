@@ -1017,7 +1017,8 @@ public class Config {
 
         target.init(this);
 
-        os = target.getOs();
+        if (os == null)
+            os = target.getOs();
         sliceArch = target.getArch();
         dataLayout = new DataLayout(getTriple());
 

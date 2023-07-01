@@ -25,8 +25,9 @@ import org.robovm.llvm.Target;
 public enum OS {
     linux("linux",  "unknown","linux"),
     macosx("macosx", "apple", "10.9"),
-    ios("ios", "apple", "8.0");
-    
+    ios("ios", "apple", "8.0"),
+    xros("xros", "apple", "1.0");
+
     public enum Family {linux, darwin}
 
     private final String llvmName;

@@ -141,7 +141,6 @@ public class RoboVmCompileTask {
 
             // load the robovm.xml file
             loadConfig(project, builder, moduleBaseDir, false);
-            builder.os(OS.ios);
             builder.installDir(frameworkConfig.getDestinationDir());
             configureClassAndSourcepaths(project, frameworkConfig.getModule(), builder);
 

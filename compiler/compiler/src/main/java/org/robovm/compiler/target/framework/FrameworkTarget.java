@@ -67,11 +67,7 @@ public class FrameworkTarget extends AbstractTarget {
 	}
 
     public List<SDK> getSDKs() {
-        if (isSimulatorArch(arch)) {
-            return SDK.listSimulatorSDKs();
-        } else {
-            return SDK.listDeviceSDKs();
-        }
+		return SDK.getSdks(os, arch);
     }
 
 	public void init(Config paramConfig) {
@@ -102,8 +98,7 @@ public class FrameworkTarget extends AbstractTarget {
             }
             Collections.sort(sdks);
             this.sdk = sdks.get(sdks.size() - 1);
-        }
-        else {
+        } else {
             for (SDK sdk : sdks) {
                 if (sdk.getVersion().equals(sdkVersion)) {
                     this.sdk = sdk;
