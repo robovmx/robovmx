@@ -45,7 +45,7 @@ endif()
 set(C_CXX_FLAGS "${C_CXX_FLAGS} -fvisibility=hidden -fdata-sections -ffunction-sections")
 
 ExternalProject_Add(extclang 
-  GIT_REPOSITORY git://github.com/mobivm/clang.git
+  GIT_REPOSITORY https://github.com/mobivm/clang.git
   GIT_TAG 7b389564897bc6c0431c42f8f1825f04624ff4e3
   UPDATE_COMMAND ""
   CONFIGURE_COMMAND "" 
@@ -59,8 +59,9 @@ set(LLVM_C_FLAGS "${C_CXX_FLAGS} -fvisibility=hidden -fdata-sections -ffunction-
 set(LLVM_CXX_FLAGS "${C_CXX_FLAGS} -fvisibility=hidden -fdata-sections -ffunction-sections")
 ExternalProject_Add(extllvm
   DEPENDS extclang
-  GIT_REPOSITORY git://github.com/mobivm/llvm.git
+  GIT_REPOSITORY https://github.com/mobivm/llvm.git
   GIT_TAG aceb47b80838681fe65a1d01aac7aae7b863ac5a
+  UPDATE_COMMAND ""
   PATCH_COMMAND bash -c "rm -rf tools/clang && ln -s ../../../../extclang-prefix/src/extclang tools/clang && ${CMAKE_SOURCE_DIR}/patches/apply-patches"
   LIST_SEPARATOR ^^
   CONFIGURE_COMMAND cmake -DCMAKE_SYSTEM_NAME=${CMAKE_SYSTEM_NAME} -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT} -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER} -DCMAKE_RC_COMPILER=${CMAKE_RC_COMPILER} -DCMAKE_SYSTEM_NAME=${CMAKE_SYSTEM_NAME} -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} -DBUILD_SHARED_LIBS=OFF "-DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/llvm" "-DLLVM_TARGETS_TO_BUILD=${LLVM_ARCHS}" "-DCMAKE_C_FLAGS=${LLVM_C_FLAGS}" "-DCMAKE_CXX_FLAGS=${LLVM_CXX_FLAGS}" -DLLVM_ENABLE_LIBCXX=YES -DLLVM_ENABLE_CXX1Y=YES -DLLVM_ENABLE_THREADS=YES -DLIBCLANG_BUILD_STATIC=YES ../extllvm/

@@ -1,0 +1,242 @@
+diff --git a/include/llvm/ADT/Triple.h b/include/llvm/ADT/Triple.h
+index 3f23c891c6f..46c535a661b 100644
+--- a/include/llvm/ADT/Triple.h
++++ b/include/llvm/ADT/Triple.h
+@@ -143,7 +143,8 @@ public:
+     NVCL,       // NVIDIA OpenCL
+     AMDHSA,     // AMD HSA Runtime
+     TvOS,       // Apple tvOS
+-    WatchOS     // Apple watchOS
++    WatchOS,    // Apple watchOS,
++    XrOS        // Apple xrOS
+   };
+   enum EnvironmentType {
+     UnknownEnvironment,
+@@ -283,6 +284,11 @@ public:
+   void getWatchOSVersion(unsigned &Major, unsigned &Minor,
+                          unsigned &Micro) const;
+ 
++  /// getXrOSVersion - Parse the version number as with getOSVersion.  This
++  /// should only be called with XrOS or generic triples.
++  void getXrOSVersion(unsigned &Major, unsigned &Minor,
++                         unsigned &Micro) const;
++
+   /// @}
+   /// @name Direct Component Access
+   /// @{
+@@ -378,9 +384,19 @@ public:
+     return getOS() == Triple::IOS;
+   }
+ 
++  /// Is this an tvOS triple.
++  bool istvOS() const {
++    return getOS() == Triple::TvOS;
++  }
++
++  /// Is this an xrOS triple.
++  bool isxrOS() const {
++    return getOS() == Triple::XrOS;
++  }
++
+   /// isOSDarwin - Is this a "Darwin" OS (OS X or iOS).
+   bool isOSDarwin() const {
+-    return isMacOSX() || isiOS();
++    return isMacOSX() || isiOS() || istvOS() || isxrOS();
+   }
+ 
+   bool isSimulatorEnvironment() const {
+diff --git a/include/llvm/MC/MCDirectives.h b/include/llvm/MC/MCDirectives.h
+index f1019ec5bc9..96164e97751 100644
+--- a/include/llvm/MC/MCDirectives.h
++++ b/include/llvm/MC/MCDirectives.h
+@@ -64,7 +64,8 @@ enum MCVersionMinType {
+   MCVM_IOSVersionMin,         ///< .ios_version_min
+   MCVM_OSXVersionMin,         ///< .macosx_version_min
+   MCVM_TvOSVersionMin,        ///< .tvos_version_min
+-  MCVM_WatchOSVersionMin      ///< .watchos_version_min
++  MCVM_WatchOSVersionMin,     ///< .watchos_version_min
++  MCVM_XrOSVersionMin         ///< .xros_version_min
+ };
+ 
+ } // end namespace llvm
+diff --git a/include/llvm/Support/MachO.h b/include/llvm/Support/MachO.h
+index 296c1655a3f..abc63393db6 100644
+--- a/include/llvm/Support/MachO.h
++++ b/include/llvm/Support/MachO.h
+@@ -545,6 +545,8 @@ namespace llvm {
+       PLATFORM_TVOSSIMULATOR = 8,
+       PLATFORM_WATCHOSSIMULATOR = 9,
+       PLATFORM_DRIVERKIT = 10,
++      PLATFORM_XROS = 11,
++      PLATFORM_XROSSIMULATOR = 12
+     };
+ 
+     // Structs from <mach-o/loader.h>
+diff --git a/lib/MC/MCAsmStreamer.cpp b/lib/MC/MCAsmStreamer.cpp
+index 84140009d22..bdbc7db9d59 100644
+--- a/lib/MC/MCAsmStreamer.cpp
++++ b/lib/MC/MCAsmStreamer.cpp
+@@ -375,6 +375,7 @@ void MCAsmStreamer::EmitVersionMin(MCVersionMinType Kind, unsigned Major,
+   case MCVM_TvOSVersionMin:       OS << "\t.tvos_version_min";
+   case MCVM_IOSVersionMin:        OS << "\t.ios_version_min"; break;
+   case MCVM_OSXVersionMin:        OS << "\t.macosx_version_min"; break;
++  case MCVM_XrOSVersionMin:       OS << "\t.xros_version_min"; break;
+   }
+   OS << " " << Major << ", " << Minor;
+   if (Update)
+@@ -394,6 +395,8 @@ static const char *getPlatformName(MachO::PlatformType Type) {
+   case MachO::PLATFORM_TVOSSIMULATOR:    return "tvossimulator";
+   case MachO::PLATFORM_WATCHOSSIMULATOR: return "watchossimulator";
+   case MachO::PLATFORM_DRIVERKIT:        return "driverkit";
++  case MachO::PLATFORM_XROS:             return "xros";
++  case MachO::PLATFORM_XROSSIMULATOR:    return "xrossimulator";
+   }
+   llvm_unreachable("Invalid Mach-O platform type");
+ }
+diff --git a/lib/MC/MCParser/DarwinAsmParser.cpp b/lib/MC/MCParser/DarwinAsmParser.cpp
+index 25aa54c8800..a62c6d285b5 100644
+--- a/lib/MC/MCParser/DarwinAsmParser.cpp
++++ b/lib/MC/MCParser/DarwinAsmParser.cpp
+@@ -168,6 +168,9 @@ public:
+     addDirectiveHandler<&DarwinAsmParser::parseVersionMin>(".ios_version_min");
+     addDirectiveHandler<&DarwinAsmParser::parseVersionMin>(
+       ".macosx_version_min");
++    addDirectiveHandler<&DarwinAsmParser::parseVersionMin>(".watchos_version_min");
++    addDirectiveHandler<&DarwinAsmParser::parseVersionMin>(".tvos_version_min");
++    addDirectiveHandler<&DarwinAsmParser::parseVersionMin>(".xros_version_min");
+     addDirectiveHandler<&DarwinAsmParser::parseBuildVersion>(".build_version");
+   }
+ 
+@@ -913,7 +916,8 @@ bool DarwinAsmParser::parseVersionMin(StringRef Directive, SMLoc) {
+     .Case(".watchos_version_min", MCVM_WatchOSVersionMin)
+     .Case(".tvos_version_min",    MCVM_TvOSVersionMin)
+     .Case(".ios_version_min",     MCVM_IOSVersionMin)
+-    .Case(".macosx_version_min",  MCVM_OSXVersionMin);
++    .Case(".macosx_version_min",  MCVM_OSXVersionMin)
++    .Case(".xros_version_min",    MCVM_XrOSVersionMin);
+   if (parseVersion(Major, Minor, Update))
+     return true;
+ 
+@@ -935,6 +939,8 @@ static Triple::OSType getOSTypeFromPlatform(MachO::PlatformType Type) {
+   case MachO::PLATFORM_TVOSSIMULATOR: return Triple::TvOS;
+   case MachO::PLATFORM_WATCHOSSIMULATOR: /* silence warning */ break;
+   case MachO::PLATFORM_DRIVERKIT:        /* silence warning */ break;
++  case MachO::PLATFORM_XROS:          return Triple::XrOS;
++  case MachO::PLATFORM_XROSSIMULATOR: return Triple::XrOS;
+   }
+   llvm_unreachable("Invalid mach-o platform type");
+ }
+@@ -970,6 +976,8 @@ bool DarwinAsmParser::parseBuildVersion(StringRef Directive, SMLoc Loc) {
+     .Case("iossimulator", MachO::PLATFORM_IOSSIMULATOR)
+     .Case("tvossimulator", MachO::PLATFORM_TVOSSIMULATOR)
+     .Case("watchos", MachO::PLATFORM_WATCHOS)
++    .Case("xros", MachO::PLATFORM_XROS)
++    .Case("xrossimulator", MachO::PLATFORM_XROSSIMULATOR)
+     .Default(0);
+   if (Platform == 0)
+     return Error(PlatformLoc, "unknown platform name");
+diff --git a/lib/MC/MCStreamer.cpp b/lib/MC/MCStreamer.cpp
+index a2b3d442dcf..e1176217c38 100644
+--- a/lib/MC/MCStreamer.cpp
++++ b/lib/MC/MCStreamer.cpp
+@@ -688,6 +688,8 @@ getMachoVersionMinLoadCommandType(const Triple &Target) {
+     return MCVM_TvOSVersionMin;
+   case Triple::WatchOS:
+     return MCVM_WatchOSVersionMin;
++  case Triple::XrOS:
++    return MCVM_XrOSVersionMin;
+   default:
+     break;
+   }
+@@ -712,6 +714,9 @@ static void getMachoBuildVersionSupportedOS(const Triple &Target,
+   case Triple::WatchOS:
+     Major = 5;
+     return;
++  case Triple::XrOS:
++    Major = 1;
++    return;
+   default:
+     break;
+   }
+@@ -736,6 +741,9 @@ getMachoBuildVersionPlatformType(const Triple &Target) {
+   case Triple::WatchOS:
+     return Target.isSimulatorEnvironment() ? MachO::PLATFORM_WATCHOSSIMULATOR
+                                            : MachO::PLATFORM_WATCHOS;
++  case Triple::XrOS:
++    return Target.isSimulatorEnvironment() ? MachO::PLATFORM_XROSSIMULATOR
++                                           : MachO::PLATFORM_XROS;
+   default:
+     break;
+   }
+@@ -764,6 +772,9 @@ void MCStreamer::EmitVersionForTarget(const Triple &Target) {
+   case Triple::WatchOS:
+     Target.getWatchOSVersion(Major, Minor, Update);
+     break;
++  case Triple::XrOS:
++    Target.getXrOSVersion(Major, Minor, Update);
++    break;
+   default:
+     llvm_unreachable("unexpected OS type");
+   }
+diff --git a/lib/Support/Triple.cpp b/lib/Support/Triple.cpp
+index 38ca1b06cae..cd648abe5ee 100644
+--- a/lib/Support/Triple.cpp
++++ b/lib/Support/Triple.cpp
+@@ -160,6 +160,7 @@ const char *Triple::getOSTypeName(OSType Kind) {
+   case AMDHSA: return "amdhsa";
+   case TvOS: return "tvos";
+   case WatchOS: return "watchos";
++  case XrOS: return "xros";
+   }
+ 
+   llvm_unreachable("Invalid OSType");
+@@ -353,6 +354,7 @@ static Triple::OSType parseOS(StringRef OSName) {
+     .StartsWith("amdhsa", Triple::AMDHSA)
+     .StartsWith("tvos", Triple::TvOS)
+     .StartsWith("watchos", Triple::WatchOS)
++    .StartsWith("xros", Triple::XrOS)
+     .Default(Triple::UnknownOS);
+ }
+ 
+@@ -819,6 +821,31 @@ void Triple::getWatchOSVersion(unsigned &Major, unsigned &Minor,
+   }
+ }
+ 
++void Triple::getXrOSVersion(unsigned &Major, unsigned &Minor,
++                               unsigned &Micro) const {
++  switch (getOS()) {
++  default: llvm_unreachable("unexpected OS for Darwin triple");
++  case Darwin:
++  case MacOSX:
++  case IOS:
++    // Ignore the version from the triple.  This is only handled because the
++    // the clang driver combines OS X and IOS support into a common Darwin
++    // toolchain that wants to know the iOS version number even when targeting
++    // OS X.
++    Major = 1;
++    Minor = 0;
++    Micro = 0;
++    break;
++  case XrOS:
++    getOSVersion(Major, Minor, Micro);
++    if (Major == 0)
++      Major = 1;
++    break;
++  case WatchOS:
++    llvm_unreachable("conflicting triple info");
++  }
++}
++
+ void Triple::setTriple(const Twine &Str) {
+   *this = Triple(Str);
+ }
+@@ -1064,6 +1091,9 @@ void Triple::getMinimumSupportedOSVersion(unsigned &Major, unsigned &Minor,
+     if (isSimulatorEnvironment())
+       Major = 7;
+     break;
++  case Triple::XrOS:
++    Major = 1;
++    break;
+   default:
+     break;
+   }
