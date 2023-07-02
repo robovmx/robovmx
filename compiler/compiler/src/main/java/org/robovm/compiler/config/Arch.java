@@ -71,6 +71,11 @@ public class Arch implements Comparable<Arch> {
                         new Arch(CpuArch.x86_64, Environment.Simulator),
                         new Arch(CpuArch.arm64, Environment.Simulator),
                         Arch.arm64, Arch.thumbv7};
+            case xros:
+                return new Arch[]{
+                        new Arch(CpuArch.x86_64, Environment.Simulator),
+                        new Arch(CpuArch.arm64, Environment.Simulator),
+                        Arch.arm64};
             default:
                 throw new IllegalArgumentException("Unexpected OS");
         }
