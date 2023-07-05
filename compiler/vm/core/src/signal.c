@@ -91,11 +91,7 @@ static void signalHandler_dump_thread(int signum, siginfo_t* info, void* context
 static jboolean installNoChainingSignals(Env* env);
 
 #if defined(DARWIN)
-// Weak stub for the function in vm/debug/src/debug.c. If librobovm-debug.a isn't
-// linked in this version will be used and won't do anything.
-void registerDarwinExceptionHandler(void) __attribute__ ((weak));
-void registerDarwinExceptionHandler(void) {
-}
+void registerDarwinExceptionHandler(void);
 #endif
 
 jboolean rvmInitSignals(Env* env) {

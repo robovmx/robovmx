@@ -142,6 +142,8 @@ public class RoboVmCompileTask {
             // load the robovm.xml file
             loadConfig(project, builder, moduleBaseDir, false);
             builder.installDir(frameworkConfig.getDestinationDir());
+            builder.debug(frameworkConfig.isDebug());
+            builder.registerDarwinExceptionHandler(frameworkConfig.isHandleDarwinExceptions());
             configureClassAndSourcepaths(project, frameworkConfig.getModule(), builder);
 
             // Set the Home to be used, create the Config and AppCompiler
