@@ -31,19 +31,20 @@ import org.robovm.compiler.target.framework.FrameworkTarget;
 import org.robovm.idea.RoboVmPlugin;
 
 import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.Arrays;
 
 public class CreateFrameworkDialog extends DialogWrapper {
     private static final String MODULE_NAME = "robovm.frameworkConfig.moduleName";
     private static final String DESTINATION_DIR = "robovm.frameworkConfig.destinationDir";
+    private static final String BUILD_TYPE = "robovm.frameworkConfig.buildType";
 
     private JPanel panel;
     private JButton browseButton;
     private JTextField destinationDir;
-    private JComboBox module;
-    private Project project;
+    private JComboBox<String> module;
+    private JComboBox<BuildType> buildTypePicker;
+    private final Project project;
 
     protected CreateFrameworkDialog(@Nullable Project project) {
         super(project);
@@ -53,10 +54,26 @@ public class CreateFrameworkDialog extends DialogWrapper {
         populateControls();
     }
 
+    private enum BuildType {
+        Debug, Release, ReleaseDebug;
+
+        @Override
+        public String toString() {
+            return this == ReleaseDebug ? "Release with debugger support" : super.toString();
+        }
+
+        static BuildType valueOf(String s, BuildType defaultValue) {
+            for (BuildType v : values())
+                if (v.name().equals(s)) return v;
+            return defaultValue;
+        }
+    }
+
     private void populateControls() {
         PropertiesComponent properties = PropertiesComponent.getInstance(project);
         String configModule = properties.getValue(MODULE_NAME, "");
         String configDestDir = properties.getValue(DESTINATION_DIR, "");
+        BuildType buildType = BuildType.valueOf(properties.getValue(BUILD_TYPE, ""), BuildType.Release);
 
         for(Module module: RoboVmPlugin.getRoboVmModules(project, FrameworkTarget::matches)) {
             this.module.addItem(module.getName());
@@ -69,25 +86,25 @@ public class CreateFrameworkDialog extends DialogWrapper {
             destinationDir.setText(configDestDir);
         }
 
-        browseButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                FileChooserDialog fileChooser = FileChooserFactory.getInstance()
-                        .createFileChooser(new FileChooserDescriptor(false, true, false, false, false, false) {
-                            @Override
-                            public boolean isFileVisible(VirtualFile file, boolean showHiddenFiles) {
-                                return file.isDirectory();
-                            }
+        Arrays.stream(BuildType.values()).forEach(v -> this.buildTypePicker.addItem(v) );
+        this.buildTypePicker.setSelectedItem(buildType);
 
-                            @Override
-                            public boolean isFileSelectable(VirtualFile file) {
-                                return file.isDirectory();
-                            }
-                        }, null, panel);
-                VirtualFile[] dir = fileChooser.choose(project);
-                if (dir != null && dir.length > 0) {
-                    destinationDir.setText(dir[0].getCanonicalPath());
-                }
+        browseButton.addActionListener(e -> {
+            FileChooserDialog fileChooser = FileChooserFactory.getInstance()
+                    .createFileChooser(new FileChooserDescriptor(false, true, false, false, false, false) {
+                        @Override
+                        public boolean isFileVisible(VirtualFile file, boolean showHiddenFiles) {
+                            return file.isDirectory();
+                        }
+
+                        @Override
+                        public boolean isFileSelectable(VirtualFile file) {
+                            return file.isDirectory();
+                        }
+                    }, null, panel);
+            VirtualFile[] dir = fileChooser.choose(project);
+            if (dir.length > 0) {
+                destinationDir.setText(dir[0].getCanonicalPath());
             }
         });
     }
@@ -120,12 +137,20 @@ public class CreateFrameworkDialog extends DialogWrapper {
     public CreateFrameworkAction.FrameworkConfig getFrameworkConfig() {
         saveProperties();
         Module module = ModuleManager.getInstance(project).findModuleByName(this.module.getSelectedItem().toString());
-        return new CreateFrameworkAction.FrameworkConfig(module, new File(this.destinationDir.getText()));
+        BuildType buildType = (BuildType) buildTypePicker.getSelectedItem();
+        return new CreateFrameworkAction.FrameworkConfig(
+                module,
+                new File(this.destinationDir.getText()),
+                buildType == BuildType.Debug,
+                buildType == BuildType.Debug || buildType == BuildType.ReleaseDebug
+                );
     }
 
     private void saveProperties() {
         PropertiesComponent properties = PropertiesComponent.getInstance(project);
         properties.setValue(MODULE_NAME, module.getSelectedItem().toString());
         properties.setValue(DESTINATION_DIR, destinationDir.getText());
+        BuildType buildType = (BuildType) buildTypePicker.getSelectedItem();
+        properties.setValue(BUILD_TYPE, buildType.name());
     }
 }

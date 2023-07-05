@@ -111,7 +111,7 @@ public abstract class AbstractTarget implements Target {
         } else {
             libs.addAll(Arrays.asList("-Wl,--whole-archive", "-lrobovm-rt" + libSuffix, "-Wl,--no-whole-archive"));
         }
-        if (config.isSkipInstall()) {
+        if (config.isDebug() || config.isRegisterDarwinExceptionHandler()) {
             libs.add("-lrobovm-debug" + libSuffix);
         }
         libs.addAll(Arrays.asList(
@@ -155,7 +155,7 @@ public abstract class AbstractTarget implements Target {
         } else if (config.getOs().getFamily() == OS.Family.darwin) {
             ccArgs.add("-ObjC");
 
-            if (config.isSkipInstall()) {
+            if (config.isDebug() || config.isRegisterDarwinExceptionHandler()) {
                 exportedSymbols.add("catch_exception_raise");
             }
             for (int i = 0; i < exportedSymbols.size(); i++) {

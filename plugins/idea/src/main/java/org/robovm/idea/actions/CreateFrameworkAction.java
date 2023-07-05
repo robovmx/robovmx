@@ -72,10 +72,14 @@ public class CreateFrameworkAction extends AnAction {
     public static class FrameworkConfig {
         private final Module module;
         private final File destinationDir;
+        private final boolean debug;
+        private final boolean handleDarwinExceptions;
 
-        public FrameworkConfig(Module module, File destinationDir) {
+        public FrameworkConfig(Module module, File destinationDir, boolean debug, boolean handleDarwinExceptions) {
             this.module = module;
             this.destinationDir = destinationDir;
+            this.debug = debug;
+            this.handleDarwinExceptions = handleDarwinExceptions;
         }
 
         public Module getModule() {
@@ -84,6 +88,14 @@ public class CreateFrameworkAction extends AnAction {
 
         public File getDestinationDir() {
             return destinationDir;
+        }
+
+        public boolean isDebug() {
+            return debug;
+        }
+
+        public boolean isHandleDarwinExceptions() {
+            return handleDarwinExceptions;
         }
     }
 }
