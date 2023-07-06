@@ -16,8 +16,7 @@
 
 #if defined(DARWIN)
 
-#include <pthread.h>
-#include <assert.h>
+#include <robovm.h> // for rvmAbort in release builds
 #include <mach/mach.h>
 #include <mach/mach_error.h>
 #include <mach/exception.h>
