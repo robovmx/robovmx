@@ -44,7 +44,6 @@ import org.robovm.compiler.target.ios.ProvisioningProfile;
 import org.robovm.compiler.target.ios.SigningIdentity;
 import org.robovm.compiler.util.DigestUtil;
 import org.robovm.compiler.util.InfoPList;
-import org.robovm.compiler.util.XCFrameworkPlist;
 import org.robovm.compiler.util.io.RamDiskTools;
 import org.simpleframework.xml.*;
 import org.simpleframework.xml.convert.Converter;
