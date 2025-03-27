@@ -18,19 +18,15 @@
     </description>
     <change-notes>
         <![CDATA[
-            <b>2.3.22</b>
+            <b>2.3.23</b>
 
             <h2>New Features</h2>
             <ul>
-                <li>static hashcode functions for scalar types</li>
-                <li>Transforms unknown dynamic invoke into NoSuchMethodError</li>
+                <li>XCode 16 support</li>
             </ul>
             <h2>Bug Fixes</h2>
             <ul>
-                <li>manual adding of RoboVM SDK from File/Project structure</li>
-                <li>SSL session caching memory corruption fix</li>
-                <li>Idea run dialog was not saving Sim details if no device is attached and selected in preferred device udid</li>
-                <li>compilation failed due swift lib not found (libswiftXPC.dylib is not found in swift paths)</li>
+                <li>Fixes for XCode 16 provisioning profiles</li>
             </ul>
         ]]>
     </change-notes>
