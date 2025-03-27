@@ -4,7 +4,7 @@ plugins {
 }
 
 ext {
-    roboVMVersion = '2.3.23'
+    roboVMVersion = '2.3.24-SNAPSHOT'
 }
 
 group 'com.mobidevelop.robovm'
