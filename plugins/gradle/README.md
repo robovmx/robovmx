@@ -11,6 +11,7 @@ buildscript {
     repositories {
         mavenCentral()
         maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
+        maven { url 'https://central.sonatype.com/repository/maven-snapshots' }
     }
     dependencies {
         classpath "com.mobidevelop.robovm:robovm-gradle-plugin:${roboVMVersion}"
@@ -26,6 +27,7 @@ repositories {
     mavenLocal()
     mavenCentral()
     maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
+    maven { url 'https://central.sonatype.com/repository/maven-snapshots' }
 }
 
 dependencies {
