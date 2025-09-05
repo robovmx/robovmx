@@ -54,11 +54,13 @@ import org.sonatype.aether.resolution.ArtifactResult;
 import org.sonatype.aether.spi.connector.RepositoryConnectorFactory;
 import org.sonatype.aether.util.artifact.DefaultArtifact;
 
-import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.*;
+import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 
 /**
@@ -133,6 +135,13 @@ abstract public class AbstractRoboVMTask extends DefaultTask {
             }
         }
 
+        // add project properties on top of one read from property file
+        // leave only not nullable string values
+        Map<String, String> gradleProperties = project.getProperties().entrySet().stream()
+                .filter( e -> e.getValue() instanceof String)
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().toString()));
+        builder.addProperties(gradleProperties);
+
         if (extension.getConfigFile() != null) {
             File configFile = new File(extension.getConfigFile());
 
@@ -175,12 +184,18 @@ abstract public class AbstractRoboVMTask extends DefaultTask {
         }
         temporaryDirectory.mkdirs();
 
-        builder.home(new Config.Home(extractSdk()))
+        Config.Home home = Config.Home.suggestDevHome();
+        if (home == null) home = new Config.Home(extractSdk());
+        builder.home(home)
                 .tmpDir(temporaryDirectory)
                 .skipInstall(true)
                 .installDir(installDir)
                 .cacheDir(cacheDir);
-
+	    if (home.isDev()) {
+            builder.useDebugLibs(true);
+            builder.dumpIntermediates(true);
+            builder.addPluginArgument("debug:logconsole=true");
+        }
         if (project.hasProperty("mainClassName")) {
             builder.mainClass((String) project.property("mainClassName"));
         }
@@ -217,9 +232,6 @@ abstract public class AbstractRoboVMTask extends DefaultTask {
 
         if (extension.isDumpIntermediates())
             builder.dumpIntermediates(true);
-
-        if (extension.isEnableBitcode())
-            builder.enableBitcode(true);
 
         builder.clearClasspathEntries();
 
@@ -364,7 +376,7 @@ abstract public class AbstractRoboVMTask extends DefaultTask {
         List<RemoteRepository> repositories = new ArrayList<>();
         repositories.add(new RemoteRepository("maven-central", "default", "https://repo1.maven.org/maven2/"));
         repositories.add(new RemoteRepository("oss.sonatype.org-snapshots", "default",
-                "https://oss.sonatype.org/content/repositories/snapshots/"));
+                "https://central.sonatype.com/repository/maven-snapshots/"));
 
         return repositories;
     }
