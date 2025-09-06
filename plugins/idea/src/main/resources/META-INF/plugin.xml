@@ -40,7 +40,7 @@
         <stepsBeforeRunProvider implementation="org.robovm.idea.running.RoboVmBeforeRunTaskProvider"/>
         <!-- dkimitsa: removed as it is not required for open source xcode integration -->
         <!--<applicationConfigurable implementation="org.robovm.idea.config.RoboVmGlobalConfig"></applicationConfigurable>-->
-        <toolWindow id="RoboVMx" anchor="bottom" icon="org.robovm.idea.RoboVmIcons.ROBOVM_SMALL" secondary="true"
+        <toolWindow id="RoboVM" anchor="bottom" icon="org.robovm.idea.RoboVmIcons.ROBOVM_SMALL" secondary="true"
                     factoryClass="org.robovm.idea.components.RoboVmToolWindowFactory"/>
 
         <!--group.names.language.level.specific.issues.and.migration.aids-->
@@ -56,7 +56,7 @@
                          cleanupTool="true"/>
         <externalProjectDataService implementation="org.robovm.idea.gradle.sync.RoboVmModuleDataService" order="last"/>
         <facetType implementation="org.robovm.idea.facet.RoboVmFacetType"/>
-        <notificationGroup id="RoboVMx" displayType="BALLOON"/>
+        <notificationGroup id="RoboVM" displayType="BALLOON"/>
 
     </extensions>
 

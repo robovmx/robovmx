@@ -21,7 +21,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.robovm.compiler.Version;
 import org.robovm.compiler.*;
-import org.robovm.compiler.branding.Locations;
+import org.robovm.compiler.namespace.RoboVmLocations;
 import org.robovm.compiler.clazz.Clazz;
 import org.robovm.compiler.clazz.Clazzes;
 import org.robovm.compiler.clazz.Path;
@@ -184,7 +184,7 @@ public class Config {
 
     private Home home = null;
     private File tmpDir;
-    private File cacheDir = Locations.Cache;
+    private File cacheDir = RoboVmLocations.roboVmCacheDir;
     private File ccBinPath = null;
 
     private boolean clean = false;
