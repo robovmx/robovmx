@@ -19,9 +19,7 @@
     <change-notes>
         <![CDATA[
             <b>RoboVMx: 10.2.2.4</b>
-            <li> TBD </li>
-            <li> TBD </li>
-            <li> TBD </li>
+            <li> synchronized with MobiVM 2.3.24-SNAPSHOT @ Sep 9th, 2025 </li>
         ]]>
     </change-notes>
 
