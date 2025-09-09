@@ -37,7 +37,7 @@ jobs:
           server-password: MAVEN_PASSWORD
       - name: Install dependencies
         run: |
-          brew install autoconf automake libtool cmake
+          brew install autoconf automake libtool
       - name: build everything
         run: ./build.sh
       - name: Maven deploy
