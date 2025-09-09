@@ -11,6 +11,7 @@ buildscript {
     repositories {
         mavenCentral()
         maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
+        maven { url 'https://central.sonatype.com/repository/maven-snapshots' }
     }
     dependencies {
         classpath "com.robovmx:robovm-gradle-plugin:${roboVMVersion}"
@@ -26,6 +27,7 @@ repositories {
     mavenLocal()
     mavenCentral()
     maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
+    maven { url 'https://central.sonatype.com/repository/maven-snapshots' }
 }
 
 dependencies {
@@ -105,12 +107,6 @@ The `robovmInstall` task is very similar to the `robovmArchive` task but doesn't
 
 ```
 gradle -Probovm.archs=x86:x86_64 robovmInstall
-```
-
-To enable bitcode when running `createIPA`, `robovmArchive` or `robovmInstall` add `-Probovm.enableBitcode=true`:
-
-```
-gradle -Probovm.enableBitcode=true -Probovm.archs=thumbv7:arm64 robovmArchive
 ```
 
 ## Headless code signing

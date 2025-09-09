@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.robovmx</groupId>
-    <version>10.2.2.3-SNAPSHOT</version>
+    <version>10.2.2.4-SNAPSHOT</version>
     <artifactId>robovm-parent</artifactId>
     <organization>
         <name>com.robovmx</name>
@@ -46,7 +46,7 @@
 
 
     <properties>
-        <sonatypeOssDistMgmtSnapshotsUrl>https://oss.sonatype.org/content/repositories/snapshots/</sonatypeOssDistMgmtSnapshotsUrl>
+        <sonatypeOssDistMgmtSnapshotsUrl>https://central.sonatype.com/repository/maven-snapshots/</sonatypeOssDistMgmtSnapshotsUrl>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
@@ -312,7 +312,7 @@
         <repository>
             <id>sonatype-nexus-snapshots</id>
             <name>Sonatype Nexus Snapshots</name>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+            <url>https://central.sonatype.com/repository/maven-snapshots</url>
             <releases>
                 <enabled>false</enabled>
             </releases>
@@ -464,7 +464,7 @@
                     <configuration>
                         <!-- FIXME: this one is to fix "single failed: group id 'SOME BIG ID' is too big" when mac is in NT domain -->
                         <!-- FIXME: this adds PaxHeaders.X in this case, check if it will be adding it for normal user -->
-                        <!-- <tarLongFileMode>posix</tarLongFileMode> -->
+                        <tarLongFileMode>posix</tarLongFileMode>
                     </configuration>
                 </plugin>
 

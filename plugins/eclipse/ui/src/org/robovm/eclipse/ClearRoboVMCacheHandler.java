@@ -19,7 +19,7 @@ package org.robovm.eclipse;
 import java.io.File;
 import java.io.IOException;
 
-import org.robovm.compiler.branding.Locations;
+import org.robovm.compiler.namespace.RoboVmLocations;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -37,7 +37,7 @@ public class ClearRoboVMCacheHandler extends AbstractHandler {
             protected IStatus run(IProgressMonitor monitor) {
                 monitor.beginTask("Clearing RoboVM cache", 50);
                 try {
-                    FileUtils.deleteDirectory(Locations.Cache);                                   
+                    FileUtils.deleteDirectory(RoboVmLocations.roboVmCacheDir);                                   
                 } catch (IOException e) {                       
                     e.printStackTrace();                    
                 }
