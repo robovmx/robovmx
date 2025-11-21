@@ -103,7 +103,10 @@ endif()
 
 if(DARWIN)
   if(NOT SYSROOT)
-    exec_program(xcode-select ARGS --print-path OUTPUT_VARIABLE XCODE_PATH)
+    execute_process(COMMAND xcode-select --print-path 
+      OUTPUT_VARIABLE XCODE_PATH 
+      OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
     if(MACOSX)
       set(SYSROOT "${XCODE_PATH}/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk")
       if(NOT IS_DIRECTORY ${SYSROOT})
@@ -134,7 +137,6 @@ set(C_FLAGS "${C_FLAGS} -std=gnu99 -fPIC")
 set(CXX_FLAGS "${CXX_FLAGS} -fPIC")
 set(C_CXX_FLAGS "${C_CXX_FLAGS} -Wall -fPIC")
 if(NOT IOS)
-  # -fdata-sections -ffunction-sections conflicts with -fembed-bitcode
   set(C_CXX_FLAGS "${C_CXX_FLAGS} -fdata-sections -ffunction-sections")
 endif()
 if(CTARGET)
@@ -149,9 +151,6 @@ if(SYSROOT)
 endif()
 if(IOS)
   set(CMAKE_OSX_DEPLOYMENT_TARGET "") #reset variable for compat with SDK 10.12, see issue #48
-  if (ARM64 OR THUMBV7)
-    set(C_CXX_FLAGS "${C_CXX_FLAGS} -fembed-bitcode")
-  endif()
 endif()
 
 # Linker flags
@@ -192,9 +191,6 @@ if(MACOSX)
 endif()
 if(IOS)
   set(ASM_FLAGS "${ASM_FLAGS} -target ${CTARGET}")
-  if (ARCH STREQUAL "arm64" OR ARCH STREQUAL "thumbv7")
-    set(ASM_FLAGS "${ASM_FLAGS} -fembed-bitcode")
-  endif()
 endif()
 set(CMAKE_ASM_COMPILE_OBJECT "${CMAKE_C_COMPILER} ${ASM_FLAGS} -o <OBJECT> <SOURCE>")
 enable_language(ASM)
@@ -266,7 +262,7 @@ set(EXTGC_C_FLAGS "${C_CXX_FLAGS} -DGC_DISABLE_INCREMENTAL -DGC_DISCOVER_TASK_TH
 set(EXTGC_C_FLAGS "${EXTGC_C_FLAGS} -Wno-error=incompatible-function-pointer-types -Wno-error=int-conversion")
 set(EXTGC_LD_FLAGS "${CMAKE_EXE_LINKER_FLAGS}")
 if(DARWIN)
-  set(EXTGC_C_FLAGS "${EXTGC_C_FLAGS} -DNO_DYLD_BIND_FULLY_IMAGE --sysroot=${SYSROOT}")
+  set(EXTGC_C_FLAGS "${EXTGC_C_FLAGS} -DGC_MAX_MACH_THREADS=1024 -DNO_DYLD_BIND_FULLY_IMAGE --sysroot=${SYSROOT}")
   set(EXTGC_LD_FLAGS "${EXTGC_LD_FLAGS} --sysroot=${SYSROOT}")
 endif()
 

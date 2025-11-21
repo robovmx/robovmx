@@ -38,6 +38,7 @@ import org.robovm.compiler.config.Arch;
 import org.robovm.compiler.config.Config;
 import org.robovm.compiler.config.Environment;
 import org.robovm.compiler.config.OS;
+import org.robovm.compiler.namespace.RoboVmLocations;
 import org.robovm.compiler.plugin.PluginArgument;
 import org.robovm.compiler.target.ConsoleTarget;
 import org.robovm.compiler.target.ios.IOSTarget;
@@ -53,13 +54,7 @@ import org.robovm.idea.utils.RoboFileUtils;
 import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Initially was a CompileTask that was attached as last chain in compilation
@@ -96,7 +91,7 @@ public class RoboVmCompileTask {
                 builder.iosProvisioningProfile(ProvisioningProfile.find(ProvisioningProfile.list(), ipaConfig.getProvisioningProfile()));
             }
             configureClassAndSourcepaths(project, ipaConfig.getModule(), builder);
-            builder.home(RoboVmPlugin.getRoboVmHome());
+            builder.home(RoboVmLocations.roboVmHome);
             Config config = builder.build();
 
             progress.setFraction(0.5);
@@ -146,7 +141,7 @@ public class RoboVmCompileTask {
             configureClassAndSourcepaths(project, frameworkConfig.getModule(), builder);
 
             // Set the Home to be used, create the Config and AppCompiler
-            Config.Home home = RoboVmPlugin.getRoboVmHome();
+            Config.Home home = RoboVmLocations.roboVmHome;
             if (home.isDev()) {
                 builder.useDebugLibs(true);
                 builder.dumpIntermediates(true);
@@ -241,7 +236,7 @@ public class RoboVmCompileTask {
             configureTarget(builder, runConfig);
 
             // Set the Home to be used, create the Config and AppCompiler
-            Config.Home home = RoboVmPlugin.getRoboVmHome();
+            Config.Home home = RoboVmLocations.roboVmHome;
             if (home.isDev()) {
                 builder.useDebugLibs(true);
                 builder.dumpIntermediates(true);
@@ -327,7 +322,7 @@ public class RoboVmCompileTask {
         // specified in a Maven/Gradle build file, in which case they'll
         // turn up as order entries. We filter them out here.
         // FIXME junit needs to include test classes
-        OrderEnumerator classes = ModuleRootManager.getInstance(module).orderEntries().recursively().withoutSdk().compileOnly().productionOnly();
+        OrderEnumerator classes = ModuleRootManager.getInstance(module).orderEntries().recursively().withoutSdk().productionOnly();
         Set<File> classPaths = new HashSet<>();
         for (String path : classes.getPathsList().getPathList()) {
             if (!RoboVmPlugin.isSdkLibrary(path)) {
