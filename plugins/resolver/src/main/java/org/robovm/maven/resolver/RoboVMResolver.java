@@ -52,7 +52,7 @@ public class RoboVMResolver {
             return Maven
                     .configureResolver()
                     .withRemoteRepo("Sonatype Nexus Snapshots",
-                            "https://oss.sonatype.org/content/repositories/snapshots/", "default")
+                            "https://central.sonatype.com/repository/maven-snapshots/", "default")
                     .resolve(artifact).withoutTransitivity().asSingleResolvedArtifact();
         }
     }
@@ -65,7 +65,7 @@ public class RoboVMResolver {
             return Maven
                     .configureResolver()
                     .withRemoteRepo("Sonatype Nexus Snapshots",
-                            "https://oss.sonatype.org/content/repositories/snapshots/", "default")
+                            "https://central.sonatype.com/repository/maven-snapshots/", "default")
                     .resolve(artifact).withTransitivity().asResolvedArtifact();
         }
     }

@@ -15,7 +15,6 @@
  */
 package org.robovm.objc;
 
-import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -57,31 +56,6 @@ public final class ObjCClass extends ObjCObject {
 
     static {
         ObjCRuntime.bind(ObjCClass.class);
-
-        // TODO: remove once resolved on Idea side
-        // affects only debug builds
-        // workaround for Idea Bug: https://youtrack.jetbrains.com/issue/IDEA-332794
-        // there is code bellow loads all ObjCClass' and some of them might be Inner ones
-        // idea seems to be ignoring PREPARE class events in case Inner class is
-        // being loaded before the host one
-        byte[] data = VM.getRuntimeData(ObjCClass.class.getName() + ".preloadClasses");
-        if (data != null) {
-            String[] innerClassHosts;
-            try {
-                innerClassHosts = new String(data, "UTF8").split(",");
-            } catch (UnsupportedEncodingException e) {
-                innerClassHosts = new String[0];
-            }
-            for (String host : innerClassHosts) {
-                try {
-                    // preload class.
-                    Class.forName(host);
-                } catch (Throwable t) {
-                    System.err.println("Failed to preload inner ObjCClass host class " + host + ": " + t.getMessage());
-                }
-            }
-        }
-
         @SuppressWarnings("unchecked")
         Class<? extends ObjCObject>[] classes = (Class<? extends ObjCObject>[]) 
                 VM.listClasses(ObjCObject.class, ClassLoader.getSystemClassLoader());
@@ -248,8 +222,12 @@ public final class ObjCClass extends ObjCObject {
         }
         return getByType(id.getClass());
     }
-    
+
     public static ObjCClass getFromObject(long handle) {
+        return getFromObject(handle, false);
+    }
+
+    public static ObjCClass getFromObject(long handle, boolean optional) {
         long classPtr = ObjCRuntime.object_getClass(handle);
         // dkimitsa. There is a bug observed in iOS12 that causes not all Objective-C class fields properly initialized
         // in Class instance of Swift classes. This causes a crash in APIs like class_copyProtocolList to crash
@@ -260,7 +238,7 @@ public final class ObjCClass extends ObjCObject {
         if (classPtr != 0 && ObjCRuntime.class_respondsToSelector(classPtr, SELECTOR_NSOBJECT_CLASS.getHandle())) {
             classPtr = ObjCRuntime.ptr_objc_msgSend(handle, SELECTOR_NSOBJECT_CLASS.getHandle());
         }
-        return toObjCClass(classPtr);
+        return toObjCClass(classPtr, optional);
     }
     
     public static ObjCClass getByType(Class<? extends ObjCObject> type) {
@@ -328,6 +306,10 @@ public final class ObjCClass extends ObjCObject {
     }
 
     public static ObjCClass toObjCClass(final long handle) {
+        return toObjCClass(handle, false);
+    }
+
+    public static ObjCClass toObjCClass(final long handle, final boolean optional) {
         long classPtr = handle;
         ObjCClass c = ObjCObject.getPeerObject(classPtr);
         if (c == null) {
@@ -358,7 +340,7 @@ public final class ObjCClass extends ObjCObject {
                 }
             }
         }
-        if (c == null) {
+        if (c == null && !optional) {
             String name = VM.newStringUTF(ObjCRuntime.class_getName(handle));
             throw new ObjCClassNotFoundException("Could not find Java class corresponding to Objective-C class: " + name);
         }

@@ -127,7 +127,7 @@ public class IOSTarget extends AbstractTarget {
     public static boolean isDeviceArch(Arch arch) {
         Environment env = arch.getEnv();
         CpuArch cpuArch = arch.getCpuArch();
-        return env == Environment.Native &&  (cpuArch == CpuArch.thumbv7 || cpuArch == CpuArch.arm64);
+        return env == Environment.Native && cpuArch == CpuArch.arm64;
     }
 
     /**
@@ -434,10 +434,10 @@ public class IOSTarget extends AbstractTarget {
         // sign dynamic frameworks first
         File frameworksDir = new File(appDir, "Frameworks");
         if (frameworksDir.exists() && frameworksDir.isDirectory()) {
-            // Sign swift rt libs
-            for (File swiftLib : frameworksDir.listFiles()) {
-                if (swiftLib.getName().endsWith(".dylib")) {
-                    codesignSwiftLib(identity, swiftLib);
+            // Sign swift/dylibs rt libs
+            for (File dylib : frameworksDir.listFiles()) {
+                if (dylib.getName().endsWith(".dylib")) {
+                    codesignDylib(identity, dylib);
                 }
             }
 
@@ -614,8 +614,8 @@ public class IOSTarget extends AbstractTarget {
         codesign(identity, entitlementsPList, false, false, true, appDir);
     }
 
-    private void codesignSwiftLib(SigningIdentity identity, File swiftLib) throws IOException {
-        config.getLogger().info("Code signing swift dylib '%s' using identity '%s' with fingerprint %s", swiftLib.getName(), identity.getName(),
+    private void codesignDylib(SigningIdentity identity, File swiftLib) throws IOException {
+        config.getLogger().info("Code signing dylib '%s' using identity '%s' with fingerprint %s", swiftLib.getName(), identity.getName(),
                 identity.getFingerprint());
         codesign(identity, null, false, true, false, swiftLib);
     }
@@ -798,7 +798,7 @@ public class IOSTarget extends AbstractTarget {
 
     @Override
     public List<Arch> getDefaultArchs() {
-        return Arrays.asList(new Arch(CpuArch.thumbv7), new Arch(CpuArch.arm64));
+        return List.of(new Arch(CpuArch.arm64));
     }
 
     public void archive() throws IOException {
@@ -851,7 +851,7 @@ public class IOSTarget extends AbstractTarget {
                 }
 
                 swiftSupportDir.mkdirs();
-                copySwiftLibs(Arrays.asList(swiftLibs), swiftSupportDir, false);
+                copySwiftLibs(Arrays.asList(swiftLibs), Collections.emptyList(), swiftSupportDir, false);
             }
         }
 
