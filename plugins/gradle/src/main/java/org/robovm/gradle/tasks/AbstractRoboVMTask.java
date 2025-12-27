@@ -34,10 +34,10 @@ import org.robovm.compiler.AppCompiler;
 import org.robovm.compiler.config.Arch;
 import org.robovm.compiler.config.Config;
 import org.robovm.compiler.config.OS;
+import org.robovm.compiler.namespace.RoboVmLocations;
 import org.robovm.compiler.log.Logger;
 import org.robovm.compiler.target.ios.ProvisioningProfile;
 import org.robovm.compiler.target.ios.SigningIdentity;
-import org.robovm.compiler.branding.Locations;
 import org.robovm.gradle.RoboVMGradleException;
 import org.robovm.gradle.RoboVMPlugin;
 import org.robovm.gradle.RoboVMPluginExtension;
@@ -54,11 +54,13 @@ import org.sonatype.aether.resolution.ArtifactResult;
 import org.sonatype.aether.spi.connector.RepositoryConnectorFactory;
 import org.sonatype.aether.util.artifact.DefaultArtifact;
 
-import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.*;
+import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 
 /**
@@ -133,6 +135,13 @@ abstract public class AbstractRoboVMTask extends DefaultTask {
             }
         }
 
+        // add project properties on top of one read from property file
+        // leave only not nullable string values
+        Map<String, String> gradleProperties = project.getProperties().entrySet().stream()
+                .filter( e -> e.getValue() instanceof String)
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().toString()));
+        builder.addProperties(gradleProperties);
+
         if (extension.getConfigFile() != null) {
             File configFile = new File(extension.getConfigFile());
 
@@ -159,15 +168,15 @@ abstract public class AbstractRoboVMTask extends DefaultTask {
         if (extension.getInstallDir() != null) {
             installDir = new File(extension.getInstallDir());
         } else {
-            installDir = Locations.inBuildDir(project.getBuildDir(), "tmp/");
+            installDir = RoboVmLocations.inBuildDir(project.getBuildDir(), "tmp/");
         }
         File cacheDir = null;
         if(extension.getCacheDir() != null) {
             cacheDir = new File(extension.getCacheDir());
         } else {
-            cacheDir = Locations.Cache;
+            cacheDir = RoboVmLocations.roboVmCacheDir;
         }
-        File temporaryDirectory = Locations.inBuildDir(project.getBuildDir(), "tmp/");
+        File temporaryDirectory = RoboVmLocations.inBuildDir(project.getBuildDir(), "tmp/");
         try {
             FileUtils.deleteDirectory(temporaryDirectory);
         } catch (IOException e) {
@@ -175,12 +184,18 @@ abstract public class AbstractRoboVMTask extends DefaultTask {
         }
         temporaryDirectory.mkdirs();
 
-        builder.home(new Config.Home(extractSdk()))
+        Config.Home home = Config.Home.suggestDevHome();
+        if (home == null) home = new Config.Home(extractSdk());
+        builder.home(home)
                 .tmpDir(temporaryDirectory)
                 .skipInstall(true)
                 .installDir(installDir)
                 .cacheDir(cacheDir);
-
+	    if (home.isDev()) {
+            builder.useDebugLibs(true);
+            builder.dumpIntermediates(true);
+            builder.addPluginArgument("debug:logconsole=true");
+        }
         if (project.hasProperty("mainClassName")) {
             builder.mainClass((String) project.property("mainClassName"));
         }
@@ -217,9 +232,6 @@ abstract public class AbstractRoboVMTask extends DefaultTask {
 
         if (extension.isDumpIntermediates())
             builder.dumpIntermediates(true);
-
-        if (extension.isEnableBitcode())
-            builder.enableBitcode(true);
 
         builder.clearClasspathEntries();
 
@@ -364,7 +376,7 @@ abstract public class AbstractRoboVMTask extends DefaultTask {
         List<RemoteRepository> repositories = new ArrayList<>();
         repositories.add(new RemoteRepository("maven-central", "default", "https://repo1.maven.org/maven2/"));
         repositories.add(new RemoteRepository("oss.sonatype.org-snapshots", "default",
-                "https://oss.sonatype.org/content/repositories/snapshots/"));
+                "https://central.sonatype.com/repository/maven-snapshots/"));
 
         return repositories;
     }
@@ -414,9 +426,8 @@ abstract public class AbstractRoboVMTask extends DefaultTask {
 
             if (filesWereUpdated) {
                 getLogger().debug("Archive '" + archive + "' unpacked to: " + destDir);
-                getLogger().info("Clearing ~/.robovm/cache folder due SDK files changed.");
-
-                File cacheDir = new File(System.getProperty("user.home"), ".robovm/cache");
+                getLogger().info("Clearing " + RoboVmLocations.roboVmCacheDir + " folder due SDK files changed.");
+                File cacheDir = RoboVmLocations.roboVmCacheDir;
                 try {
                     FileUtils.deleteDirectory(cacheDir);
                 } catch (IOException ignored) {

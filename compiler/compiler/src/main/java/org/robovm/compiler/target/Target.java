@@ -24,7 +24,6 @@ import java.util.Map;
 import org.robovm.compiler.clazz.Path;
 import org.robovm.compiler.config.Arch;
 import org.robovm.compiler.config.Config;
-import org.robovm.compiler.config.Environment;
 import org.robovm.compiler.config.OS;
 
 /**
@@ -92,7 +91,7 @@ public interface Target {
     /**
      * Builds a fat binary out of the specified slices.
      */
-    public void buildFat(Map<Arch, File> slices) throws IOException;
+    void buildFat(Map<Arch, File> slices) throws IOException;
 
     /**
      * Installs the built binary and any supporting files into the

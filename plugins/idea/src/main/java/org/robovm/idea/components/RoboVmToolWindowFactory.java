@@ -14,7 +14,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class RoboVmToolWindowFactory implements ToolWindowFactory, DumbAware {
-    public static final String ID = "RoboVMx";
+    public static final String ID = "RoboVM";
     public static final String Title = "Console";
 
     @Override

@@ -179,7 +179,11 @@ public class FrameworkTarget extends AbstractTarget {
 		ccArgs.add("-install_name");
 		ccArgs.add(String.format("@rpath/%s.framework/%s", config.getImageName(), config.getImageName()));
 
-		return ccArgs;
+        // specify dynamic library loading path (for embedded dylibs/frameworks)
+        ccArgs.add("-Wl,-rpath,@loader_path/Frameworks");
+        ccArgs.add("-Wl,-rpath,@rpath");
+
+        return ccArgs;
 	}
 
 	@Override
@@ -306,7 +310,15 @@ public class FrameworkTarget extends AbstractTarget {
 					executable = new File(new File(config.getTmpDir(), identifier), getExecutable());
 				}
 				config.getLogger().info("Installing " + identifier + "framework slice: %s", frameworkDir);
-				installFramework(frameworkDir, dsymDir, executable, image);
+
+                // create slice config and slice target for install operation as
+                // there should be different variant filtering while copying dependencies
+                Config sliceConfig = config.builder().archs(archesInBinary).build();
+                // copy resource path otherwise resource jars such as cacert will not be copied
+                sliceConfig.getResourcesPaths().addAll(config.getResourcesPaths());
+                FrameworkTarget sliceTarget = new FrameworkTarget(XC_TYPE);
+                sliceTarget.init(sliceConfig);
+				sliceTarget.installFramework(frameworkDir, dsymDir, executable, image);
 
 				XCFrameworkPlist.Library library = new XCFrameworkPlist.Library(identifier,
 						image + ".framework", config.getOs(),

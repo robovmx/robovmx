@@ -1,6 +1,6 @@
 #!/bin/sh
 set -e
-mvn clean install
+mvn -T 10 clean install
 ./plugins/idea/gradlew -b plugins/idea/build.gradle clean buildPlugin
 # robovmx -- not focusing on eclipse plugin
 # mvn -f plugins/eclipse/pom.xml clean install

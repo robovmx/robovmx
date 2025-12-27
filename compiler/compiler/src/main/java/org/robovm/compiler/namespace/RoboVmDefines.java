@@ -1,12 +1,12 @@
-package org.robovm.compiler.branding;
+package org.robovm.compiler.namespace;
 
 /**
  * Specifies generic brand titles and names which can be in case of need (e.x. custom test builds)
  *
  * @author dkimitsa
  */
-public final class Brand {
-    private Brand() {
+public final class RoboVmDefines {
+    private RoboVmDefines() {
     }
 
     /**
@@ -17,15 +17,15 @@ public final class Brand {
     /**
      * Home directory name where robovm related files and cache to be located
      */
-    public final static String HomeDir = ".robovmx";
+    public final static String BaseDirName = ".robovmx";
 
     /**
      * SDK directory
      */
-    public final static String SdkDir = ".robovmx-sdks";
+    public final static String SdkDirName = ".robovmx-sdks";
 
     /**
      * name of build dir
      */
-    public final static String BuildDir = "robovmx-build";
+    public final static String BuildDirName = "robovmx-build";
 }
