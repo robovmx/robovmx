@@ -43,6 +43,7 @@ import org.robovm.rt.VM;
 import sun.reflect.CallerSensitive;
 import sun.reflect.Reflection;
 import sun.security.util.SecurityConstants;
+import android.system.StructPasswd;
 /**
  * The <code>System</code> class contains several useful class fields
  * and methods. It cannot be instantiated.
@@ -1120,12 +1121,8 @@ public final class System {
         p.put("java.boot.class.path", runtime.bootClassPath());
         p.put("java.class.path", runtime.classPath());
 
-        // TODO: does this make any sense? Should we just leave java.home unset?
-        String javaHome = getenv("JAVA_HOME");
-        if (javaHome == null) {
-            javaHome = "/system";
-        }
-        p.put("java.home", javaHome);
+        // RoboVM note: Android uses getenv("JAVA_HOME") here with "/system" as fallback.
+        p.put("java.home", VM.resourcesPath());
 
         p.put("java.vm.version", runtime.vmVersion());
 
@@ -1152,6 +1149,33 @@ public final class System {
         parsePropertyAssignments(p, specialProperties());
 
         parsePropertyAssignments(p, robovmSpecialProperties()); // RoboVM Note: own properties
+
+        // RoboVM note: Added in RoboVM. Make sure we get sane and consistent
+        // user.home, user.dir and user.name values on iOS.
+        if (p.getProperty("os.name").contains("iOS")) {
+            // On iOS we want user.home and user.dir to point to the app's data
+            // container root dir. This is the dir $HOME points to. We also set
+            // user.name to $USER or hardcode 'mobile' if $USER isn't set (iOS
+            // simulator).
+            String home = getenv("HOME");
+            String user = getenv("USER");
+            p.put("user.home", home != null ? home : "");
+            p.put("user.dir", home != null ? home : "/");
+            p.put("user.name", user != null ? user : "mobile");
+        } else {
+            try {
+                StructPasswd passwd = Libcore.os.getpwuid(Libcore.os.getuid());
+                p.put("user.home", passwd.pw_dir);
+                p.put("user.name", passwd.pw_name);
+            } catch (ErrnoException exception) {
+                // Fall back to environment variables. getpwuid() fails on the iOS simulator.
+                String home = getenv("HOME");
+                String user = getenv("USER");
+                p.put("user.home", home != null ? home : "");
+                p.put("user.name", user != null ? user : "");
+            }
+        }
+        // RoboVM note: End change.
 
         // Override built-in properties with settings from the command line.
         // Note: it is not possible to override hardcoded values.
@@ -1188,7 +1212,9 @@ public final class System {
         // We check first if the property has not been set already: note that it
         // can only be set from the command line through the '-Djava.io.tmpdir=' option.
         if (!unchangeableProps.containsKey("java.io.tmpdir")) {
-            p.put("java.io.tmpdir", "/tmp");
+            // RoboVM note: Use value of $TMPDIR if set. Otherwise use /tmp as Android does.
+            String tmpdir = getenv("TMPDIR");
+            p.put("java.io.tmpdir", tmpdir != null ? tmpdir : "/tmp");
         }
 
         // Android has always had an empty "user.home" (see docs for getProperty).
