@@ -52,6 +52,7 @@ jobs:
           name: "${{ github.event.inputs.tagName }}"
           body: "${{ github.event.inputs.releaseMessage }}"
           tag: "${{ github.event.inputs.tagName }}"
+          commit: "${{ github.event.inputs.targetBranch }}"
           draft: true
           artifacts: "plugins/idea/build/distributions/*"
           token: ${{ secrets.GITHUB_TOKEN }}
