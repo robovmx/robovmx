@@ -16,13 +16,14 @@
 package org.robovm.gradle.tasks;
 
 import org.apache.tools.ant.types.Commandline;
+import org.gradle.api.tasks.UntrackedTask;
 import org.gradle.api.tasks.options.Option;
 import org.robovm.compiler.AppCompiler;
 import org.robovm.compiler.config.Arch;
 import org.robovm.compiler.config.Config;
 import org.robovm.compiler.config.OS;
-import org.robovm.compiler.target.ios.IOSDeviceLaunchParameters;
 import org.robovm.compiler.target.ios.IOSTarget;
+import org.robovm.compiler.target.ios.devicecommon.IOSDeviceLaunchParameters;
 import org.robovm.gradle.RoboVMGradleException;
 
 import java.util.Arrays;
@@ -31,6 +32,7 @@ import java.util.Arrays;
  *
  * @author Junji Takakura
  */
+@UntrackedTask(because = "caching not implemented")
 public class IOSDeviceTask extends AbstractRoboVMTask {
 
     private String[] args;
@@ -56,6 +58,12 @@ public class IOSDeviceTask extends AbstractRoboVMTask {
             if (args != null) {
                 launchParameters.setArguments(Arrays.asList(args));
             }
+
+            // redirect stdout and stderr to gradle console, ignoring parent in chain
+            // as not returning the process but just running it synchronously
+            launchParameters.getStdoutChain().registerLink((p) -> System.out );
+            launchParameters.getStderrChain().registerLink((p) -> System.err );
+
             compiler.launch(launchParameters);
         } catch (Throwable t) {
             throw new RoboVMGradleException("Failed to launch IOS Device", t);

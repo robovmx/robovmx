@@ -17,12 +17,11 @@
  */
 package org.robovm.compiler;
 
-import org.apache.commons.exec.ExecuteException;
+import com.github.cliftonlabs.json_simple.JsonObject;
+import com.github.cliftonlabs.json_simple.Jsoner;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
 import org.robovm.compiler.namespace.RoboVmLocations;
 import org.robovm.compiler.clazz.*;
 import org.robovm.compiler.config.*;
@@ -30,10 +29,15 @@ import org.robovm.compiler.config.Config.TreeShakerMode;
 import org.robovm.compiler.config.StripArchivesConfig.StripArchivesBuilder;
 import org.robovm.compiler.log.ConsoleLogger;
 import org.robovm.compiler.plugin.*;
-import org.robovm.compiler.target.ConsoleTarget;
-import org.robovm.compiler.target.LaunchParameters;
+import org.robovm.compiler.plugin.launch.LaunchPlugin;
+import org.robovm.compiler.target.console.ConsoleTarget;
+import org.robovm.compiler.launcher.LaunchParameters;
 import org.robovm.compiler.target.ios.*;
+import org.robovm.compiler.target.ios.simulator.DeviceType;
+import org.robovm.compiler.target.ios.simulator.IOSSimulatorLaunchParameters;
+import org.robovm.compiler.target.ios.simulator.SimCtl;
 import org.robovm.compiler.util.AntPathMatcher;
+import org.robovm.compiler.util.Executor.ExecuteException;
 import org.simpleframework.xml.Serializer;
 
 import java.io.*;
@@ -316,12 +320,11 @@ public class AppCompiler {
      * which classes need to be recompiled and linked in through the root
      * classes' dependencies.
      * 
-     * The classes matching {@link #ROOT_CLASS_PATTERNS} and
-     * {@link #ROOT_CLASSES} will always be included. If a main class has been
+     * The classes matching {@link #ROOT_CLASSES} will always be included. If a main class has been
      * specified it will also become a root. Any root class pattern specified on
-     * the command line (as returned by {@link Config#getRoots()} will also be
+     * the command line (as returned by {@link Config#getForceLinkClasses()} will also be
      * used to find root classes. If no main class has been specified and
-     * {@link Config#getRoots()} returns an empty set all classes available on
+     * {@link Config#getForceLinkClasses()} returns an empty set all classes available on
      * the bootclasspath and the classpath will become roots.
      */
     private TreeSet<Clazz> getRootClasses() {
@@ -569,7 +572,6 @@ public class AppCompiler {
     /**
      * Write the classpaths file that contains a list of class and jar files that were input for the Main binary
      *
-     * @param classPathsFile
      * @param linkClasses
      * @throws IOException
      */
@@ -610,7 +612,6 @@ public class AppCompiler {
     /**
      * Checks, whether recompilation of the Main binary is necessary by looking at the classPathsFile
      *
-     * @param classPathsFile
      * @return
      * @throws IOException
      */
@@ -1032,47 +1033,20 @@ public class AppCompiler {
     }
 
     public int launch(LaunchParameters launchParameters) throws Throwable {
-        return launch(launchParameters, null);
-    }
-
-    public int launch(LaunchParameters launchParameters, InputStream inputStream) throws Throwable {
-        try {
-            return launchAsync(launchParameters, inputStream).waitFor();
-        } finally {
-            launchAsyncCleanup();
-        }
+        return launchAsync(launchParameters).waitFor();
     }
 
     public Process launchAsync(LaunchParameters launchParameters) throws Throwable {
-        return launchAsync(launchParameters, null);
-    }
-
-    public Process launchAsync(LaunchParameters launchParameters, InputStream inputStream) throws Throwable {
+        // allow launch plugins to mutate the launch parameters before launching
+        // e.g. setup stdio handling and setup process listener callbacks
         for (LaunchPlugin plugin : config.getLaunchPlugins()) {
-            plugin.beforeLaunch(config, launchParameters);
+            plugin.setupLaunch(config, launchParameters);
         }
-        try {
-            Process process = config.getTarget().launch(launchParameters);
-            for (LaunchPlugin plugin : config.getLaunchPlugins()) {
-                plugin.afterLaunch(config, launchParameters, process);
-            }
-            return process;
-        } catch (Throwable e) {
-            for (LaunchPlugin plugin : config.getLaunchPlugins()) {
-                plugin.launchFailed(config, launchParameters);
-            }
-            throw e;
-        }
-    }
-
-    public void launchAsyncCleanup() {
-        for (LaunchPlugin plugin : config.getLaunchPlugins()) {
-            plugin.cleanup();
-        }
+        return config.getTarget().launch(launchParameters);
     }
 
     private static void printDeviceTypesAndExit() throws IOException {
-        List<DeviceType> types = DeviceType.listDeviceTypes();
+        List<DeviceType> types = SimCtl.list();
         for (DeviceType type : types) {
             System.out.println(type.getSimpleDeviceTypeId());
         }
@@ -1285,7 +1259,7 @@ public class AppCompiler {
 
     private class UpdateChecker extends Thread {
         private final String address;
-        private volatile JSONObject result;
+        private volatile JsonObject result;
 
         public UpdateChecker(String address) {
             this.address = address;
@@ -1326,7 +1300,7 @@ public class AppCompiler {
                     + "osVersion=" + URLEncoder.encode(osVersion, "UTF-8"));
             t.start();
             t.join(5 * 1000); // Wait for a maximum of 5 seconds
-            JSONObject result = t.result;
+            JsonObject result = t.result;
             if (result != null) {
                 String version = (String) result.get("version");
                 if (version != null && Version.isOlderThan(Version.getCompilerVersion(), version)) {
@@ -1372,14 +1346,14 @@ public class AppCompiler {
         FileUtils.writeStringToFile(timeFile, String.valueOf(System.currentTimeMillis()), "UTF-8");
     }
 
-    private JSONObject fetchJson(String address) {
+    private JsonObject fetchJson(String address) {
         try {
             URL url = new URL(address);
             URLConnection conn = url.openConnection();
             conn.setConnectTimeout(5 * 1000);
             conn.setReadTimeout(5 * 1000);
             try (InputStream in = new BufferedInputStream(conn.getInputStream())) {
-                return (JSONObject) JSONValue.parseWithException(IOUtils.toString(in, "UTF-8"));
+                return (JsonObject) Jsoner.deserialize(IOUtils.toString(in, "UTF-8"));
             }
         } catch (Exception e) {
             if (config.getHome().isDev()) {

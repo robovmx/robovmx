@@ -1,29 +1,32 @@
 plugins {
-    id "com.github.johnrengelman.shadow" version "8.1.1"
+    id "com.gradleup.shadow" version "9.4.3"
     id "com.gradle.plugin-publish" version "1.2.1"
     id 'java-gradle-plugin'
     id 'groovy'
     id 'maven-publish'
+    id "org.jreleaser" version "1.20.0"
     id 'signing'
     id 'eclipse'
-}
-
-
-group = 'com.robovmx'
-archivesBaseName = 'robovm-gradle-plugin'
-version = '10.2.2.4-SNAPSHOT'
-
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
-compileJava {
-    options.encoding = 'UTF-8'
-    options.compilerArgs.addAll(['--release', '8'])
 }
 
 ext {
     roboVMVersion = '10.2.2.4-SNAPSHOT'
     nexusUsername = System.getenv('MAVEN_USERNAME')
     nexusPassword = System.getenv('MAVEN_PASSWORD')
+}
+
+group = 'com.robovmx'
+base {
+    archivesName = 'robovm-gradle-plugin'
+}
+version "${roboVMVersion}"
+
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+    withSourcesJar()
+    withJavadocJar()
 }
 
 repositories {
@@ -60,61 +63,95 @@ gradlePlugin {
 }
 
 publishing {
-    publications {
-        pluginMaven(MavenPublication) {
-            pom {
-                name = 'RoboVM Gradle Plugin'
-                packaging = 'jar'
-                description = 'The RoboVM Gradle Plugin provides a way to build RoboVM apps using Gradle.'
-                url = 'https://github.com/mobidevelop/robovm/'
-                inceptionYear = '2013'
+    // TODO: while not pushing to Gradle Plugin Portal but to Maven Central we need
+    //       to have complete POM with all fields to pass Cental validation
+    //       there is no way to configure URLs etc in gradlePlugin {} blocks,
+    //       so override both plugin marker's and plugin's POM in configureEach
+    //       instead of single `pluginMaven(MavenPublication)`
+    publications.withType(MavenPublication).configureEach {
+        pom {
+            name = 'RoboVM Gradle Plugin'
+            description = 'The RoboVM Gradle Plugin provides a way to build RoboVM apps using Gradle.'
+            url = 'https://github.com/mobidevelop/robovm/'
+            inceptionYear = '2013'
 
-                scm {
-                    url = 'https://github.com/robovmx/robovmx.git'
-                    connection = 'scm:git:git://github.com/robovmx/robovmx.git'
-                    developerConnection = 'scm:git:git@github.com:robovmx/robovmx.git'
+            scm {
+                url = 'https://github.com/robovmx/robovmx.git'
+                connection = 'scm:git:git://github.com/robovmx/robovmx.git'
+                developerConnection = 'scm:git:git@github.com:robovmx/robovmx.git'
+            }
+
+            licenses {
+                license {
+                    name = 'The Apache Software License, Version 2.0'
+                    url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    distribution = 'repo'
                 }
+            }
 
-                licenses {
-                    license {
-                        name = 'The Apache Software License, Version 2.0'
-                        url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-                        distribution = 'repo'
-                    }
+            developers {
+                developer {
+                    id = 'jtakakura'
+                    name = 'Junji Takakura'
                 }
-
-                developers {
-                    developer {
-                        id = 'jtakakura'
-                        name = 'Junji Takakura'
-                    }
-                    developer {
-                        id = 'ntherning'
-                        name = 'Niklas Therning'
-                    }
+                developer {
+                    id = 'ntherning'
+                    name = 'Niklas Therning'
                 }
             }
         }
     }
     repositories {
-        maven {
-            def releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
-            def snapshotsRepoUrl = "https://central.sonatype.com/repository/maven-snapshots/"
-            url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
-            credentials {
-                username = System.getenv("MAVEN_USERNAME")
-                password = System.getenv("MAVEN_PASSWORD")            }
+        if (project.version.toString().endsWith("-SNAPSHOT")) {
+            // snapshots are going to sonatype
+            maven {
+                credentials {
+                    username = System.getenv("MAVEN_USERNAME")
+                    password = System.getenv("MAVEN_PASSWORD")
+                }
+                url = uri("https://central.sonatype.com/repository/maven-snapshots/")
+            }
+        } else {
+            // local staging repository for JReleaser
+            maven {
+                url = uri(layout.buildDirectory.dir("staging-deploy"))
+            }
         }
     }
 }
 
-java {
-    withSourcesJar()
-    withJavadocJar()
+
+// https://central.sonatype.org/publish/publish-portal-gradle/
+jreleaser {
+    signing {
+        setActive("ALWAYS")
+        armored = true
+    }
+    deploy {
+        maven {
+            mavenCentral {
+                create("sonatype") {
+                    setActive("RELEASE")
+                    username = System.getenv("MAVEN_USERNAME")
+                    password = System.getenv("MAVEN_PASSWORD")
+                    url = "https://central.sonatype.com/api/v1/publisher"
+                    stagingRepository("build/staging-deploy")
+                    setStage("UPLOAD") // OTHERWISE it will do "publish"
+                }
+            }
+        }
+    }
+    release {
+        github {
+            skipRelease = true
+            token = "-" // must be not blank
+        }
+    }
 }
 
+
 shadowJar {
-    archiveClassifier.set('')
+    archiveClassifier.set((String) null)
     relocate 'org.apache.http', 'com.robovmx.org.apache.http'
     relocate 'org.apache.commons.io', 'com.robovmx.org.apache.commons.io'
     relocate 'org.objectweb.asm', 'com.robovmx.asm'
@@ -127,7 +164,7 @@ tasks.withType(Javadoc) {
 
 signing {
     required { !version.endsWith('SNAPSHOT') && gradle.taskGraph.hasTask("publish") }
-    sign publishing.publications.pluginMaven
+    sign publishing.publications.matching { it instanceof MavenPublication }
 }
 
 assemble.dependsOn('shadowJar')

@@ -18,8 +18,8 @@
     </description>
     <change-notes>
         <![CDATA[
-            <b>RoboVMx: 10.2.2.4</b>
-            <li> synchronized with MobiVM 2.3.24-SNAPSHOT @ Sep 9th, 2025 </li>
+            <b>RoboVMx: 10.2.2.5</b>
+            <li> synchronized with MobiVM 2.3.26-SNAPSHOT @ Jul 26th, 2026 </li>
         ]]>
     </change-notes>
 
@@ -34,7 +34,6 @@
         <projectTemplatesFactory implementation="org.robovm.idea.builder.RoboVmTemplatesFactory"/>
         <sdkType implementation="org.robovm.idea.sdk.RoboVmSdkType"/>
         <postStartupActivity implementation="org.robovm.idea.components.RoboVmProjectStartupActivity"/>
-        <buildProcess.parametersProvider implementation="org.robovm.idea.components.RoboVmBuildProcessParametersProvider"/>
         <stepsBeforeRunProvider implementation="org.robovm.idea.running.RoboVmBeforeRunTaskProvider"/>
         <!-- dkimitsa: removed as it is not required for open source xcode integration -->
         <!--<applicationConfigurable implementation="org.robovm.idea.config.RoboVmGlobalConfig"></applicationConfigurable>-->
