@@ -894,6 +894,17 @@ jboolean rvmInitMemory(Env* env) {
     if (!java_nio_Buffer_capacity) return FALSE;
     java_lang_Throwable_backtrace = rvmGetInstanceField(env, java_lang_Throwable, "backtrace", "J");
     if (!java_lang_Throwable_backtrace) return FALSE;
+
+    criticalOutOfMemoryError = rvmAllocateMemoryForObject(env, java_lang_OutOfMemoryError);
+    if (!criticalOutOfMemoryError) return FALSE;
+    criticalOutOfMemoryError->clazz = java_lang_OutOfMemoryError;
+    if (!rvmAddGlobalRef(env, criticalOutOfMemoryError)) return FALSE;
+
+    return TRUE;
+}
+
+jboolean rvmInitOptionalMemory(Env* env) {
+    vm = env->vm;
     org_robovm_rt_bro_Struct = rvmFindClassUsingLoader(env, "org/robovm/rt/bro/Struct", NULL);
     if (!org_robovm_rt_bro_Struct) {
         // We don't need Struct if it hasn't been compiled in
@@ -902,10 +913,6 @@ jboolean rvmInitMemory(Env* env) {
         org_robovm_rt_bro_Struct_handle = rvmGetInstanceField(env, org_robovm_rt_bro_Struct, "handle", "J");
         if (!org_robovm_rt_bro_Struct_handle) return FALSE;
     }
-    criticalOutOfMemoryError = rvmAllocateMemoryForObject(env, java_lang_OutOfMemoryError);
-    if (!criticalOutOfMemoryError) return FALSE;
-    criticalOutOfMemoryError->clazz = java_lang_OutOfMemoryError;
-    if (!rvmAddGlobalRef(env, criticalOutOfMemoryError)) return FALSE;
 
     return TRUE;
 }
@@ -938,8 +945,7 @@ void rvmSetupGcDescriptor(Env* env, Class* clazz) {
         // and will be reachable even if we allocate this using REF_FREE_GC_DESCRIPTOR.
         clazz->gcDescriptor = REF_FREE_GC_DESCRIPTOR;
     } else if (clazz == java_lang_Class || CLASS_IS_FINALIZABLE(clazz) || CLASS_IS_REFERENCE(clazz) 
-        || (clazz->superclass && clazz->superclass == java_nio_MemoryBlock)
-        || (clazz == java_nio_MemoryBlock) || rvmIsSubClass(java_lang_Throwable, clazz)
+        || rvmIsSubClass(java_lang_Throwable, clazz)
         || (clazz->superclass && org_robovm_rt_bro_Struct && rvmIsSubClass(org_robovm_rt_bro_Struct, clazz))) {
 
         // These types of objects must be marked specially. We could probably
