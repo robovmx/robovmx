@@ -5,9 +5,10 @@
     <parent>
         <groupId>com.robovmx</groupId>
         <artifactId>robovm-junit-parent</artifactId>
-        <version>10.2.2.4-SNAPSHOT</version>
+        <version>10.2.2.5-SNAPSHOT</version>
     </parent>
 
+    <name>RoboVM JUnit Protocol</name>
     <artifactId>robovm-junit-protocol</artifactId>
     <packaging>jar</packaging>
 

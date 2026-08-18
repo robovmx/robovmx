@@ -30,6 +30,7 @@ import org.gradle.api.Project;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.api.tasks.Internal;
+import org.gradle.api.tasks.UntrackedTask;
 import org.robovm.compiler.AppCompiler;
 import org.robovm.compiler.config.Arch;
 import org.robovm.compiler.config.Config;
@@ -67,6 +68,7 @@ import java.util.zip.GZIPInputStream;
  *
  * @author Junji Takakura
  */
+@UntrackedTask(because = "caching not implemented")
 abstract public class AbstractRoboVMTask extends DefaultTask {
 
     protected final Project project;
@@ -78,6 +80,16 @@ abstract public class AbstractRoboVMTask extends DefaultTask {
     protected Logger roboVMLogger;
 
     public AbstractRoboVMTask() {
+        try {
+            // TODO: support configuration cache, disabling as will crash with message
+            // Task `:launchIPhoneSimulator` of type `org.robovm.gradle.tasks.IPhoneSimulatorTask`:
+            // cannot serialize object of type 'org.gradle.api.internal.project.DefaultProject',
+            // a subtype of 'org.gradle.api.Project', as these are not supported with the configuration cache.
+            notCompatibleWithConfigurationCache("Not compatible due internal implementation");
+        } catch (NoSuchMethodError e) {
+            // not available before Gradle 7.4
+        }
+
         project = getProject();
         extension = (RoboVMPluginExtension) project.getExtensions().getByName(RoboVMPluginExtension.NAME);
         repositorySystem = createRepositorySystem();

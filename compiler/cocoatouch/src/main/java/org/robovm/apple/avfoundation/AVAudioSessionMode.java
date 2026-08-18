@@ -114,9 +114,17 @@ import org.robovm.apple.uikit.*;
      * @since Available in iOS 12.0 and later.
      */
     public static final AVAudioSessionMode VoicePrompt = new AVAudioSessionMode("VoicePrompt");
+    /**
+     * @since Available in iOS 26.0 and later.
+     */
+    public static final AVAudioSessionMode ShortFormVideo = new AVAudioSessionMode("ShortFormVideo");
+    /**
+     * @since Available in iOS 26.2 and later.
+     */
+    public static final AVAudioSessionMode DualRoute = new AVAudioSessionMode("DualRoute");
     /*</constants>*/
     
-    private static /*<name>*/AVAudioSessionMode/*</name>*/[] values = new /*<name>*/AVAudioSessionMode/*</name>*/[] {/*<value_list>*/Default, VoiceChat, GameChat, VideoRecording, Measurement, MoviePlayback, VideoChat, SpokenAudio, VoicePrompt/*</value_list>*/};
+    private static /*<name>*/AVAudioSessionMode/*</name>*/[] values = new /*<name>*/AVAudioSessionMode/*</name>*/[] {/*<value_list>*/Default, VoiceChat, GameChat, VideoRecording, Measurement, MoviePlayback, VideoChat, SpokenAudio, VoicePrompt, ShortFormVideo, DualRoute/*</value_list>*/};
     
     /*<name>*/AVAudioSessionMode/*</name>*/ (String getterName) {
         super(Values.class, getterName);
@@ -163,6 +171,16 @@ import org.robovm.apple.uikit.*;
          */
         @GlobalValue(symbol="AVAudioSessionModeVoicePrompt", optional=true)
         public static native NSString VoicePrompt();
+        /**
+         * @since Available in iOS 26.0 and later.
+         */
+        @GlobalValue(symbol="AVAudioSessionModeShortFormVideo", optional=true)
+        public static native NSString ShortFormVideo();
+        /**
+         * @since Available in iOS 26.2 and later.
+         */
+        @GlobalValue(symbol="AVAudioSessionModeDualRoute", optional=true)
+        public static native NSString DualRoute();
         /*</values>*/
     }
 }

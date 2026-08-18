@@ -7,7 +7,7 @@
   <parent>
     <groupId>com.robovmx</groupId>
     <artifactId>robovm-parent</artifactId>
-    <version>10.2.2.4-SNAPSHOT</version>
+    <version>10.2.2.5-SNAPSHOT</version>
     <relativePath>../../</relativePath>
   </parent>
 
@@ -16,6 +16,7 @@
     <robovm.version>${project.version}</robovm.version>
   </properties>
 
+  <name>RoboVM Maven Resolver</name>
   <artifactId>robovm-maven-resolver</artifactId>
   <packaging>jar</packaging>
 

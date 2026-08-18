@@ -39,7 +39,7 @@ import org.robovm.apple.security.*;
 /*</javadoc>*/
 /*<annotations>*/@Library("Matter") @NativeClass/*</annotations>*/
 /*<visibility>*/public/*</visibility>*/ class /*<name>*/MTRClusterColorControl/*</name>*/ 
-    extends /*<extends>*/MTRCluster/*</extends>*/ 
+    extends /*<extends>*/MTRGenericCluster/*</extends>*/ 
     /*<implements>*//*</implements>*/ {
 
     /*<ptr>*/public static class MTRClusterColorControlPtr extends Ptr<MTRClusterColorControl, MTRClusterColorControlPtr> {}/*</ptr>*/
@@ -60,11 +60,6 @@ import org.robovm.apple.security.*;
     /*</properties>*/
     /*<members>*//*</members>*/
     /*<methods>*/
-    /**
-     * @since Available in iOS 16.4 and later.
-     */
-    @Method(selector = "initWithDevice:endpointID:queue:")
-    protected native @Pointer long init(MTRDevice device, NSNumber endpointID, DispatchQueue queue);
     /**
      * @since Available in iOS 16.4 and later.
      */
@@ -323,28 +318,8 @@ import org.robovm.apple.security.*;
     /**
      * @since Available in iOS 16.1 and later.
      */
-    @Method(selector = "writeAttributeWhitePointXWithValue:expectedValueInterval:")
-    public native void writeAttributeWhitePointX(NSDictionary<NSString, ?> dataValueDictionary, NSNumber expectedValueIntervalMs);
-    /**
-     * @since Available in iOS 16.1 and later.
-     */
-    @Method(selector = "writeAttributeWhitePointXWithValue:expectedValueInterval:params:")
-    public native void writeAttributeWhitePointX(NSDictionary<NSString, ?> dataValueDictionary, NSNumber expectedValueIntervalMs, MTRWriteParams params);
-    /**
-     * @since Available in iOS 16.1 and later.
-     */
     @Method(selector = "readAttributeWhitePointYWithParams:")
     public native NSDictionary<NSString, ?> readAttributeWhitePointY(MTRReadParams params);
-    /**
-     * @since Available in iOS 16.1 and later.
-     */
-    @Method(selector = "writeAttributeWhitePointYWithValue:expectedValueInterval:")
-    public native void writeAttributeWhitePointY(NSDictionary<NSString, ?> dataValueDictionary, NSNumber expectedValueIntervalMs);
-    /**
-     * @since Available in iOS 16.1 and later.
-     */
-    @Method(selector = "writeAttributeWhitePointYWithValue:expectedValueInterval:params:")
-    public native void writeAttributeWhitePointY(NSDictionary<NSString, ?> dataValueDictionary, NSNumber expectedValueIntervalMs, MTRWriteParams params);
     /**
      * @since Available in iOS 16.1 and later.
      */
@@ -353,28 +328,8 @@ import org.robovm.apple.security.*;
     /**
      * @since Available in iOS 16.1 and later.
      */
-    @Method(selector = "writeAttributeColorPointRXWithValue:expectedValueInterval:")
-    public native void writeAttributeColorPointRX(NSDictionary<NSString, ?> dataValueDictionary, NSNumber expectedValueIntervalMs);
-    /**
-     * @since Available in iOS 16.1 and later.
-     */
-    @Method(selector = "writeAttributeColorPointRXWithValue:expectedValueInterval:params:")
-    public native void writeAttributeColorPointRX(NSDictionary<NSString, ?> dataValueDictionary, NSNumber expectedValueIntervalMs, MTRWriteParams params);
-    /**
-     * @since Available in iOS 16.1 and later.
-     */
     @Method(selector = "readAttributeColorPointRYWithParams:")
     public native NSDictionary<NSString, ?> readAttributeColorPointRY(MTRReadParams params);
-    /**
-     * @since Available in iOS 16.1 and later.
-     */
-    @Method(selector = "writeAttributeColorPointRYWithValue:expectedValueInterval:")
-    public native void writeAttributeColorPointRY(NSDictionary<NSString, ?> dataValueDictionary, NSNumber expectedValueIntervalMs);
-    /**
-     * @since Available in iOS 16.1 and later.
-     */
-    @Method(selector = "writeAttributeColorPointRYWithValue:expectedValueInterval:params:")
-    public native void writeAttributeColorPointRY(NSDictionary<NSString, ?> dataValueDictionary, NSNumber expectedValueIntervalMs, MTRWriteParams params);
     /**
      * @since Available in iOS 16.1 and later.
      */
@@ -383,28 +338,8 @@ import org.robovm.apple.security.*;
     /**
      * @since Available in iOS 16.1 and later.
      */
-    @Method(selector = "writeAttributeColorPointRIntensityWithValue:expectedValueInterval:")
-    public native void writeAttributeColorPointRIntensity(NSDictionary<NSString, ?> dataValueDictionary, NSNumber expectedValueIntervalMs);
-    /**
-     * @since Available in iOS 16.1 and later.
-     */
-    @Method(selector = "writeAttributeColorPointRIntensityWithValue:expectedValueInterval:params:")
-    public native void writeAttributeColorPointRIntensity(NSDictionary<NSString, ?> dataValueDictionary, NSNumber expectedValueIntervalMs, MTRWriteParams params);
-    /**
-     * @since Available in iOS 16.1 and later.
-     */
     @Method(selector = "readAttributeColorPointGXWithParams:")
     public native NSDictionary<NSString, ?> readAttributeColorPointGX(MTRReadParams params);
-    /**
-     * @since Available in iOS 16.1 and later.
-     */
-    @Method(selector = "writeAttributeColorPointGXWithValue:expectedValueInterval:")
-    public native void writeAttributeColorPointGX(NSDictionary<NSString, ?> dataValueDictionary, NSNumber expectedValueIntervalMs);
-    /**
-     * @since Available in iOS 16.1 and later.
-     */
-    @Method(selector = "writeAttributeColorPointGXWithValue:expectedValueInterval:params:")
-    public native void writeAttributeColorPointGX(NSDictionary<NSString, ?> dataValueDictionary, NSNumber expectedValueIntervalMs, MTRWriteParams params);
     /**
      * @since Available in iOS 16.1 and later.
      */
@@ -413,28 +348,8 @@ import org.robovm.apple.security.*;
     /**
      * @since Available in iOS 16.1 and later.
      */
-    @Method(selector = "writeAttributeColorPointGYWithValue:expectedValueInterval:")
-    public native void writeAttributeColorPointGY(NSDictionary<NSString, ?> dataValueDictionary, NSNumber expectedValueIntervalMs);
-    /**
-     * @since Available in iOS 16.1 and later.
-     */
-    @Method(selector = "writeAttributeColorPointGYWithValue:expectedValueInterval:params:")
-    public native void writeAttributeColorPointGY(NSDictionary<NSString, ?> dataValueDictionary, NSNumber expectedValueIntervalMs, MTRWriteParams params);
-    /**
-     * @since Available in iOS 16.1 and later.
-     */
     @Method(selector = "readAttributeColorPointGIntensityWithParams:")
     public native NSDictionary<NSString, ?> readAttributeColorPointGIntensity(MTRReadParams params);
-    /**
-     * @since Available in iOS 16.1 and later.
-     */
-    @Method(selector = "writeAttributeColorPointGIntensityWithValue:expectedValueInterval:")
-    public native void writeAttributeColorPointGIntensity(NSDictionary<NSString, ?> dataValueDictionary, NSNumber expectedValueIntervalMs);
-    /**
-     * @since Available in iOS 16.1 and later.
-     */
-    @Method(selector = "writeAttributeColorPointGIntensityWithValue:expectedValueInterval:params:")
-    public native void writeAttributeColorPointGIntensity(NSDictionary<NSString, ?> dataValueDictionary, NSNumber expectedValueIntervalMs, MTRWriteParams params);
     /**
      * @since Available in iOS 16.1 and later.
      */
@@ -443,43 +358,13 @@ import org.robovm.apple.security.*;
     /**
      * @since Available in iOS 16.1 and later.
      */
-    @Method(selector = "writeAttributeColorPointBXWithValue:expectedValueInterval:")
-    public native void writeAttributeColorPointBX(NSDictionary<NSString, ?> dataValueDictionary, NSNumber expectedValueIntervalMs);
-    /**
-     * @since Available in iOS 16.1 and later.
-     */
-    @Method(selector = "writeAttributeColorPointBXWithValue:expectedValueInterval:params:")
-    public native void writeAttributeColorPointBX(NSDictionary<NSString, ?> dataValueDictionary, NSNumber expectedValueIntervalMs, MTRWriteParams params);
-    /**
-     * @since Available in iOS 16.1 and later.
-     */
     @Method(selector = "readAttributeColorPointBYWithParams:")
     public native NSDictionary<NSString, ?> readAttributeColorPointBY(MTRReadParams params);
     /**
      * @since Available in iOS 16.1 and later.
      */
-    @Method(selector = "writeAttributeColorPointBYWithValue:expectedValueInterval:")
-    public native void writeAttributeColorPointBY(NSDictionary<NSString, ?> dataValueDictionary, NSNumber expectedValueIntervalMs);
-    /**
-     * @since Available in iOS 16.1 and later.
-     */
-    @Method(selector = "writeAttributeColorPointBYWithValue:expectedValueInterval:params:")
-    public native void writeAttributeColorPointBY(NSDictionary<NSString, ?> dataValueDictionary, NSNumber expectedValueIntervalMs, MTRWriteParams params);
-    /**
-     * @since Available in iOS 16.1 and later.
-     */
     @Method(selector = "readAttributeColorPointBIntensityWithParams:")
     public native NSDictionary<NSString, ?> readAttributeColorPointBIntensity(MTRReadParams params);
-    /**
-     * @since Available in iOS 16.1 and later.
-     */
-    @Method(selector = "writeAttributeColorPointBIntensityWithValue:expectedValueInterval:")
-    public native void writeAttributeColorPointBIntensity(NSDictionary<NSString, ?> dataValueDictionary, NSNumber expectedValueIntervalMs);
-    /**
-     * @since Available in iOS 16.1 and later.
-     */
-    @Method(selector = "writeAttributeColorPointBIntensityWithValue:expectedValueInterval:params:")
-    public native void writeAttributeColorPointBIntensity(NSDictionary<NSString, ?> dataValueDictionary, NSNumber expectedValueIntervalMs, MTRWriteParams params);
     /**
      * @since Available in iOS 16.1 and later.
      */
@@ -575,5 +460,164 @@ import org.robovm.apple.security.*;
      */
     @Method(selector = "readAttributeClusterRevisionWithParams:")
     public native NSDictionary<NSString, ?> readAttributeClusterRevision(MTRReadParams params);
+    /**
+     * @since Available in iOS 16.4 and later.
+     */
+    @Method(selector = "initWithDevice:endpointID:queue:")
+    protected native @Pointer long init(MTRDevice device, NSNumber endpointID, DispatchQueue queue);
+    /**
+     * @since Available in iOS 16.1 and later.
+     * @deprecated Deprecated in iOS 26.1. This attribute is no longer writable in the Matter standard
+     */
+    @Deprecated
+    @Method(selector = "writeAttributeWhitePointXWithValue:expectedValueInterval:")
+    public native void writeAttributeWhitePointX(NSDictionary<NSString, ?> dataValueDictionary, NSNumber expectedValueIntervalMs);
+    /**
+     * @since Available in iOS 16.1 and later.
+     * @deprecated Deprecated in iOS 26.1. This attribute is no longer writable in the Matter standard
+     */
+    @Deprecated
+    @Method(selector = "writeAttributeWhitePointXWithValue:expectedValueInterval:params:")
+    public native void writeAttributeWhitePointX(NSDictionary<NSString, ?> dataValueDictionary, NSNumber expectedValueIntervalMs, MTRWriteParams params);
+    /**
+     * @since Available in iOS 16.1 and later.
+     * @deprecated Deprecated in iOS 26.1. This attribute is no longer writable in the Matter standard
+     */
+    @Deprecated
+    @Method(selector = "writeAttributeWhitePointYWithValue:expectedValueInterval:")
+    public native void writeAttributeWhitePointY(NSDictionary<NSString, ?> dataValueDictionary, NSNumber expectedValueIntervalMs);
+    /**
+     * @since Available in iOS 16.1 and later.
+     * @deprecated Deprecated in iOS 26.1. This attribute is no longer writable in the Matter standard
+     */
+    @Deprecated
+    @Method(selector = "writeAttributeWhitePointYWithValue:expectedValueInterval:params:")
+    public native void writeAttributeWhitePointY(NSDictionary<NSString, ?> dataValueDictionary, NSNumber expectedValueIntervalMs, MTRWriteParams params);
+    /**
+     * @since Available in iOS 16.1 and later.
+     * @deprecated Deprecated in iOS 26.1. This attribute is no longer writable in the Matter standard
+     */
+    @Deprecated
+    @Method(selector = "writeAttributeColorPointRXWithValue:expectedValueInterval:")
+    public native void writeAttributeColorPointRX(NSDictionary<NSString, ?> dataValueDictionary, NSNumber expectedValueIntervalMs);
+    /**
+     * @since Available in iOS 16.1 and later.
+     * @deprecated Deprecated in iOS 26.1. This attribute is no longer writable in the Matter standard
+     */
+    @Deprecated
+    @Method(selector = "writeAttributeColorPointRXWithValue:expectedValueInterval:params:")
+    public native void writeAttributeColorPointRX(NSDictionary<NSString, ?> dataValueDictionary, NSNumber expectedValueIntervalMs, MTRWriteParams params);
+    /**
+     * @since Available in iOS 16.1 and later.
+     * @deprecated Deprecated in iOS 26.1. This attribute is no longer writable in the Matter standard
+     */
+    @Deprecated
+    @Method(selector = "writeAttributeColorPointRYWithValue:expectedValueInterval:")
+    public native void writeAttributeColorPointRY(NSDictionary<NSString, ?> dataValueDictionary, NSNumber expectedValueIntervalMs);
+    /**
+     * @since Available in iOS 16.1 and later.
+     * @deprecated Deprecated in iOS 26.1. This attribute is no longer writable in the Matter standard
+     */
+    @Deprecated
+    @Method(selector = "writeAttributeColorPointRYWithValue:expectedValueInterval:params:")
+    public native void writeAttributeColorPointRY(NSDictionary<NSString, ?> dataValueDictionary, NSNumber expectedValueIntervalMs, MTRWriteParams params);
+    /**
+     * @since Available in iOS 16.1 and later.
+     * @deprecated Deprecated in iOS 26.1. This attribute is no longer writable in the Matter standard
+     */
+    @Deprecated
+    @Method(selector = "writeAttributeColorPointRIntensityWithValue:expectedValueInterval:")
+    public native void writeAttributeColorPointRIntensity(NSDictionary<NSString, ?> dataValueDictionary, NSNumber expectedValueIntervalMs);
+    /**
+     * @since Available in iOS 16.1 and later.
+     * @deprecated Deprecated in iOS 26.1. This attribute is no longer writable in the Matter standard
+     */
+    @Deprecated
+    @Method(selector = "writeAttributeColorPointRIntensityWithValue:expectedValueInterval:params:")
+    public native void writeAttributeColorPointRIntensity(NSDictionary<NSString, ?> dataValueDictionary, NSNumber expectedValueIntervalMs, MTRWriteParams params);
+    /**
+     * @since Available in iOS 16.1 and later.
+     * @deprecated Deprecated in iOS 26.1. This attribute is no longer writable in the Matter standard
+     */
+    @Deprecated
+    @Method(selector = "writeAttributeColorPointGXWithValue:expectedValueInterval:")
+    public native void writeAttributeColorPointGX(NSDictionary<NSString, ?> dataValueDictionary, NSNumber expectedValueIntervalMs);
+    /**
+     * @since Available in iOS 16.1 and later.
+     * @deprecated Deprecated in iOS 26.1. This attribute is no longer writable in the Matter standard
+     */
+    @Deprecated
+    @Method(selector = "writeAttributeColorPointGXWithValue:expectedValueInterval:params:")
+    public native void writeAttributeColorPointGX(NSDictionary<NSString, ?> dataValueDictionary, NSNumber expectedValueIntervalMs, MTRWriteParams params);
+    /**
+     * @since Available in iOS 16.1 and later.
+     * @deprecated Deprecated in iOS 26.1. This attribute is no longer writable in the Matter standard
+     */
+    @Deprecated
+    @Method(selector = "writeAttributeColorPointGYWithValue:expectedValueInterval:")
+    public native void writeAttributeColorPointGY(NSDictionary<NSString, ?> dataValueDictionary, NSNumber expectedValueIntervalMs);
+    /**
+     * @since Available in iOS 16.1 and later.
+     * @deprecated Deprecated in iOS 26.1. This attribute is no longer writable in the Matter standard
+     */
+    @Deprecated
+    @Method(selector = "writeAttributeColorPointGYWithValue:expectedValueInterval:params:")
+    public native void writeAttributeColorPointGY(NSDictionary<NSString, ?> dataValueDictionary, NSNumber expectedValueIntervalMs, MTRWriteParams params);
+    /**
+     * @since Available in iOS 16.1 and later.
+     * @deprecated Deprecated in iOS 26.1. This attribute is no longer writable in the Matter standard
+     */
+    @Deprecated
+    @Method(selector = "writeAttributeColorPointGIntensityWithValue:expectedValueInterval:")
+    public native void writeAttributeColorPointGIntensity(NSDictionary<NSString, ?> dataValueDictionary, NSNumber expectedValueIntervalMs);
+    /**
+     * @since Available in iOS 16.1 and later.
+     * @deprecated Deprecated in iOS 26.1. This attribute is no longer writable in the Matter standard
+     */
+    @Deprecated
+    @Method(selector = "writeAttributeColorPointGIntensityWithValue:expectedValueInterval:params:")
+    public native void writeAttributeColorPointGIntensity(NSDictionary<NSString, ?> dataValueDictionary, NSNumber expectedValueIntervalMs, MTRWriteParams params);
+    /**
+     * @since Available in iOS 16.1 and later.
+     * @deprecated Deprecated in iOS 26.1. This attribute is no longer writable in the Matter standard
+     */
+    @Deprecated
+    @Method(selector = "writeAttributeColorPointBXWithValue:expectedValueInterval:")
+    public native void writeAttributeColorPointBX(NSDictionary<NSString, ?> dataValueDictionary, NSNumber expectedValueIntervalMs);
+    /**
+     * @since Available in iOS 16.1 and later.
+     * @deprecated Deprecated in iOS 26.1. This attribute is no longer writable in the Matter standard
+     */
+    @Deprecated
+    @Method(selector = "writeAttributeColorPointBXWithValue:expectedValueInterval:params:")
+    public native void writeAttributeColorPointBX(NSDictionary<NSString, ?> dataValueDictionary, NSNumber expectedValueIntervalMs, MTRWriteParams params);
+    /**
+     * @since Available in iOS 16.1 and later.
+     * @deprecated Deprecated in iOS 26.1. This attribute is no longer writable in the Matter standard
+     */
+    @Deprecated
+    @Method(selector = "writeAttributeColorPointBYWithValue:expectedValueInterval:")
+    public native void writeAttributeColorPointBY(NSDictionary<NSString, ?> dataValueDictionary, NSNumber expectedValueIntervalMs);
+    /**
+     * @since Available in iOS 16.1 and later.
+     * @deprecated Deprecated in iOS 26.1. This attribute is no longer writable in the Matter standard
+     */
+    @Deprecated
+    @Method(selector = "writeAttributeColorPointBYWithValue:expectedValueInterval:params:")
+    public native void writeAttributeColorPointBY(NSDictionary<NSString, ?> dataValueDictionary, NSNumber expectedValueIntervalMs, MTRWriteParams params);
+    /**
+     * @since Available in iOS 16.1 and later.
+     * @deprecated Deprecated in iOS 26.1. This attribute is no longer writable in the Matter standard
+     */
+    @Deprecated
+    @Method(selector = "writeAttributeColorPointBIntensityWithValue:expectedValueInterval:")
+    public native void writeAttributeColorPointBIntensity(NSDictionary<NSString, ?> dataValueDictionary, NSNumber expectedValueIntervalMs);
+    /**
+     * @since Available in iOS 16.1 and later.
+     * @deprecated Deprecated in iOS 26.1. This attribute is no longer writable in the Matter standard
+     */
+    @Deprecated
+    @Method(selector = "writeAttributeColorPointBIntensityWithValue:expectedValueInterval:params:")
+    public native void writeAttributeColorPointBIntensity(NSDictionary<NSString, ?> dataValueDictionary, NSNumber expectedValueIntervalMs, MTRWriteParams params);
     /*</methods>*/
 }

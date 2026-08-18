@@ -33,7 +33,9 @@ import org.robovm.apple.security.*;
 /*</imports>*/
 
 /*<javadoc>*/
-
+/**
+ * @since Available in iOS 16.1 and later.
+ */
 /*</javadoc>*/
 /*<annotations>*/@Marshaler(ValuedEnum.AsMachineSizedSIntMarshaler.class) @Library("Matter")/*</annotations>*/
 public enum /*<name>*/MTRInteractionErrorCode/*</name>*/ implements NSErrorCode {
@@ -56,19 +58,34 @@ public enum /*<name>*/MTRInteractionErrorCode/*</name>*/ implements NSErrorCode 
     DataVersionMismatch(146L),
     Timeout(148L),
     Busy(156L),
+    /**
+     * @since Available in iOS 26.0 and later.
+     */
+    AccessRestricted(157L),
     UnsupportedCluster(195L),
     NoUpstreamSubscription(197L),
     NeedsTimedInteraction(198L),
     UnsupportedEvent(199L),
     PathsExhausted(200L),
     TimedRequestMismatch(201L),
-    FailsafeRequired(202L);
+    FailsafeRequired(202L),
+    /**
+     * @since Available in iOS 17.6 and later.
+     */
+    InvalidInState(203L),
+    /**
+     * @since Available in iOS 17.6 and later.
+     */
+    NoCommandResponse(204L);
     /*</values>*/
 
     /*<bind>*/static { Bro.bind(MTRInteractionErrorCode.class); }/*</bind>*/
     /*<constants>*//*</constants>*/
     /*<members>*//*</members>*/
     /*<methods>*/
+    /**
+     * @since Available in iOS 16.1 and later.
+     */
     @GlobalValue(symbol="MTRInteractionErrorDomain", optional=true)
     public static native String getClassDomain();
     /*</methods>*/

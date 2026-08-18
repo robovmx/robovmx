@@ -33,7 +33,9 @@ import org.robovm.apple.security.*;
 /*</imports>*/
 
 /*<javadoc>*/
-
+/**
+ * @since Available in iOS 16.1 and later.
+ */
 /*</javadoc>*/
 /*<annotations>*/@Library("Matter") @NativeClass/*</annotations>*/
 /*<visibility>*/public/*</visibility>*/ class /*<name>*/MTRCommissioningParameters/*</name>*/ 
@@ -109,6 +111,46 @@ import org.robovm.apple.security.*;
      */
     @Property(selector = "setCountryCode:")
     public native void setCountryCode(String v);
+    /**
+     * @since Available in iOS 18.4 and later.
+     */
+    @Property(selector = "readEndpointInformation")
+    public native boolean isReadEndpointInformation();
+    /**
+     * @since Available in iOS 18.4 and later.
+     */
+    @Property(selector = "setReadEndpointInformation:")
+    public native void setReadEndpointInformation(boolean v);
+    /**
+     * @since Available in iOS 26.2 and later.
+     */
+    @Property(selector = "extraAttributesToRead")
+    public native NSArray<MTRAttributeRequestPath> getExtraAttributesToRead();
+    /**
+     * @since Available in iOS 26.2 and later.
+     */
+    @Property(selector = "setExtraAttributesToRead:")
+    public native void setExtraAttributesToRead(NSArray<MTRAttributeRequestPath> v);
+    /**
+     * @since Available in iOS 26.2 and later.
+     */
+    @Property(selector = "forceWiFiScan")
+    public native boolean isForceWiFiScan();
+    /**
+     * @since Available in iOS 26.2 and later.
+     */
+    @Property(selector = "setForceWiFiScan:")
+    public native void setForceWiFiScan(boolean v);
+    /**
+     * @since Available in iOS 26.2 and later.
+     */
+    @Property(selector = "forceThreadScan")
+    public native boolean isForceThreadScan();
+    /**
+     * @since Available in iOS 26.2 and later.
+     */
+    @Property(selector = "setForceThreadScan:")
+    public native void setForceThreadScan(boolean v);
     /*</properties>*/
     /*<members>*//*</members>*/
     /*<methods>*/

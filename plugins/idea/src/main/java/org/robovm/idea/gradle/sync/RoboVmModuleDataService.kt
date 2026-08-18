@@ -18,7 +18,7 @@ package org.robovm.idea.gradle.sync
 import com.intellij.facet.ModifiableFacetModel
 import com.intellij.openapi.externalSystem.model.DataNode
 import com.intellij.openapi.externalSystem.model.Key
-import com.intellij.openapi.externalSystem.model.ProjectKeys
+import com.intellij.openapi.externalSystem.model.project.ModuleData
 import com.intellij.openapi.externalSystem.model.project.ProjectData
 import com.intellij.openapi.externalSystem.service.project.IdeModifiableModelsProvider
 import com.intellij.openapi.externalSystem.service.project.manage.AbstractProjectDataService
@@ -34,18 +34,25 @@ import org.robovm.idea.sdk.RoboVmSdkType
  * Key identifies as RoboVM module being imported by gradle.
  * Being set in RoboVMGradleProjectResolver. Using facet setting class here as data
  */
-internal val RoboVmGradleModelKey = Key.create(RoboVmFacetConfiguration.Settings::class.java, 1)
+internal val RoboVmGradleModelKey = Key.create(RoboVmModuleDataService.ServiceData::class.java, 1)
 
 /**
  * Attaches RoboVM facet to modules imported by gradle.
  * (triggered by RoboVmModelKey in DataNode, attached by RoboVMGradleProjectResolver)
  */
-class RoboVmModuleDataService : AbstractProjectDataService<RoboVmFacetConfiguration.Settings, Module>() {
+class RoboVmModuleDataService : AbstractProjectDataService<RoboVmModuleDataService.ServiceData, Module>() {
+    sealed interface ServiceData {
+        /// special tag for modules that are part of RoboVM module but where facet to be removed
+        /// e.g. `ios-main` should have it attached, but `ios` not.
+        /// module `ios` will be marked with this tag and checked for facet for removal
+        data object InspectionRequest: ServiceData
+        data class FacetSettings(val settings: RoboVmFacetConfiguration.Settings): ServiceData
+    }
 
-    override fun getTargetDataKey(): Key<RoboVmFacetConfiguration.Settings> = RoboVmGradleModelKey
+    override fun getTargetDataKey(): Key<ServiceData> = RoboVmGradleModelKey
 
     override fun postProcess(
-        toImport: Collection<DataNode<RoboVmFacetConfiguration.Settings>>,
+        toImport: Collection<DataNode<ServiceData>>,
         projectData: ProjectData?,
         project: Project,
         modelsProvider: IdeModifiableModelsProvider
@@ -54,10 +61,12 @@ class RoboVmModuleDataService : AbstractProjectDataService<RoboVmFacetConfigurat
 
         // for each module with RoboVMGradleModel attached just add RoboVM facet
         toImport.forEach { nodeToImport ->
-            ExternalSystemApiUtil.findParent(nodeToImport, ProjectKeys.MODULE)?.let { moduleNode ->
-                val module = modelsProvider.findIdeModule(moduleNode.data) ?: return@let
-                val externalModel = nodeToImport.data
-                val facetModel = modelsProvider.getModifiableFacetModel(module)
+            val parentNode = nodeToImport.parent ?: return@forEach
+            val moduleData = parentNode.data as? ModuleData ?: return@forEach
+            val module = modelsProvider.findIdeModule(moduleData) ?: return@forEach
+            val externalModel = (nodeToImport.data as? ServiceData.FacetSettings)?.settings
+            val facetModel = modelsProvider.getModifiableFacetModel(module)
+            if (externalModel != null) {
                 facetModel.getFacetByType(RoboVmFacetType.TYPE_ID)?.let {
                     // facet already attached, replace its settings
                     it.configuration.replaceSettings(externalModel)
@@ -69,6 +78,9 @@ class RoboVmModuleDataService : AbstractProjectDataService<RoboVmFacetConfigurat
                 // setup sdk
                 val moduleModel = modelsProvider.getModifiableRootModel(module)
                 moduleModel.sdk = RoboVmSdkType.setUpSdkIfNeeded(project)
+            } else {
+                // module tagged with ServiceData.InspectionRequest and facet should be removed from it
+                facetModel.getFacetByType(RoboVmFacetType.TYPE_ID)?.let { facetModel.removeFacet(it) }
             }
         }
     }

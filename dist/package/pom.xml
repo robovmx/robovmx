@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.robovmx</groupId>
         <artifactId>robovm-dist-parent</artifactId>
-        <version>10.2.2.4-SNAPSHOT</version>
+        <version>10.2.2.5-SNAPSHOT</version>
     </parent>
 
     <artifactId>robovm-dist</artifactId>
@@ -15,20 +15,6 @@
     <properties>
         <robovmdir>${basedir}/../../compiler</robovmdir>
     </properties>
-
-    <profiles>
-        <profile>
-            <id>robovm-release</id>
-            <dependencies>
-                <!-- RT sources are build during release only -->
-                <dependency>
-                    <groupId>com.robovmx</groupId>
-                    <artifactId>robovm-rt</artifactId>
-                    <classifier>sources</classifier>
-                </dependency>
-            </dependencies>
-        </profile>
-    </profiles>
 
     <dependencies>
         <dependency>
@@ -41,7 +27,17 @@
         </dependency>
         <dependency>
             <groupId>com.robovmx</groupId>
+            <artifactId>robovm-rt</artifactId>
+            <classifier>sources</classifier>
+        </dependency>
+        <dependency>
+            <groupId>com.robovmx</groupId>
             <artifactId>robovm-objc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.robovmx</groupId>
+            <artifactId>robovm-objc</artifactId>
+            <classifier>sources</classifier>
         </dependency>
         <dependency>
             <groupId>com.robovmx</groupId>

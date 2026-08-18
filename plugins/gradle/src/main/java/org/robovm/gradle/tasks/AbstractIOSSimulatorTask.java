@@ -15,16 +15,18 @@
  */
 package org.robovm.gradle.tasks;
 
+import org.gradle.api.tasks.UntrackedTask;
 import org.robovm.compiler.config.Arch;
 import org.robovm.compiler.config.CpuArch;
 import org.robovm.compiler.config.Environment;
 import org.robovm.compiler.config.OS;
-import org.robovm.compiler.target.ios.DeviceType;
 import org.robovm.compiler.target.ios.IOSTarget;
+import org.robovm.compiler.target.ios.simulator.DeviceType;
 
 /**
  *
  */
+@UntrackedTask(because = "launches simulator")
 public abstract class AbstractIOSSimulatorTask extends AbstractSimulatorTask {
 
     @Override

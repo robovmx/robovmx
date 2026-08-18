@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.robovmx</groupId>
-    <version>10.2.2.4-SNAPSHOT</version>
+    <version>10.2.2.5-SNAPSHOT</version>
     <artifactId>robovm-parent</artifactId>
     <organization>
         <name>com.robovmx</name>
@@ -46,7 +46,6 @@
 
 
     <properties>
-        <sonatypeOssDistMgmtSnapshotsUrl>https://central.sonatype.com/repository/maven-snapshots/</sonatypeOssDistMgmtSnapshotsUrl>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
@@ -71,6 +70,10 @@
                                 </goals>
                             </execution>
                         </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.sonatype.central</groupId>
+                        <artifactId>central-publishing-maven-plugin</artifactId>
                     </plugin>
                 </plugins>
             </build>
@@ -181,9 +184,9 @@
                 <version>1.49</version>
             </dependency>
             <dependency>
-                <groupId>com.googlecode.json-simple</groupId>
+                <groupId>com.github.cliftonlabs</groupId>
                 <artifactId>json-simple</artifactId>
-                <version>1.1.1</version>
+                <version>4.0.1</version>
             </dependency>
             <dependency>
                 <groupId>org.ow2.asm</groupId>
@@ -239,7 +242,7 @@
                 <artifactId>robovm-rt</artifactId>
                 <version>${project.version}</version>
             </dependency>
-            <!-- FIXME: -->
+            <!-- robovm-rt sources used in dist -->
             <dependency>
                 <groupId>com.robovmx</groupId>
                 <artifactId>robovm-rt</artifactId>
@@ -255,6 +258,13 @@
                 <groupId>com.robovmx</groupId>
                 <artifactId>robovm-objc</artifactId>
                 <version>${project.version}</version>
+            </dependency>
+            <!-- robovm-objc sources used in dist -->
+            <dependency>
+                <groupId>com.robovmx</groupId>
+                <artifactId>robovm-objc</artifactId>
+                <version>${project.version}</version>
+                <classifier>sources</classifier>
             </dependency>
             <dependency>
                 <groupId>com.robovmx</groupId>
@@ -325,13 +335,8 @@
         <snapshotRepository>
             <id>ossrh-robovmx</id>
             <name>Sonatype Nexus Snapshots</name>
-            <url>${sonatypeOssDistMgmtSnapshotsUrl}</url>
+            <url>https://central.sonatype.com/repository/maven-snapshots/</url>
         </snapshotRepository>
-        <repository>
-            <id>sonatype-nexus-staging</id>
-            <name>Nexus Release Repository</name>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-        </repository>
     </distributionManagement>
     <!-- end of: entries from sonatype oss-parent-->
 
@@ -349,7 +354,6 @@
                     <configuration>
                         <release>9</release>
                         <debug>true</debug>
-                        <optimize>true</optimize>
                         <encoding>UTF-8</encoding>
                     </configuration>
                 </plugin>
@@ -384,7 +388,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>3.1.1</version>
+                    <version>3.12.0</version>
                 </plugin>
 
                 <plugin>
@@ -407,7 +411,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-gpg-plugin</artifactId>
-                    <version>1.6</version>
+                    <version>3.2.4</version>
                 </plugin>
 
                 <plugin>
@@ -460,7 +464,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-assembly-plugin</artifactId>
-                    <version>3.1.1</version>
+                    <version>3.8.0</version>
                     <configuration>
                         <!-- FIXME: this one is to fix "single failed: group id 'SOME BIG ID' is too big" when mac is in NT domain -->
                         <!-- FIXME: this adds PaxHeaders.X in this case, check if it will be adding it for normal user -->
@@ -478,6 +482,17 @@
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>exec-maven-plugin</artifactId>
                     <version>1.6.0</version>
+                </plugin>
+                <!-- Central publishing -->
+                <plugin>
+                    <groupId>org.sonatype.central</groupId>
+                    <artifactId>central-publishing-maven-plugin</artifactId>
+                    <version>0.8.0</version>
+                    <extensions>true</extensions>
+                    <configuration>
+                       <publishingServerId>sonatype-nexus-snapshots</publishingServerId>
+                       <autoPublish>false</autoPublish>
+                    </configuration>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -508,9 +523,13 @@
                     </execution>
                 </executions>
                 <configuration>
+                    <quiet>true</quiet>
                     <doclint>none</doclint>
                     <release>9</release>
                     <detectJavaApiLink>false</detectJavaApiLink>
+                    <notree>true</notree>
+                    <noindex>true</noindex>
+                    <nodeprecated>true</nodeprecated>
                 </configuration>
             </plugin>
         </plugins>
